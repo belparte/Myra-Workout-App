@@ -554,9 +554,16 @@ textarea{resize:none}
   <div class="top-bar">
     <div class="top-bar-title">HISTORY</div>
     <div class="top-bar-actions">
-      <div class="icon-btn" onclick="exportData()" title="Export">📄</div>
-      <div class="icon-btn btn-danger" onclick="clearAllHistory()" title="Clear" style="font-size:13px">🗑</div>
+      <div class="icon-btn" onclick="importJSON()" title="Restore backup" style="font-size:13px">📥</div>
+      <div class="icon-btn" onclick="exportJSON()" title="Backup all data" style="font-size:13px">💾</div>
+      <div class="icon-btn" onclick="exportData()" title="Export summary" style="font-size:13px">📄</div>
+      <div class="icon-btn btn-danger" onclick="clearAllHistory()" title="Clear history" style="font-size:13px">🗑</div>
     </div>
+  </div>
+  <div style="padding:8px 16px;background:rgba(29,233,182,0.06);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;gap:12px;align-items:center">
+    <span>📥 Restore</span><span style="color:var(--border)">·</span>
+    <span>💾 Full Backup (.json)</span><span style="color:var(--border)">·</span>
+    <span>📄 Text Summary</span>
   </div>
   <div style="padding:10px 16px;font-size:12px;color:var(--muted)" id="histStats"></div>
   <div id="histContent"></div>
@@ -640,46 +647,46 @@ const WORKOUTS={
   day1:{label:'Day 1',title:'Upper Push',sub:'Chest · Shoulders · Triceps',type:'push',
     warmup:'5 min: arm circles, band pull-aparts, 5 slow push-up negatives',sciWarn:false,
     exercises:[
-      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',sciNote:null},
-      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',sciNote:null},
-      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',sciNote:null},
-      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',sciNote:null},
-      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',sciNote:null},
-      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',sciNote:null},
+      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',sciNote:null},
+      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',sciNote:null},
+      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',sciNote:null},
+      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',sciNote:null},
+      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',sciNote:null},
+      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',repTarget:15,rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',sciNote:null,noWeight:true},
     ]},
   day2:{label:'Day 2',title:'Lower + Core',sub:'Quads · Hamstrings · Core',type:'lower',
     warmup:'5 min: glute bridges x10, leg swings, hip circles, piriformis stretch',
     sciWarn:'🦵 Sciatica note: Do glute bridges first every session. Skip reverse lunges if left leg tingles — substitute with right leg only.',
     exercises:[
-      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',sciNote:'Keep weight light. Widen stance slightly if left leg tingles.'},
-      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',sciNote:'Best exercise for sciatica relief. Squeeze glutes 2s at top.'},
-      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',sciNote:'Wk 1–2: right leg only. Add left from wk 3 if pain-free.'},
-      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',sciNote:'Gentle on sciatica. Keep hips level throughout.'},
-      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',sciNote:'Core without spinal loading — ideal for sciatica.'},
-      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',sciNote:null},
+      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',sciNote:'Keep weight light. Widen stance slightly if left leg tingles.'},
+      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',sciNote:'Best exercise for sciatica relief. Squeeze glutes 2s at top.',noWeight:true},
+      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',sciNote:'Wk 1–2: right leg only. Add left from wk 3 if pain-free.',noWeight:true},
+      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',sciNote:'Gentle on sciatica. Keep hips level throughout.',noWeight:true},
+      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',sciNote:'Core without spinal loading — ideal for sciatica.',noWeight:true},
+      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',sciNote:null,noWeight:true},
     ]},
   day3:{label:'Day 3',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,sciWarn:false,exercises:[]},
   day4:{label:'Day 4',title:'Upper Pull',sub:'Back · Biceps · Rear Delts',type:'pull',
     warmup:'5 min: band pull-aparts, shoulder rolls, light row x10',
     sciWarn:'Row at 45° — not parallel. Brace core on every rep. Never round lower back.',
     exercises:[
-      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',sciNote:null},
-      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',sciNote:null},
-      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',sciNote:null},
-      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',sciNote:null},
-      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',sciNote:null},
-      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',sciNote:null},
+      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',sciNote:null},
+      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',sciNote:null},
+      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',sciNote:null},
+      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',sciNote:null,noWeight:true},
+      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',sciNote:null},
+      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',sciNote:null},
     ]},
   day5:{label:'Day 5',title:'Lower + Glutes',sub:'Glutes · Hamstrings · Core',type:'lower',
     warmup:'5 min: glute bridges x10, lateral band walks x10 each side, piriformis stretch',
     sciWarn:'🦵 Hip thrusts directly reduce sciatic nerve compression — prioritise them. Move controlled, squeeze at top.',
     exercises:[
-      {id:'d5e1',icon:'🍑',name:'Barbell Hip Thrust',sets:4,reps:'10–12',rest:90,url:'https://www.youtube.com/results?search_query=barbell+hip+thrust+form+beginners',sciNote:'Best long-term fix for sciatica. Full glute squeeze at top.'},
-      {id:'d5e2',icon:'📦',name:'Step-Ups (Low Step)',sets:3,reps:'10 ea',rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+step+ups+form+tutorial',sciNote:'Wk 1–2: bodyweight only. Lead with right leg.'},
-      {id:'d5e3',icon:'🏋️',name:'Sumo Squat',sets:3,reps:'12',rest:60,url:'https://www.youtube.com/results?search_query=sumo+squat+dumbbell+form',sciNote:'Wide stance reduces stress on piriformis.'},
-      {id:'d5e4',icon:'🦀',name:'Lateral Band Walks',sets:3,reps:'15 ea',rest:45,url:'https://www.youtube.com/results?search_query=lateral+band+walk+glute+med+activation',sciNote:'Activates glute med — counters sciatica weakness directly.'},
-      {id:'d5e5',icon:'⚽',name:'Stability Ball Glute Bridge',sets:3,reps:'15',rest:45,url:'https://www.youtube.com/results?search_query=stability+ball+glute+bridge+tutorial',sciNote:null},
-      {id:'d5e6',icon:'🪵',name:'Plank Hold',sets:3,reps:'20–30s',rest:45,url:'https://www.youtube.com/results?search_query=plank+form+core+beginners',sciNote:'Start 20s. Do not let lower back sag.'},
+      {id:'d5e1',icon:'🍑',name:'Barbell Hip Thrust',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=barbell+hip+thrust+form+beginners',sciNote:'Best long-term fix for sciatica. Full glute squeeze at top.'},
+      {id:'d5e2',icon:'📦',name:'Step-Ups (Low Step)',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+step+ups+form+tutorial',sciNote:'Wk 1–2: bodyweight only. Lead with right leg.',noWeight:true},
+      {id:'d5e3',icon:'🏋️',name:'Sumo Squat',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=sumo+squat+dumbbell+form',sciNote:'Wide stance reduces stress on piriformis.'},
+      {id:'d5e4',icon:'🦀',name:'Lateral Band Walks',sets:3,reps:'15 ea',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+band+walk+glute+med+activation',sciNote:'Activates glute med — counters sciatica weakness directly.',noWeight:true},
+      {id:'d5e5',icon:'⚽',name:'Stability Ball Glute Bridge',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=stability+ball+glute+bridge+tutorial',sciNote:null,noWeight:true},
+      {id:'d5e6',icon:'🪵',name:'Plank Hold',sets:3,reps:'20–30s',repTarget:30,rest:45,url:'https://www.youtube.com/results?search_query=plank+form+core+beginners',sciNote:'Start 20s. Do not let lower back sag.',noWeight:true,timed:true},
     ]},
 };
 const DAY_ORDER=['day1','day2','day3','day4','day5'];
@@ -818,14 +825,15 @@ function buildDayHTML(dayId,w){
       <div class="ex-body">
         ${ex.sciNote?`<div class="sci-note">🦵 ${ex.sciNote}</div>`:''}
         <a class="video-btn" href="${ex.url}" target="_blank">▶ Watch Tutorial on YouTube ↗</a>
-        <div class="set-header-row">
+        ${ex.repTarget?`<div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px"><span>🎯</span><span>Target: <b>${ex.reps} reps</b>${ex.noWeight?' · Bodyweight/Band':''}</span></div>`:''}
+        <div class="set-header-row" style="grid-template-columns:${ex.noWeight?'22px 1fr 1fr 34px':'22px 1fr 1fr 1fr 34px'}">
           <div class="set-col-label">#</div>
-          <div class="set-col-label">Weight (lbs)</div>
-          <div class="set-col-label">Reps</div>
+          ${ex.noWeight?'':`<div class="set-col-label">Weight (lbs)</div>`}
+          <div class="set-col-label">${ex.timed?'Seconds':'Reps'}</div>
           <div class="set-col-label">RIR</div>
           <div class="set-col-label">✓</div>
         </div>
-        <div id="rows-${ex.id}"></div>
+        <div id="rows-${ex.id}" data-noweight="${ex.noWeight?'1':'0'}" data-timed="${ex.timed?'1':'0'}" data-reptarget="${ex.repTarget||0}"></div>
         <button class="add-set-row" onclick="addRow('${ex.id}')">+ Add Set</button>
         <div class="orm-box" id="orm-${ex.id}">
           <div class="orm-title">Estimated 1 Rep Max</div>
@@ -847,6 +855,12 @@ function buildDayHTML(dayId,w){
       </div>
     </div>`;
   });
+  // Complete Workout button
+  if(w.exercises.length>0){
+    h+=`<div style="padding:16px">
+      <button id="completeBtn-${dayId}" onclick="completeWorkout('${dayId}')" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;box-shadow:0 4px 20px rgba(255,193,7,0.25)">✅ Complete Workout</button>
+    </div>`;
+  }
   return h;
 }
 
@@ -867,19 +881,56 @@ function initRows(id,n){RC[id]=0;document.getElementById('rows-'+id).innerHTML='
 function addRow(id){
   RC[id]=(RC[id]||0)+1;const n=RC[id];
   const ex=findEx(id);const restSecs=ex?ex.rest:60;
-  const div=document.getElementById('rows-'+id);
-  const row=document.createElement('div');row.className='set-row';row.dataset.n=n;
+  const container=document.getElementById('rows-'+id);
+  const noWeight=container.dataset.noweight==='1';
+  const isTimed=container.dataset.timed==='1';
+  const repTarget=parseInt(container.dataset.reptarget)||0;
+  // Get last session's set n for suggestion
+  const prevSess=ls('w:'+id)||[];
+  const prevSet=prevSess.length&&prevSess[0].sets[n-1]?prevSess[0].sets[n-1]:null;
+  const wSug=prevSet&&!noWeight?prevSet.weight:'';
+  const rSug=prevSet?prevSet.reps:(repTarget||'');
+  const row=document.createElement('div');
+  row.className='set-row';
+  row.style.gridTemplateColumns=noWeight?'22px 1fr 1fr 34px':'22px 1fr 1fr 1fr 34px';
+  row.dataset.n=n;
   row.innerHTML=`<div class="set-num-badge">${n}</div>
-    <input class="set-inp" type="number" placeholder="lbs" step="2.5" min="0" data-f="w" oninput="calcORM('${id}')">
-    <input class="set-inp" type="number" placeholder="—" min="0" data-f="r" oninput="calcORM('${id}')">
-    <input class="set-inp" type="number" placeholder="—" min="0" max="10" data-f="rir">
+    ${noWeight?'':`<input class="set-inp" type="number" placeholder="${wSug||'lbs'}" step="2.5" min="0" data-f="w" oninput="calcORM('${id}')" style="${wSug?'border-color:rgba(255,193,7,0.25);color:var(--accent)':''}" value="${wSug}">`}
+    <input class="set-inp" type="number" placeholder="${rSug||'—'}" min="0" data-f="r" oninput="calcORM('${id}')" style="${rSug?'border-color:rgba(0,230,118,0.25);color:var(--green)':''}" value="${rSug}">
+    <input class="set-inp" type="number" placeholder="RIR" min="0" max="10" data-f="rir">
     <button class="set-done-btn" onclick="markDone(this,'${id}',${restSecs})">○</button>`;
-  div.appendChild(row);
+  container.appendChild(row);
 }
 function markDone(btn,id,restSecs){
   btn.classList.toggle('done');
   btn.textContent=btn.classList.contains('done')?'✓':'○';
   if(btn.classList.contains('done'))startRest(id,restSecs);
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════════════════════
+let audioCtx=null;
+function getAudioCtx(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return audioCtx;}
+function playBeep(freq,dur,vol=0.4,type='sine'){
+  const ctx=getAudioCtx();if(!ctx)return;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);
+  o.frequency.value=freq;o.type=type;
+  g.gain.setValueAtTime(vol,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+  o.start(ctx.currentTime);o.stop(ctx.currentTime+dur);
+}
+function playWarningBeep(){
+  // 3 quick beeps — "almost done"
+  playBeep(880,0.12,0.3);
+  setTimeout(()=>playBeep(880,0.12,0.3),180);
+  setTimeout(()=>playBeep(880,0.12,0.3),360);
+}
+function playDoneBeep(){
+  // Ascending two-tone — "go!" signal
+  playBeep(523,0.15,0.4);
+  setTimeout(()=>playBeep(784,0.3,0.5),160);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -890,11 +941,18 @@ function startRest(id,secs){
   clearInterval(RT[id]);
   const panel=document.getElementById('rt-'+id),count=document.getElementById('rtc-'+id);
   panel.classList.add('show');
-  let rem=secs;
-  const tick=()=>{const m=Math.floor(rem/60),s=rem%60;count.textContent=m+':'+(s<10?'0':'')+s;count.classList.toggle('urgent',rem<=10);if(rem<=0){clearInterval(RT[id]);panel.classList.remove('show');toast('⏱ Rest done — next set!','warn');}rem--;};
+  let rem=secs;let warned=false;
+  const tick=()=>{
+    const m=Math.floor(rem/60),s=rem%60;
+    count.textContent=m+':'+(s<10?'0':'')+s;
+    count.classList.toggle('urgent',rem<=5);
+    if(rem===3&&!warned){warned=true;playWarningBeep();}
+    if(rem<=0){clearInterval(RT[id]);panel.classList.remove('show');playDoneBeep();toast('⏱ Rest done — next set!','warn');}
+    rem--;
+  };
   tick();RT[id]=setInterval(tick,1000);
 }
-function skipRest(id){clearInterval(RT[id]);document.getElementById('rt-'+id).classList.remove('show');toast('Skipped — let\'s go! 💥');}
+function skipRest(id){clearInterval(RT[id]);document.getElementById('rt-'+id).classList.remove('show');playDoneBeep();toast('Skipped — let\'s go! 💥');}
 
 // ══════════════════════════════════════════════════════════════
 // 1RM
@@ -924,18 +982,31 @@ function checkProgAlert(id){
 // ══════════════════════════════════════════════════════════════
 function saveSession(exId,exName,dayId){
   const rows=document.querySelectorAll(`#rows-${exId} .set-row`);
+  const container=document.getElementById('rows-'+exId);
+  const noWeight=container.dataset.noweight==='1';
   const sets=[];
-  rows.forEach(r=>{const w=r.querySelector('[data-f="w"]').value,rep=r.querySelector('[data-f="r"]').value,rir=r.querySelector('[data-f="rir"]').value,done=r.querySelector('.set-done-btn').classList.contains('done');if(w||rep)sets.push({weight:w||'—',reps:rep||'—',rir:rir||'—',done});});
+  rows.forEach(r=>{
+    const w=noWeight?'BW':r.querySelector('[data-f="w"]')?.value;
+    const rep=r.querySelector('[data-f="r"]').value;
+    const rir=r.querySelector('[data-f="rir"]').value;
+    const done=r.querySelector('.set-done-btn').classList.contains('done');
+    if(rep||w)sets.push({weight:w||'—',reps:rep||'—',rir:rir||'—',done,bodyweight:noWeight});
+  });
   if(!sets.length){toast('Enter at least one set!','err');return;}
   const note=document.getElementById('note-'+exId)?.value||'';
-  let orm=0;sets.forEach(s=>{const w=parseFloat(s.weight),r=parseFloat(s.reps);if(w&&r){const o=Math.round(w*(1+r/30));if(o>orm)orm=o;}});
+  let orm=0;
+  if(!noWeight)sets.forEach(s=>{const w=parseFloat(s.weight),r=parseFloat(s.reps);if(w&&r){const o=Math.round(w*(1+r/30));if(o>orm)orm=o;}});
   const key='w:'+exId;let hist=ls(key)||[];
   hist.unshift({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}),timestamp:Date.now(),dayId,exName,sets,note,estimatedORM:orm||null,programDay:getProgramDay(),programWeek:getProgramWeek()});
   if(hist.length>30)hist=hist.slice(0,30);ls(key,hist);
   const today=new Date().toDateString(),logs=ls('streakLogs')||[];
   if(!logs.includes(today)){logs.unshift(today);ls('streakLogs',logs.slice(0,90));}
   loadPrevSessions(exId);toast('✅ Session saved!');
+  // mark exercise done on card
+  const card=document.getElementById('exc-'+exId);
+  if(card){card.style.borderColor='var(--green)';const arrow=card.querySelector('.ex-arrow');if(arrow)arrow.textContent='✓';}
   if([...rows].every(r=>r.querySelector('.set-done-btn').classList.contains('done')))celebrate();
+  checkDayCompletion(dayId);
 }
 function loadPrevSessions(id){
   const c=document.getElementById('prevList-'+id);if(!c)return;
@@ -952,8 +1023,31 @@ function loadPrevSessions(id){
 function delSess(id,i){const k='w:'+id,s=ls(k)||[];s.splice(i,1);ls(k,s);loadPrevSessions(id);}
 
 // ══════════════════════════════════════════════════════════════
-// POST WORKOUT SUMMARY
+// DAY COMPLETION
 // ══════════════════════════════════════════════════════════════
+function checkDayCompletion(dayId){
+  const exercises=WORKOUTS[dayId]?.exercises||[];
+  if(!exercises.length)return;
+  const today=new Date().toDateString();
+  const allSaved=exercises.every(ex=>{
+    const hist=ls('w:'+ex.id)||[];
+    return hist.length&&new Date(hist[0].timestamp).toDateString()===today;
+  });
+  const btn=document.getElementById('completeBtn-'+dayId);
+  if(btn){btn.style.background=allSaved?'linear-gradient(135deg,var(--green),#00c853)':'';btn.textContent=allSaved?'🏆 Workout Complete!':'✅ Complete Workout';}
+}
+function completeWorkout(dayId){
+  const today=new Date().toDateString();
+  const completed=ls('completedDays')||{};
+  completed[today]=(completed[today]||[]);
+  if(!completed[today].includes(dayId))completed[today].push(dayId);
+  ls('completedDays',completed);
+  // Mark streak
+  const logs=ls('streakLogs')||[];
+  if(!logs.includes(today)){logs.unshift(today);ls('streakLogs',logs.slice(0,90));}
+  showPostWorkout();
+  refreshHome();
+}
 let sessionStart=Date.now();
 function showPostWorkout(){
   const all=getAllSessions().filter(s=>s.timestamp>sessionStart);
@@ -1120,7 +1214,7 @@ function renderHistory(){
       ${entries.map(e=>`<div class="hist-entry-card">
         <div class="hist-day-tag">${DAY_NAMES[e.dayId]||''} · Wk ${e.programWeek||'?'} · Day ${e.programDay||'?'}</div>
         <div class="hist-ex-name">${e.exName}</div>
-        <div class="hist-set-chips">${e.sets.map((s,i)=>{const rir=parseInt(s.rir);return`<span class="hist-set-chip ${isNaN(rir)?'':(rir<=2?'lo':'hi')}">S${i+1}: ${s.weight}×${s.reps} RIR${s.rir}</span>`;}).join('')}</div>
+        <div class="hist-set-chips">${e.sets.map((s,i)=>{const rir=parseInt(s.rir);const wLabel=s.bodyweight?'BW':s.weight;return`<span class="hist-set-chip ${isNaN(rir)?'':(rir<=2?'lo':'hi')}">S${i+1}: ${wLabel}×${s.reps} RIR${s.rir}</span>`;}).join('')}</div>
         ${e.estimatedORM?`<div class="hist-orm-line">🏋️ Est. 1RM: ${e.estimatedORM} lbs</div>`:''}
         ${e.note?`<div class="hist-note-line">"${e.note}"</div>`:''}
       </div>`).join('')}
@@ -1130,22 +1224,87 @@ function renderHistory(){
 function clearAllHistory(){if(!confirm('Clear ALL workout history? This cannot be undone.'))return;DAY_ORDER.forEach(d=>(WORKOUTS[d]?.exercises||[]).forEach(ex=>ls('w:'+ex.id,[])));ls('streakLogs',[]);renderHistory();refreshHome();toast('History cleared','warn');}
 
 // ══════════════════════════════════════════════════════════════
-// EXPORT
+// EXPORT & IMPORT (Full Data Backup/Restore)
 // ══════════════════════════════════════════════════════════════
+
+// Collect every localStorage key that belongs to Myra
+function getAllMyraKeys(){
+  const keys=[];
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)keys.push(k);}}catch(e){}
+  return keys;
+}
+
+// ── JSON backup (carries ALL data) ──
+function exportJSON(){
+  const snapshot={__version:1,__exported:new Date().toISOString(),data:{}};
+  getAllMyraKeys().forEach(k=>{try{snapshot.data[k]=JSON.parse(localStorage.getItem(k));}catch(e){snapshot.data[k]=localStorage.getItem(k);}});
+  const blob=new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`myra-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast('💾 Backup saved!');
+}
+
+// ── Restore from JSON backup ──
+function importJSON(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.json,application/json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const snapshot=JSON.parse(ev.target.result);
+        if(!snapshot.data){toast('Invalid backup file','err');return;}
+        if(!confirm(`Restore backup from ${snapshot.__exported?new Date(snapshot.__exported).toLocaleDateString():'unknown date'}?\n\nThis will MERGE with your current data — nothing will be deleted.`))return;
+        // Merge: only write keys that don't exist locally, or where backup is newer
+        let restored=0;
+        Object.entries(snapshot.data).forEach(([k,v])=>{
+          try{
+            const existing=localStorage.getItem(k);
+            if(!existing){localStorage.setItem(k,JSON.stringify(v));restored++;}
+            else{
+              // For workout arrays, merge entries by timestamp
+              const ex=JSON.parse(existing);
+              if(Array.isArray(ex)&&Array.isArray(v)){
+                const merged=[...ex];
+                v.forEach(item=>{if(!merged.find(m=>m.timestamp===item.timestamp)){merged.push(item);restored++;}});
+                merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+                localStorage.setItem(k,JSON.stringify(merged));
+              }
+            }
+          }catch(err){}
+        });
+        toast(`✅ Restored! ${restored} new entries merged.`);
+        buildWorkout();refreshHome();renderHistory();renderProgress();
+      }catch(err){toast('Could not read backup file','err');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ── Plain text export (readable summary) ──
 function exportData(){
   const all=getAllSessions().sort((a,b)=>b.timestamp-a.timestamp);
   const bw=ls('bodyweight')||[];
-  let txt=`MYRA APP — EXPORT\n${new Date().toLocaleDateString()}\nProgram: ${getPhaseLabel()}\n\n`;
+  let txt=`MYRA APP — SUMMARY\n${new Date().toLocaleDateString()}\nProgram: ${getPhaseLabel()}\n\n`;
   if(bw.length)txt+=`WEIGHT: ${bw[bw.length-1].weight} lbs → ${bw[0].weight} lbs\n\n`;
   txt+=`WORKOUT LOG\n${'═'.repeat(40)}\n`;
   const byDate={};all.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
   Object.entries(byDate).forEach(([date,entries])=>{
     txt+=`\n${date}\n`;
-    entries.forEach(e=>{txt+=`  ${e.exName}\n`;e.sets.forEach((s,i)=>txt+=`    Set ${i+1}: ${s.weight} lbs × ${s.reps} reps | RIR ${s.rir}\n`);if(e.estimatedORM)txt+=`    Est. 1RM: ${e.estimatedORM} lbs\n`;if(e.note)txt+=`    Note: ${e.note}\n`;});
+    entries.forEach(e=>{
+      txt+=`  ${e.exName}\n`;
+      e.sets.forEach((s,i)=>txt+=`    Set ${i+1}: ${s.bodyweight?'BW':s.weight+' lbs'} × ${s.reps} reps | RIR ${s.rir}\n`);
+      if(e.estimatedORM)txt+=`    Est. 1RM: ${e.estimatedORM} lbs\n`;
+      if(e.note)txt+=`    Note: ${e.note}\n`;
+    });
   });
   const blob=new Blob([txt],{type:'text/plain'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='myra-export.txt';a.click();
-  toast('📄 Exported!');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='myra-summary.txt';a.click();
+  toast('📄 Summary exported!');
 }
 
 // ══════════════════════════════════════════════════════════════
