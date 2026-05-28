@@ -714,7 +714,10 @@ body.font-lg .chip{font-size:13px}
   </div>
   <div class="fb-date-nav">
     <div class="fb-nav-btn" onclick="fbChangeDay(-1)">‹</div>
-    <div class="fb-date-label" id="fbDateLabel"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="fb-date-label" id="fbDateLabel"></div>
+      <div id="fbSavedBadge" style="display:none;background:rgba(29,233,182,0.15);border:1px solid rgba(29,233,182,0.3);border-radius:10px;padding:2px 10px;font-size:10px;color:var(--teal);font-weight:700">✓ Data saved</div>
+    </div>
     <div class="fb-nav-btn" onclick="fbChangeDay(1)">›</div>
   </div>
   <div class="fb-grid">
@@ -789,7 +792,12 @@ body.font-lg .chip{font-size:13px}
 
 <!-- ══════════════════════ PROGRESS ══════════════════════ -->
 <div id="s-progress" class="screen">
-  <div class="top-bar"><div class="top-bar-title">PROGRESS</div></div>
+  <div class="top-bar">
+    <div class="top-bar-title">PROGRESS</div>
+    <div class="top-bar-actions">
+      <div class="icon-btn" onclick="go('fitbit',this)" title="Fitbit Dashboard" style="color:var(--teal);border-color:rgba(29,233,182,0.3)">⌚</div>
+    </div>
+  </div>
   <div class="bw-hero">
     <div class="stat-row">
       <div class="stat-box"><div class="stat-val" id="bwStart">—</div><div class="stat-label">Start lbs</div></div>
@@ -953,9 +961,6 @@ body.font-lg .chip{font-size:13px}
 <div id="s-nutrition" class="screen">
   <div class="top-bar">
     <div class="top-bar-title">NUTRITION</div>
-    <div class="top-bar-actions">
-      <div class="icon-btn" onclick="go('fitbit',document.querySelectorAll('.nav-btn')[2])" title="Fitbit data" style="font-size:13px">⌚</div>
-    </div>
   </div>
   <div style="padding:16px">
     <!-- Daily targets banner -->
@@ -1446,7 +1451,46 @@ function celebrate(){
 function getStartDate(){let d=ls('startDate');if(!d){d=new Date().toISOString().split('T')[0];ls('startDate',d);}return new Date(d);}
 function getProgramDay(){return Math.max(1,Math.floor((Date.now()-getStartDate())/86400000)+1);}
 function getProgramWeek(){return Math.ceil(getProgramDay()/7);}
-// ── SESSION LENGTH & DYNAMIC SETS ────────────────────────────
+// Reload today's already-logged sets into the workout UI after restore
+function reloadTodaySets(){
+  const today=new Date().toDateString();
+  DAY_ORDER.forEach(dayId=>{
+    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+      const sessions=ls('w:'+ex.id)||[];
+      // find today's session
+      const todaySess=sessions.find(s=>
+        (s.timestamp&&new Date(s.timestamp).toDateString()===today)||
+        (s.date&&new Date(s.date).toDateString()===today)
+      );
+      if(!todaySess)return;
+      const container=document.getElementById('rows-'+ex.id);
+      if(!container)return;
+      // Clear existing rows and rebuild from saved data
+      container.innerHTML='';
+      RC[ex.id]=0;
+      todaySess.sets.forEach((st,i)=>{
+        addRow(ex.id);
+        const rows=container.querySelectorAll('.set-row');
+        const row=rows[rows.length-1];
+        if(!row)return;
+        // Fill weight
+        const wInp=row.querySelector('[data-f="w"]');
+        if(wInp&&st.weight)wInp.value=st.weight;
+        // Fill reps
+        const rInp=row.querySelector('[data-f="r"]');
+        if(rInp&&st.reps)rInp.value=st.reps;
+        // Fill RIR
+        const rirInp=row.querySelector('[data-f="rir"]');
+        if(rirInp&&st.rir!=null)rirInp.value=st.rir;
+        // Mark done if it was done
+        if(st.done){
+          const doneBtn=row.querySelector('.set-done-btn');
+          if(doneBtn){doneBtn.classList.add('done');doneBtn.textContent='✓';}
+        }
+      });
+    });
+  });
+}
 let currentSessionLength = parseInt(ls('sessionLength')) || 45;
 
 function setSessionLength(mins) {
@@ -1480,21 +1524,21 @@ function getSets(base) {
 }
 
 function startWorkoutSession() {
+  if(sessionStart){toast('Session already in progress ⏱');return;}
   const btn = document.getElementById('startSessionBtn');
   const banner = document.getElementById('sessionSetupBanner');
+  startSessionTimer(); // now sets sessionStart
   if(btn) {
-    btn.textContent = '⏱ Session in progress — ' + currentSessionLength + ' min target';
-    btn.style.background = 'rgba(0,230,118,0.12)';
-    btn.style.color = 'var(--green)';
-    btn.style.border = '1px solid rgba(0,230,118,0.3)';
-    btn.onclick = null; // disable re-clicking
+    btn.innerHTML='⏱ Session in progress — '+currentSessionLength+' min target';
+    btn.style.background='rgba(0,230,118,0.12)';
+    btn.style.color='var(--green)';
+    btn.style.border='1px solid rgba(0,230,118,0.3)';
+    btn.onclick=null;
   }
-  startSessionTimer();
   haptic('success');
-  toast('Session started! ' + currentSessionLength + ' min target 💪');
-  // Scroll to exercises
-  const dayContents = document.getElementById('dayContents');
-  if(dayContents) setTimeout(() => dayContents.scrollIntoView({behavior:'smooth', block:'start'}), 300);
+  toast('Session started! '+currentSessionLength+' min target 💪');
+  const dayContents=document.getElementById('dayContents');
+  if(dayContents)setTimeout(()=>dayContents.scrollIntoView({behavior:'smooth',block:'start'}),300);
 }
 
 // ── HISTORY OVERFLOW MENU ────────────────────────────────────
@@ -1529,7 +1573,7 @@ function go(name,btn){
   if(name==='progress')renderProgress();
   if(name==='nutrition'){setTimeout(()=>{renderNutrition();patchQuickFoods();},50);}
   if(name==='plan'){const prog=ls('generatedProgram');if(prog)renderGeneratedProgram(prog);}
-  if(name==='workout')startSessionTimer();
+  if(name==='workout'){/* timer only starts on explicit startWorkoutSession() click */}
   if(name!=='workout')stopSessionTimer();
 }
 function toggleMode(){const b=document.body.classList.toggle('light-mode');document.getElementById('modeBtn').textContent=b?'🌙':'☀️';ls('lm',b);}
@@ -1874,7 +1918,7 @@ function completeWorkout(dayId){
   showPostWorkout();
   refreshHome();
 }
-let sessionStart=Date.now();
+let sessionStart=null; // only set when user explicitly taps Start Session
 function showPostWorkout(){
   const all=getAllSessions().filter(s=>s.timestamp>sessionStart);
   const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
@@ -1903,7 +1947,14 @@ function fbChangeDay(dir){fbCurrentDate.setDate(fbCurrentDate.getDate()+dir);ren
 function renderFitbit(){
   const key='fb:'+fbDateKey(fbCurrentDate);
   const data=ls(key)||{};
-  document.getElementById('fbDateLabel').textContent=fbCurrentDate.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  const hasData=Object.keys(data).length>0;
+  const isToday=fbDateKey(fbCurrentDate)===fbDateKey(new Date());
+  // Date label with indicator
+  const dateStr=fbCurrentDate.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  document.getElementById('fbDateLabel').textContent=(isToday?'Today — ':'')+dateStr;
+  // Show/hide saved badge
+  const savedBadge=document.getElementById('fbSavedBadge');
+  if(savedBadge)savedBadge.style.display=hasData?'inline-flex':'none';
   const fields=[
     {id:'steps',disp:'fb-steps-disp',bar:'fb-steps-bar',goal:7500,fmt:v=>v.toLocaleString()},
     {id:'cal',disp:'fb-cal-disp',bar:'fb-cal-bar',goal:2200,fmt:v=>v.toLocaleString()},
@@ -1916,7 +1967,9 @@ function renderFitbit(){
     const v=data[f.id];
     document.getElementById(f.disp).textContent=v!=null?f.fmt(v):'—';
     document.getElementById(f.bar).style.width=v!=null?Math.min(100,Math.round(v/f.goal*100))+'%':'0%';
-    if(v!=null){['fi-'+f.id].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value=v;});}
+    // Always sync input to saved value — clear if no data for this day
+    const inp=document.getElementById('fi-'+f.id);
+    if(inp)inp.value=v!=null?v:'';
   });
   renderFbWeek();renderFbInsights(data);
 }
@@ -2324,6 +2377,7 @@ function importJSON(){
         rebuildStreakFromSessions();
         toast(`✅ Restored! ${restored} entries merged.`);
         buildWorkout();refreshHome();renderHistory();renderProgress();
+        setTimeout(reloadTodaySets,200);
       }catch(err){toast('Could not read backup file','err');}
     };
     reader.readAsText(file);
@@ -2538,9 +2592,9 @@ function skipWarmupStep(){clearInterval(wtTimer);advanceWarmupStep();}
 function closeWarmup(){
   clearInterval(wtTimer);
   document.getElementById('warmupOverlay').classList.remove('show');
-  // After warmup, go straight to workout
+  // After warmup, go straight to workout and start timer
   go('workout',document.querySelectorAll('.nav-btn')[1]);
-  setTimeout(()=>selectDay(wtDayId),60);
+  setTimeout(()=>{selectDay(wtDayId);startWorkoutSession();},60);
 }
 
 // goToToday: warmup then straight to workout (no pain check-in)
@@ -2879,7 +2933,19 @@ function startSessionTimer(){
     el.textContent=mins+':'+(secs<10?'0':'')+secs;
   },1000);
 }
-function stopSessionTimer(){clearInterval(sessionTimerInterval);const el=document.getElementById('sessionTimerDisplay');if(el)el.textContent='';}
+function stopSessionTimer(){
+  clearInterval(sessionTimerInterval);
+  const el=document.getElementById('sessionTimerDisplay');if(el)el.textContent='';
+  sessionStart=null;
+  // Reset Start Session button
+  const btn=document.getElementById('startSessionBtn');
+  if(btn){
+    btn.innerHTML='▶ Start Session';
+    btn.style.background='linear-gradient(135deg,var(--accent),var(--accent2))';
+    btn.style.color='#000';btn.style.border='none';
+    btn.onclick=startWorkoutSession;
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 // NUTRITION TRACKER
@@ -3516,26 +3582,53 @@ function exportGeneratedProgram(){
 // ══════════════════════════════════════════════════════════════
 // SPOTIFY INTEGRATION
 // ══════════════════════════════════════════════════════════════
+const SPOTIFY_WORKER='https://myra-spotify.depoetichand.workers.dev';
 const SPOTIFY_CLIENT_ID='ea304fc343754fef8622b31e3b4b8251';
 const SPOTIFY_REDIRECT_URI='https://belparte.github.io/Myra-Workout-App/';
-const SPOTIFY_SCOPES=['user-read-playback-state','user-modify-playback-state','user-read-currently-playing','user-library-modify','user-library-read','streaming','user-read-email','user-read-private'].join(' ');
-let spotifyToken=null,spotifyState=null,spotifyPollInterval=null,spotifyExpanded_state=false,spotifyPlaying=false,spotifyShuffleOn=false,spotifyRepeatMode=0,spotifyLiked=false,spotifyWidgetVisible=false;
+let spotifyToken=null,spotifyRefreshToken=null,spotifyState=null,spotifyPollInterval=null,spotifyExpanded_state=false,spotifyPlaying=false,spotifyShuffleOn=false,spotifyRepeatMode=0,spotifyLiked=false,spotifyWidgetVisible=false;
 
 function spotifyAuth(){
-  const state=Math.random().toString(36).substring(2);
-  ls('spotifyAuthState',state);
-  const p=new URLSearchParams({client_id:SPOTIFY_CLIENT_ID,response_type:'token',redirect_uri:SPOTIFY_REDIRECT_URI,scope:SPOTIFY_SCOPES,state,show_dialog:'false'});
-  window.location.href='https://accounts.spotify.com/authorize?'+p.toString();
+  window.location.href=SPOTIFY_WORKER+'/login';
 }
+
 function spotifyHandleCallback(){
-  const hash=window.location.hash.substring(1);if(!hash)return;
-  const p=new URLSearchParams(hash);
-  const token=p.get('access_token'),exp=p.get('expires_in');
-  if(token){spotifyToken=token;ls('spotifyToken',token);ls('spotifyTokenExpiry',Date.now()+parseInt(exp)*1000);window.history.replaceState({},document.title,window.location.pathname);spotifyInit();}
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('spotify_token');
+  const expires=params.get('spotify_expires');
+  const refresh=params.get('spotify_refresh');
+  const error=params.get('spotify_error');
+  if(error){toast('Spotify error: '+error,'err');window.history.replaceState({},document.title,window.location.pathname);return;}
+  if(token){
+    spotifyToken=token;
+    spotifyRefreshToken=refresh||null;
+    ls('spotifyToken',token);
+    ls('spotifyTokenExpiry',Date.now()+parseInt(expires||3600)*1000);
+    ls('spotifyRefreshToken',refresh||'');
+    window.history.replaceState({},document.title,window.location.pathname);
+    spotifyInit();
+  }
 }
+
 function spotifyLoadToken(){
-  const t=ls('spotifyToken'),e=ls('spotifyTokenExpiry');
-  if(t&&e&&Date.now()<e){spotifyToken=t;return true;}return false;
+  const t=ls('spotifyToken'),e=ls('spotifyTokenExpiry'),r=ls('spotifyRefreshToken');
+  if(t&&e&&Date.now()<e){spotifyToken=t;spotifyRefreshToken=r||null;return true;}
+  if(r){spotifyRefreshToken=r;spotifyRefreshAccess();return false;}
+  return false;
+}
+
+async function spotifyRefreshAccess(){
+  if(!spotifyRefreshToken)return;
+  try{
+    const r=await fetch(SPOTIFY_WORKER+'/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:spotifyRefreshToken})});
+    const d=await r.json();
+    if(d.access_token){
+      spotifyToken=d.access_token;
+      ls('spotifyToken',d.access_token);
+      ls('spotifyTokenExpiry',Date.now()+(d.expires_in||3600)*1000);
+      if(d.refresh_token){spotifyRefreshToken=d.refresh_token;ls('spotifyRefreshToken',d.refresh_token);}
+      spotifyInit();
+    }
+  }catch(e){console.log('Spotify refresh failed',e);}
 }
 function spotifyDisconnect(){
   spotifyToken=null;ls('spotifyToken',null);ls('spotifyTokenExpiry',null);
@@ -3650,8 +3743,9 @@ buildWorkout();
 refreshHome();
 checkOnboarding();
 checkDeload();
-// Init session length UI
 setSessionLength(currentSessionLength);
+// Restore today's set state if app was refreshed mid-workout
+setTimeout(reloadTodaySets,300);
 // Silently repair any date issues from previous restores
 setTimeout(()=>{
   DAY_ORDER.forEach(dayId=>{
@@ -3664,9 +3758,13 @@ setTimeout(()=>{
   });
   rebuildStreakFromSessions();
 },500);
-// Spotify — handle redirect callback or restore existing token
+// Spotify — handle callback or restore token
 spotifyHandleCallback();
-if(!spotifyToken&&spotifyLoadToken())spotifyInit();
+if(!spotifyToken){
+  if(!spotifyLoadToken()&&ls('spotifyRefreshToken')){
+    spotifyRefreshAccess();
+  }
+}
 </script>
 </body>
 </html>
