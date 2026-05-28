@@ -879,8 +879,9 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
   <!-- History overflow menu -->
-  <div id="histMoreMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:200;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden">
+  <div id="histMoreMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:200;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden">
     <button onclick="exportData();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">📄 Text Summary</button>
+    <button onclick="repairHistoryDates();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--blue);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">🔧 Repair Date Issues</button>
     <button onclick="clearAllHistory();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;color:var(--red);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Clear All History</button>
   </div>
   <div style="padding:10px 16px;font-size:12px;color:var(--muted)" id="histStats"></div>
@@ -2287,31 +2288,102 @@ function importJSON(){
         const snapshot=JSON.parse(ev.target.result);
         if(!snapshot.data){toast('Invalid backup file','err');return;}
         if(!confirm(`Restore backup from ${snapshot.__exported?new Date(snapshot.__exported).toLocaleDateString():'unknown date'}?\n\nThis will MERGE with your current data — nothing will be deleted.`))return;
-        // Merge: only write keys that don't exist locally, or where backup is newer
         let restored=0;
         Object.entries(snapshot.data).forEach(([k,v])=>{
           try{
             const existing=localStorage.getItem(k);
-            if(!existing){localStorage.setItem(k,JSON.stringify(v));restored++;}
-            else{
-              // For workout arrays, merge entries by timestamp
+            if(!existing){
+              // Normalise before saving
+              if(Array.isArray(v))v=v.map(normaliseSession);
+              localStorage.setItem(k,JSON.stringify(v));restored++;
+            } else {
               const ex=JSON.parse(existing);
               if(Array.isArray(ex)&&Array.isArray(v)){
                 const merged=[...ex];
-                v.forEach(item=>{if(!merged.find(m=>m.timestamp===item.timestamp)){merged.push(item);restored++;}});
+                v.forEach(item=>{
+                  const norm=normaliseSession(item);
+                  // Match by timestamp if present, otherwise by date+exName
+                  const dup=merged.find(m=>
+                    (norm.timestamp&&m.timestamp&&m.timestamp===norm.timestamp)||
+                    (!norm.timestamp&&m.date===norm.date&&m.exName===norm.exName)
+                  );
+                  if(!dup){merged.push(norm);restored++;}
+                });
                 merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
                 localStorage.setItem(k,JSON.stringify(merged));
               }
             }
           }catch(err){}
         });
-        toast(`✅ Restored! ${restored} new entries merged.`);
+        // Always rebuild streak from actual session data after restore
+        rebuildStreakFromSessions();
+        toast(`✅ Restored! ${restored} entries merged.`);
         buildWorkout();refreshHome();renderHistory();renderProgress();
       }catch(err){toast('Could not read backup file','err');}
     };
     reader.readAsText(file);
   };
   input.click();
+}
+
+// Normalise a session entry — fill missing timestamp from date, fix date format
+function normaliseSession(s){
+  if(!s||typeof s!=='object')return s;
+  const out={...s};
+  // Fix missing timestamp — derive from date string
+  if(!out.timestamp&&out.date){
+    try{const d=new Date(out.date);if(!isNaN(d))out.timestamp=d.getTime();}catch(e){}
+  }
+  // Fix missing date — derive from timestamp
+  if(!out.date&&out.timestamp){
+    try{out.date=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}catch(e){}
+  }
+  // Normalise date format — some old backups used different locales
+  if(out.timestamp&&out.date){
+    const canonical=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    if(canonical&&canonical!=='Invalid Date')out.date=canonical;
+  }
+  return out;
+}
+
+// Rebuild streakLogs + completedDays from actual session timestamps
+function rebuildStreakFromSessions(){
+  const all=getAllSessions();
+  if(!all.length)return;
+  // Collect unique toDateString() values from all session timestamps
+  const dateSet=new Set();
+  all.forEach(s=>{
+    if(s.timestamp){dateSet.add(new Date(s.timestamp).toDateString());}
+    else if(s.date){
+      try{const d=new Date(s.date);if(!isNaN(d))dateSet.add(d.toDateString());}catch(e){}
+    }
+  });
+  const logs=[...dateSet].sort((a,b)=>new Date(b)-new Date(a));
+  ls('streakLogs',logs);
+  // Rebuild completedDays
+  const completed=ls('completedDays')||{};
+  logs.forEach(dateStr=>{if(!completed[dateStr])completed[dateStr]=['restored'];});
+  ls('completedDays',completed);
+}
+
+// One-tap repair tool — fix current data without re-importing
+function repairHistoryDates(){
+  let fixed=0;
+  DAY_ORDER.forEach(dayId=>{
+    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+      const sessions=ls('w:'+ex.id)||[];
+      if(!sessions.length)return;
+      const normalised=sessions.map(s=>{
+        const n=normaliseSession(s);
+        if(n.date!==s.date||n.timestamp!==s.timestamp)fixed++;
+        return n;
+      });
+      ls('w:'+ex.id,normalised);
+    });
+  });
+  rebuildStreakFromSessions();
+  renderHistory();refreshHome();
+  toast(fixed>0?`🔧 Fixed ${fixed} session entries!`:'✅ All dates look good — nothing to fix');
 }
 
 // ── Plain text export (readable summary) ──
@@ -3575,6 +3647,18 @@ checkOnboarding();
 checkDeload();
 // Init session length UI
 setSessionLength(currentSessionLength);
+// Silently repair any date issues from previous restores
+setTimeout(()=>{
+  DAY_ORDER.forEach(dayId=>{
+    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+      const sessions=ls('w:'+ex.id)||[];
+      if(!sessions.length)return;
+      const fixed=sessions.map(normaliseSession);
+      ls('w:'+ex.id,fixed);
+    });
+  });
+  rebuildStreakFromSessions();
+},500);
 // Spotify — handle redirect callback or restore existing token
 spotifyHandleCallback();
 if(!spotifyToken&&spotifyLoadToken())spotifyInit();
