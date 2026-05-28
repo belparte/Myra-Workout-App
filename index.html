@@ -1036,7 +1036,7 @@ body.font-lg .chip{font-size:13px}
 <div id="spotifyWidget" style="position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));left:0;right:0;z-index:99;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1)">
 
   <!-- Collapsed mini bar -->
-  <div id="spotifyMini" onclick="toggleSpotifyExpand()" style="background:linear-gradient(135deg,#1a1d35,#121528);border-top:1px solid rgba(30,215,96,0.25);padding:8px 16px;display:flex;align-items:center;gap:10px;cursor:pointer">
+  <div id="spotifyMini" style="background:linear-gradient(135deg,#1a1d35,#121528);border-top:1px solid rgba(30,215,96,0.25);padding:8px 16px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleSpotifyExpand()">
     <div id="spotifyAlbumArt" style="width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,#1db954,#158a3e);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
     </div>
@@ -1050,7 +1050,8 @@ body.font-lg .chip{font-size:13px}
       <button id="spotifyPlayBtn" onclick="spotifyTogglePlay()" style="width:32px;height:32px;border-radius:50%;background:#1db954;border:none;color:#000;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">▶</button>
       <button onclick="spotifyNext()" style="background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;padding:4px;line-height:1">⏭</button>
     </div>
-    <div id="spotifyChevron" style="color:#555;font-size:12px;margin-left:4px">▲</div>
+    <div id="spotifyChevron" style="color:#555;font-size:12px;margin-left:2px">▲</div>
+    <button onclick="event.stopPropagation();hideSpotifyWidget()" style="background:rgba(255,255,255,0.08);border:none;border-radius:6px;color:#aaa;font-size:13px;cursor:pointer;padding:4px 8px;margin-left:2px;line-height:1" title="Hide player">✕</button>
   </div>
 
   <!-- Expanded panel -->
@@ -1454,39 +1455,45 @@ function getProgramWeek(){return Math.ceil(getProgramDay()/7);}
 // Reload today's already-logged sets into the workout UI after restore
 function reloadTodaySets(){
   const today=new Date().toDateString();
+  // First find which day has today's sessions and select that tab
+  let todayDayId=null;
   DAY_ORDER.forEach(dayId=>{
     (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
       const sessions=ls('w:'+ex.id)||[];
-      // find today's session
-      const todaySess=sessions.find(s=>
-        (s.timestamp&&new Date(s.timestamp).toDateString()===today)||
-        (s.date&&new Date(s.date).toDateString()===today)
-      );
+      const todaySess=sessions.find(s=>{
+        if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;
+        if(s.date){try{return new Date(s.date).toDateString()===today;}catch(e){}}
+        return false;
+      });
+      if(todaySess&&!todayDayId)todayDayId=dayId;
+    });
+  });
+  // Select today's day tab if found
+  if(todayDayId){
+    const tabs=document.querySelectorAll('.day-tab');
+    tabs.forEach(t=>{if(t.dataset.day===todayDayId){t.click();}});
+  }
+  // Now fill in the set data
+  DAY_ORDER.forEach(dayId=>{
+    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+      const sessions=ls('w:'+ex.id)||[];
+      const todaySess=sessions.find(s=>{
+        if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;
+        if(s.date){try{return new Date(s.date).toDateString()===today;}catch(e){}}
+        return false;
+      });
       if(!todaySess)return;
       const container=document.getElementById('rows-'+ex.id);
       if(!container)return;
-      // Clear existing rows and rebuild from saved data
-      container.innerHTML='';
-      RC[ex.id]=0;
+      container.innerHTML='';RC[ex.id]=0;
       todaySess.sets.forEach((st,i)=>{
         addRow(ex.id);
         const rows=container.querySelectorAll('.set-row');
-        const row=rows[rows.length-1];
-        if(!row)return;
-        // Fill weight
-        const wInp=row.querySelector('[data-f="w"]');
-        if(wInp&&st.weight)wInp.value=st.weight;
-        // Fill reps
-        const rInp=row.querySelector('[data-f="r"]');
-        if(rInp&&st.reps)rInp.value=st.reps;
-        // Fill RIR
-        const rirInp=row.querySelector('[data-f="rir"]');
-        if(rirInp&&st.rir!=null)rirInp.value=st.rir;
-        // Mark done if it was done
-        if(st.done){
-          const doneBtn=row.querySelector('.set-done-btn');
-          if(doneBtn){doneBtn.classList.add('done');doneBtn.textContent='✓';}
-        }
+        const row=rows[rows.length-1];if(!row)return;
+        const wInp=row.querySelector('[data-f="w"]');if(wInp&&st.weight)wInp.value=st.weight;
+        const rInp=row.querySelector('[data-f="r"]');if(rInp&&st.reps)rInp.value=st.reps;
+        const rirInp=row.querySelector('[data-f="rir"]');if(rirInp&&st.rir!=null)rirInp.value=st.rir;
+        if(st.done){const doneBtn=row.querySelector('.set-done-btn');if(doneBtn){doneBtn.classList.add('done');doneBtn.textContent='✓';}}
       });
     });
   });
@@ -1681,6 +1688,7 @@ function buildDayHTML(dayId,w){
         </div>
         <div id="rows-${ex.id}" data-noweight="${ex.noWeight?'1':'0'}" data-timed="${ex.timed?'1':'0'}" data-reptarget="${ex.repTarget||0}"></div>
         <button class="add-set-row" onclick="addRow('${ex.id}')">+ Add Set</button>
+        <div style="font-size:10px;color:var(--border);text-align:center;margin-top:-6px;margin-bottom:8px">Hold a set row to delete it</div>
         <div class="orm-box" id="orm-${ex.id}">
           <div class="orm-title">Estimated 1 Rep Max</div>
           <div class="orm-value" id="ormV-${ex.id}">—</div>
@@ -1745,13 +1753,21 @@ function addRow(id){
     <input class="set-inp" type="number" placeholder="RIR" min="0" max="10" data-f="rir">
     <button class="set-done-btn" onclick="markDone(this,'${id}',${restSecs})">○</button>
     <button class="del-set-btn" onclick="deleteRow(this)" title="Delete set">✕</button>`;
-  // Long-press to reveal delete
+  // Long-press to reveal delete — works on both touch and mouse
   let pressTimer;
-  row.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>{row.classList.add('long-pressed');haptic('warning');},600);});
-  row.addEventListener('pointerup',()=>clearTimeout(pressTimer));
-  row.addEventListener('pointercancel',()=>clearTimeout(pressTimer));
-  // Tap anywhere else on screen cancels long-press state
-  container.appendChild(row);
+  const startPress=()=>{pressTimer=setTimeout(()=>{row.classList.add('long-pressed');haptic('warning');},500);};
+  const cancelPress=()=>clearTimeout(pressTimer);
+  row.addEventListener('touchstart',startPress,{passive:true});
+  row.addEventListener('touchend',cancelPress);
+  row.addEventListener('touchmove',cancelPress,{passive:true});
+  row.addEventListener('mousedown',startPress);
+  row.addEventListener('mouseup',cancelPress);
+  // Tap anywhere outside to dismiss delete button
+  row.addEventListener('touchend',e=>{
+    if(row.classList.contains('long-pressed')&&!e.target.classList.contains('del-set-btn')){
+      setTimeout(()=>row.classList.remove('long-pressed'),2000); // auto-dismiss after 2s
+    }
+  });
 }
 function deleteRow(btn){
   const row=btn.closest('.set-row');
@@ -1845,25 +1861,67 @@ function saveSession(exId,exName,dayId){
   const sets=[];
   rows.forEach(r=>{
     const w=noWeight?'BW':r.querySelector('[data-f="w"]')?.value;
-    const rep=r.querySelector('[data-f="r"]').value;
-    const rir=r.querySelector('[data-f="rir"]').value;
-    const done=r.querySelector('.set-done-btn').classList.contains('done');
+    const rep=r.querySelector('[data-f="r"]')?.value;
+    const rir=r.querySelector('[data-f="rir"]')?.value;
+    const done=r.querySelector('.set-done-btn')?.classList.contains('done');
     if(rep||w)sets.push({weight:w||'—',reps:rep||'—',rir:rir||'—',done,bodyweight:noWeight});
   });
   if(!sets.length){toast('Enter at least one set!','err');return;}
   const note=document.getElementById('note-'+exId)?.value||'';
   let orm=0;
   if(!noWeight)sets.forEach(s=>{const w=parseFloat(s.weight),r=parseFloat(s.reps);if(w&&r){const o=Math.round(w*(1+r/30));if(o>orm)orm=o;}});
-  const key='w:'+exId;let hist=ls(key)||[];
-  hist.unshift({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}),timestamp:Date.now(),dayId,exName,sets,note,estimatedORM:orm||null,programDay:getProgramDay(),programWeek:getProgramWeek()});
-  if(hist.length>30)hist=hist.slice(0,30);ls(key,hist);
-  const today=new Date().toDateString(),logs=ls('streakLogs')||[];
+
+  // ── Calendar-date based storage ──────────────────────────────
+  const now=new Date();
+  const calDate=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const calDateKey=now.toISOString().split('T')[0]; // YYYY-MM-DD for reliable dedup
+  const timestamp=now.getTime();
+
+  const key='w:'+exId;
+  let hist=ls(key)||[];
+
+  // Remove any existing entry for TODAY only (replace, not duplicate)
+  hist=hist.filter(s=>{
+    if(s.calDateKey&&s.calDateKey===calDateKey)return false; // same calendar day → replace
+    if(!s.calDateKey&&s.timestamp){
+      const d=new Date(s.timestamp).toISOString().split('T')[0];
+      if(d===calDateKey)return false; // legacy entry same day → replace
+    }
+    return true;
+  });
+
+  hist.unshift({
+    date:calDate,           // human readable: "Wed, May 28, 2026"
+    calDateKey,             // YYYY-MM-DD: dedup key
+    timestamp,              // ms: for sorting
+    dayId,                  // which workout type: day1=Push, day2=Lower etc.
+    exId,
+    exName,
+    sets,
+    note,
+    estimatedORM:orm||null,
+    programDay:getProgramDay(),
+    programWeek:getProgramWeek()
+  });
+
+  if(hist.length>60)hist=hist.slice(0,60);
+  ls(key,hist);
+
+  // Mark streak for today
+  const today=now.toDateString();
+  const logs=ls('streakLogs')||[];
   if(!logs.includes(today)){logs.unshift(today);ls('streakLogs',logs.slice(0,90));}
-  loadPrevSessions(exId);toast('✅ Session saved!');
-  // mark exercise done on card
+
+  // Mark completed days
+  const completed=ls('completedDays')||{};
+  if(!completed[today])completed[today]=[];
+  if(!completed[today].includes(exId))completed[today].push(exId);
+  ls('completedDays',completed);
+
+  loadPrevSessions(exId);toast('✅ Saved!');haptic('medium');
   const card=document.getElementById('exc-'+exId);
   if(card){card.style.borderColor='var(--green)';const arrow=card.querySelector('.ex-arrow');if(arrow)arrow.textContent='✓';}
-  if([...rows].every(r=>r.querySelector('.set-done-btn').classList.contains('done')))celebrate();
+  if([...rows].every(r=>r.querySelector('.set-done-btn')?.classList.contains('done')))celebrate();
   checkDayCompletion(dayId);
 }
 function loadPrevSessions(id){
@@ -1920,15 +1978,17 @@ function completeWorkout(dayId){
 }
 let sessionStart=null; // only set when user explicitly taps Start Session
 function showPostWorkout(){
-  const all=getAllSessions().filter(s=>s.timestamp>sessionStart);
+  const now=Date.now();
+  const start=sessionStart||now; // if no session started, treat as 0 mins
+  const all=getAllSessions().filter(s=>s.timestamp&&s.timestamp>start-1000);
   const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
   const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
-  const mins=Math.round((Date.now()-sessionStart)/60000);
+  const mins=sessionStart?Math.max(0,Math.round((now-start)/60000)):0;
   const prs=all.filter(s=>s.estimatedORM&&(ls('w:'+s.exId)||[]).length>1);
-  document.getElementById('pwsSub').textContent=`${new Date().toLocaleDateString('en-US',{weekday:'long'})} · ${mins} min`;
+  document.getElementById('pwsSub').textContent=`${new Date().toLocaleDateString('en-US',{weekday:'long'})}${mins>0?' · '+mins+' min':''}`;
   document.getElementById('pwsStats').innerHTML=`
     <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${mins}</div><div class="pws-stat-label">Minutes</div></div>
+    <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
     <div class="pws-stat"><div class="pws-stat-val">${Math.round(totalVol).toLocaleString()}</div><div class="pws-stat-label">Total lbs Moved</div></div>
     <div class="pws-stat"><div class="pws-stat-val">${all.length}</div><div class="pws-stat-label">Exercises</div></div>`;
   const prEl=document.getElementById('pwsPRs');
@@ -1936,7 +1996,10 @@ function showPostWorkout(){
   document.getElementById('pwsOverlay').classList.add('show');
   celebrate();
 }
-function closePWS(){document.getElementById('pwsOverlay').classList.remove('show');sessionStart=Date.now();}
+function closePWS(){
+  document.getElementById('pwsOverlay').classList.remove('show');
+  stopSessionTimer(); // resets sessionStart to null and resets button
+}
 
 // ══════════════════════════════════════════════════════════════
 // FITBIT DASHBOARD
@@ -2091,16 +2154,51 @@ function renderMeasDisplay(){
 function renderHistory(){
   const c=document.getElementById('histContent');
   const query=(document.getElementById('histSearch')?.value||'').toLowerCase().trim();
-  let all=getAllSessions().sort((a,b)=>b.timestamp-a.timestamp);
+  let all=getAllSessions().sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
   if(query)all=all.filter(s=>s.exName?.toLowerCase().includes(query)||(s.note||'').toLowerCase().includes(query));
-  document.getElementById('histStats').textContent=all.length?`${all.length} exercise logs · ${[...new Set(all.map(s=>s.date))].length} training days${query?' (filtered)':''}`:'';  if(!all.length){c.innerHTML=`<div class="empty-state"><div class="ei">📭</div><p>No sessions yet.<br>Start your first workout!</p></div>`;return;}
-  const byDate={};all.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
-  c.innerHTML=Object.entries(byDate).map(([date,entries])=>{
+
+  // Deduplicate: for same exercise same calendar day keep only most recent
+  const seen=new Set();
+  all=all.filter(s=>{
+    const k=(s.calDateKey||s.date||'')+'_'+s.exId;
+    if(seen.has(k))return false;
+    seen.add(k);return true;
+  });
+
+  const uniqueDays=new Set(all.map(s=>s.calDateKey||s.date||''));
+  document.getElementById('histStats').textContent=all.length?`${all.length} exercise logs · ${uniqueDays.size} training days${query?' (filtered)':''}`:'' ;
+  if(!all.length){c.innerHTML=`<div class="empty-state"><div class="ei">💪</div><p>No sessions yet.<br>Start your first workout!</p></div>`;return;}
+
+  // Group by calendar date key (YYYY-MM-DD preferred, fall back to date string)
+  const byDate={};
+  all.forEach(e=>{
+    const k=e.calDateKey||e.date||'Unknown';
+    if(!byDate[k])byDate[k]=[];
+    byDate[k].push(e);
+  });
+
+  // Sort date groups newest first
+  const sortedDates=Object.keys(byDate).sort((a,b)=>{
+    const ta=byDate[a][0]?.timestamp||0;
+    const tb=byDate[b][0]?.timestamp||0;
+    return tb-ta;
+  });
+
+  c.innerHTML=sortedDates.map(dateKey=>{
+    const entries=byDate[dateKey];
+    const displayDate=entries[0]?.date||dateKey;
     const vol=entries.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
+    const workoutType=DAY_NAMES[entries[0]?.dayId]||'';
     return`<div>
-      <div class="hist-group-header"><div class="hist-group-date">📅 ${date}</div><div class="hist-group-vol">${vol>0?Math.round(vol).toLocaleString()+' lbs':''}</div></div>
-      ${entries.map(e=>`<div class="hist-entry-card" onclick="openExGraph('${e.dayId}','${e.exName.replace(/'/g,"\\'")}','${e.sets?e.sets[0]?.weight||'':''}')" style="cursor:pointer">
-        <div class="hist-day-tag">${DAY_NAMES[e.dayId]||''} · Wk ${e.programWeek||'?'} · Day ${e.programDay||'?'} <span style="float:right;color:var(--accent3);font-size:10px">📊 tap for graph</span></div>
+      <div class="hist-group-header">
+        <div>
+          <div class="hist-group-date">📅 ${displayDate}</div>
+          ${workoutType?`<div style="font-size:10px;color:var(--accent3);font-weight:700;margin-top:2px">${workoutType}</div>`:''}
+        </div>
+        <div class="hist-group-vol">${vol>0?Math.round(vol).toLocaleString()+' lbs':''}</div>
+      </div>
+      ${entries.map(e=>`<div class="hist-entry-card" onclick="openExGraph('${e.dayId}','${e.exName.replace(/'/g,"\\'")}','')" style="cursor:pointer">
+        <div class="hist-day-tag">${DAY_NAMES[e.dayId]||''} · Wk ${e.programWeek||'?'} <span style="float:right;color:var(--accent3);font-size:10px">📊 graph</span></div>
         <div class="hist-ex-name">${e.exName}</div>
         <div class="hist-set-chips">${e.sets.map((s,i)=>{const rir=parseInt(s.rir);const wLabel=s.bodyweight?'BW':s.weight;return`<span class="hist-set-chip ${isNaN(rir)?'':(rir<=2?'lo':'hi')}">S${i+1}: ${wLabel}×${s.reps} RIR${s.rir}</span>`;}).join('')}</div>
         ${e.estimatedORM?`<div class="hist-orm-line">🏋️ Est. 1RM: ${e.estimatedORM} lbs</div>`:''}
@@ -2397,11 +2495,14 @@ function normaliseSession(s){
   if(!out.date&&out.timestamp){
     try{out.date=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}catch(e){}
   }
-  // Normalise date format — some old backups used different locales
+  // Normalise date format
   if(out.timestamp&&out.date){
     const canonical=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
     if(canonical&&canonical!=='Invalid Date')out.date=canonical;
   }
+  // Always ensure calDateKey exists
+  if(!out.calDateKey&&out.timestamp){try{out.calDateKey=new Date(out.timestamp).toISOString().split('T')[0];}catch(e){}}
+  if(!out.calDateKey&&out.date){try{const d=new Date(out.date);if(!isNaN(d))out.calDateKey=d.toISOString().split('T')[0];}catch(e){}}
   return out;
 }
 
@@ -2427,22 +2528,27 @@ function rebuildStreakFromSessions(){
 
 // One-tap repair tool — fix current data without re-importing
 function repairHistoryDates(){
-  let fixed=0;
+  let fixed=0,dupsRemoved=0;
   DAY_ORDER.forEach(dayId=>{
     (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
-      const sessions=ls('w:'+ex.id)||[];
+      let sessions=ls('w:'+ex.id)||[];
       if(!sessions.length)return;
-      const normalised=sessions.map(s=>{
-        const n=normaliseSession(s);
-        if(n.date!==s.date||n.timestamp!==s.timestamp)fixed++;
-        return n;
+      // Normalise all entries
+      sessions=sessions.map(s=>{const n=normaliseSession(s);if(n.calDateKey!==s.calDateKey)fixed++;return n;});
+      // Deduplicate: keep only most recent per calDateKey
+      const byDay={};
+      sessions.forEach(s=>{
+        const k=s.calDateKey||s.date||s.timestamp;
+        if(!byDay[k]||s.timestamp>byDay[k].timestamp){byDay[k]=s;}
       });
-      ls('w:'+ex.id,normalised);
+      const deduped=Object.values(byDay).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+      dupsRemoved+=sessions.length-deduped.length;
+      ls('w:'+ex.id,deduped);
     });
   });
   rebuildStreakFromSessions();
   renderHistory();refreshHome();
-  toast(fixed>0?`🔧 Fixed ${fixed} session entries!`:'✅ All dates look good — nothing to fix');
+  toast(dupsRemoved>0?`🔧 Fixed ${fixed} dates, removed ${dupsRemoved} duplicates!`:`✅ ${fixed>0?fixed+' dates fixed':'All dates look good'}`);
 }
 
 // ── Plain text export (readable summary) ──
