@@ -410,6 +410,14 @@ body.font-lg .ex-name{font-size:16px}
 body.font-lg .set-inp{font-size:15px}
 body.font-lg .chip{font-size:13px}
 
+/* ══ DAILY IGNITION ══ */
+.wave-bar{width:4px;border-radius:2px;background:#ffc107;animation:wavePulse 1.2s ease-in-out infinite}
+.wave-bar:nth-child(1){height:8px;animation-delay:0s}
+.wave-bar:nth-child(2){height:16px;animation-delay:0.15s}
+.wave-bar:nth-child(3){height:24px;animation-delay:0.3s}
+.wave-bar:nth-child(4){height:16px;animation-delay:0.45s}
+.wave-bar:nth-child(5){height:8px;animation-delay:0.6s}
+@keyframes wavePulse{0%,100%{transform:scaleY(0.4);opacity:0.5}50%{transform:scaleY(1);opacity:1}}
 /* ── SESSION LENGTH PILLS ── */
 .session-pill{flex-shrink:0;padding:6px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
 .session-pill.active{background:rgba(255,193,7,0.12);border-color:var(--accent);color:var(--accent)}
@@ -1032,7 +1040,26 @@ body.font-lg .chip{font-size:13px}
   </div>
 </div>
 
-<!-- ══════════════════════ SPOTIFY WIDGET ══════════════════════ -->
+<!-- ══ DAILY IGNITION OVERLAY ══ -->
+<div id="ignitionOverlay" style="position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+  <!-- Particle background -->
+  <canvas id="ignitionCanvas" style="position:absolute;inset:0;opacity:0.4"></canvas>
+  <!-- Content -->
+  <div style="position:relative;z-index:1;text-align:center;max-width:360px">
+    <!-- Speaker -->
+    <div id="ignitionSpeaker" style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#ffc107;margin-bottom:24px;opacity:0;transition:opacity 1s"></div>
+    <!-- Quote -->
+    <div id="ignitionQuote" style="font-family:Georgia,serif;font-size:22px;line-height:1.6;color:#fff;font-style:italic;margin-bottom:32px;opacity:0;transition:opacity 1.2s 0.4s"></div>
+    <!-- Audio wave indicator -->
+    <div id="ignitionWave" style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:32px;opacity:0;transition:opacity 0.5s">
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+    </div>
+    <!-- Skip button -->
+    <button id="ignitionSkipBtn" onclick="skipIgnition()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;color:rgba(255,255,255,0.5);font-size:12px;padding:8px 20px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0;transition:opacity 0.5s 2s">
+      Tap to begin →
+    </button>
+  </div>
+</div>
 <div id="spotifyWidget" style="position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));left:0;right:0;z-index:99;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1)">
 
   <!-- Collapsed mini bar -->
@@ -1530,22 +1557,9 @@ function getSets(base) {
   return Math.min(getSetsByLength(userLen), weekBased);
 }
 
-function startWorkoutSession() {
+function startWorkoutSession(){
   if(sessionStart){toast('Session already in progress ⏱');return;}
-  const btn = document.getElementById('startSessionBtn');
-  const banner = document.getElementById('sessionSetupBanner');
-  startSessionTimer(); // now sets sessionStart
-  if(btn) {
-    btn.innerHTML='⏱ Session in progress — '+currentSessionLength+' min target';
-    btn.style.background='rgba(0,230,118,0.12)';
-    btn.style.color='var(--green)';
-    btn.style.border='1px solid rgba(0,230,118,0.3)';
-    btn.onclick=null;
-  }
-  haptic('success');
-  toast('Session started! '+currentSessionLength+' min target 💪');
-  const dayContents=document.getElementById('dayContents');
-  if(dayContents)setTimeout(()=>dayContents.scrollIntoView({behavior:'smooth',block:'start'}),300);
+  showIgnition(); // shows quote + audio, then calls _doStartSession() when done
 }
 
 // ── HISTORY OVERFLOW MENU ────────────────────────────────────
@@ -2698,7 +2712,7 @@ function skipWarmupStep(){clearInterval(wtTimer);advanceWarmupStep();}
 function closeWarmup(){
   clearInterval(wtTimer);
   document.getElementById('warmupOverlay').classList.remove('show');
-  // After warmup, go straight to workout and start timer
+  // After warmup, show ignition then start session
   go('workout',document.querySelectorAll('.nav-btn')[1]);
   setTimeout(()=>{selectDay(wtDayId);startWorkoutSession();},60);
 }
@@ -3025,8 +3039,208 @@ function getSuperset(exId){return SUPERSETS[exId]||null;}
 // Superset pairs
 
 // ══════════════════════════════════════════════════════════════
-// SESSION TIMER
+// DAILY IGNITION — Pre-workout motivational intro
 // ══════════════════════════════════════════════════════════════
+const ELEVENLABS_KEY='sk_de10a46590e47a3124017d3720a14e5d6b163a8e195aa61d';
+const ELEVENLABS_VOICE='onwK4e9ZLuTAKqWW03F9'; // Daniel — deep, authoritative
+
+const IGNITION_QUOTES=[
+  // Jim Rohn (every 3rd quote guaranteed)
+  {text:"Discipline is the bridge between goals and accomplishment. Without it, nothing changes.",speaker:"Jim Rohn",rohn:true},
+  {text:"Take care of your body. It's the only place you have to live. Make it a masterpiece.",speaker:"Jim Rohn",rohn:true},
+  {text:"Don't wish it were easier. Wish you were better. That's where greatness is made.",speaker:"Jim Rohn",rohn:true},
+  {text:"Success is nothing more than a few simple disciplines practiced every single day.",speaker:"Jim Rohn",rohn:true},
+  {text:"Either you run the day, or the day runs you. Today — you run it.",speaker:"Jim Rohn",rohn:true},
+  {text:"We must all suffer one of two things — the pain of discipline, or the pain of regret.",speaker:"Jim Rohn",rohn:true},
+  // Marcus Aurelius
+  {text:"You have power over your mind, not outside events. Realize this and you will find strength.",speaker:"Marcus Aurelius"},
+  {text:"The impediment to action advances action. What stands in the way becomes the way.",speaker:"Marcus Aurelius"},
+  {text:"If it is not right, do not do it. If it is not true, do not say it. And if it is hard — do it anyway.",speaker:"Marcus Aurelius"},
+  // David Goggins
+  {text:"The most important conversation you'll ever have is the one you have with yourself. Make it brutal. Make it honest. Then get to work.",speaker:"David Goggins"},
+  {text:"You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential.",speaker:"David Goggins"},
+  {text:"Callous your mind the way you callous your hands. No shortcuts. No excuses. Just reps.",speaker:"David Goggins"},
+  // Arnold Schwarzenegger
+  {text:"The last three or four reps is what makes the muscle grow. This area of pain divides a champion from someone who is not a champion.",speaker:"Arnold Schwarzenegger"},
+  {text:"Strength does not come from winning. Your struggles develop your strengths. When you go through hardships and decide not to surrender — that is strength.",speaker:"Arnold Schwarzenegger"},
+  // Epictetus
+  {text:"First say to yourself what you would be. Then do what you have to do. No one is stopping you but you.",speaker:"Epictetus"},
+  {text:"Make the best use of what is in your power, and take the rest as it happens. That is the only strategy worth having.",speaker:"Epictetus"},
+  // Seneca
+  {text:"It is not that we have little time. It is that we waste much of it. Not today.",speaker:"Seneca"},
+  {text:"No man is more unhappy than he who never faces adversity. For he has not been permitted to prove himself.",speaker:"Seneca"},
+  // Les Brown
+  {text:"Shoot for the moon. Even if you miss, you'll land among the stars. But first — you have to shoot.",speaker:"Les Brown"},
+  {text:"You have greatness within you. You have the ability to do more than you can ever begin to imagine.",speaker:"Les Brown"},
+];
+
+let ignitionQueue=[];
+let ignitionRohnCount=0;
+let ignitionAudio=null;
+let ignitionSkipped=false;
+let _pendingSessionStart=false;
+
+function getNextQuote(){
+  // Guarantee Jim Rohn every 3rd quote
+  ignitionRohnCount++;
+  const forceRohn=ignitionRohnCount%3===0;
+  let pool=forceRohn?IGNITION_QUOTES.filter(q=>q.rohn):IGNITION_QUOTES.filter(q=>!q.rohn);
+  if(!pool.length)pool=IGNITION_QUOTES;
+  // Avoid recent repeats
+  const seen=ls('ignitionSeen')||[];
+  const fresh=pool.filter(q=>!seen.includes(q.text));
+  const chosen=(fresh.length?fresh:pool)[Math.floor(Math.random()*(fresh.length||pool.length))];
+  // Update seen list
+  seen.unshift(chosen.text);
+  ls('ignitionSeen',seen.slice(0,10));
+  return chosen;
+}
+
+async function showIgnition(){
+  const quote=getNextQuote();
+  ignitionSkipped=false;
+  const overlay=document.getElementById('ignitionOverlay');
+  const speakerEl=document.getElementById('ignitionSpeaker');
+  const quoteEl=document.getElementById('ignitionQuote');
+  const waveEl=document.getElementById('ignitionWave');
+  const skipBtn=document.getElementById('ignitionSkipBtn');
+
+  // Reset
+  overlay.style.display='flex';
+  speakerEl.style.opacity='0';quoteEl.style.opacity='0';
+  waveEl.style.opacity='0';skipBtn.style.opacity='0';
+  speakerEl.textContent='— '+quote.speaker+' —';
+  quoteEl.textContent='"'+quote.text+'"';
+
+  // Start particles
+  startIgnitionParticles();
+
+  // Fade in text
+  setTimeout(()=>{speakerEl.style.opacity='1';},300);
+  setTimeout(()=>{quoteEl.style.opacity='1';},700);
+  setTimeout(()=>{skipBtn.style.opacity='1';},1500);
+
+  // Generate + play audio
+  try{
+    // Check cache first
+    const cacheKey='audio_'+btoa(quote.text.substring(0,30)).replace(/[^a-z0-9]/gi,'');
+    let audioData=ls(cacheKey);
+    if(!audioData){
+      // Generate via ElevenLabs
+      const resp=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','xi-api-key':ELEVENLABS_KEY},
+        body:JSON.stringify({
+          text:quote.text,
+          model_id:'eleven_monolingual_v1',
+          voice_settings:{stability:0.45,similarity_boost:0.82,style:0.35,use_speaker_boost:true}
+        })
+      });
+      if(resp.ok){
+        const blob=await resp.blob();
+        const reader=new FileReader();
+        audioData=await new Promise(res=>{reader.onload=e=>res(e.target.result);reader.readAsDataURL(blob);});
+        try{ls(cacheKey,audioData);}catch(e){} // cache may fail if storage full
+      }
+    }
+    if(audioData&&!ignitionSkipped){
+      waveEl.style.opacity='1';
+      ignitionAudio=new Audio(audioData);
+      ignitionAudio.volume=0.92;
+      ignitionAudio.play();
+      ignitionAudio.onended=()=>{
+        waveEl.style.opacity='0';
+        if(!ignitionSkipped)setTimeout(finaliseIgnition,1200);
+      };
+    } else if(!ignitionSkipped){
+      // Fallback to browser TTS if ElevenLabs fails
+      const utter=new SpeechSynthesisUtterance(quote.text);
+      utter.rate=0.82;utter.pitch=0.7;utter.volume=0.9;
+      const voices=speechSynthesis.getVoices();
+      const deep=voices.find(v=>v.name.includes('David')||v.name.includes('Daniel')||v.name.includes('Google UK English Male'));
+      if(deep)utter.voice=deep;
+      waveEl.style.opacity='1';
+      speechSynthesis.speak(utter);
+      utter.onend=()=>{waveEl.style.opacity='0';if(!ignitionSkipped)setTimeout(finaliseIgnition,1200);};
+    }
+  }catch(e){
+    // Silent fail — just show text
+    setTimeout(()=>{if(!ignitionSkipped)finaliseIgnition();},5000);
+  }
+}
+
+function finaliseIgnition(){
+  if(ignitionSkipped)return;
+  const overlay=document.getElementById('ignitionOverlay');
+  overlay.style.transition='opacity 0.8s';
+  overlay.style.opacity='0';
+  setTimeout(()=>{
+    overlay.style.display='none';
+    overlay.style.opacity='1';
+    overlay.style.transition='';
+    stopIgnitionParticles();
+    // Now actually start the session
+    _doStartSession();
+  },800);
+}
+
+function skipIgnition(){
+  ignitionSkipped=true;
+  if(ignitionAudio){ignitionAudio.pause();ignitionAudio=null;}
+  speechSynthesis.cancel();
+  stopIgnitionParticles();
+  document.getElementById('ignitionOverlay').style.display='none';
+  _doStartSession();
+}
+
+// Particle system
+let ignitionAnimFrame=null;
+function startIgnitionParticles(){
+  const canvas=document.getElementById('ignitionCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const particles=Array.from({length:40},()=>({
+    x:Math.random()*canvas.width,y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5)*0.4,vy:-Math.random()*0.6-0.2,
+    r:Math.random()*2+1,
+    alpha:Math.random()*0.6+0.2,
+    color:Math.random()>0.5?'255,193,7':'255,107,53'
+  }));
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.color},${p.alpha})`;ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;p.alpha-=0.002;
+      if(p.alpha<=0||p.y<0){p.y=canvas.height;p.x=Math.random()*canvas.width;p.alpha=Math.random()*0.6+0.2;}
+    });
+    ignitionAnimFrame=requestAnimationFrame(draw);
+  }
+  draw();
+}
+function stopIgnitionParticles(){
+  if(ignitionAnimFrame)cancelAnimationFrame(ignitionAnimFrame);
+  const canvas=document.getElementById('ignitionCanvas');
+  if(canvas)canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+
+// The actual session start logic (separated from the ignition)
+function _doStartSession(){
+  if(sessionStart){return;}
+  const btn=document.getElementById('startSessionBtn');
+  startSessionTimer();
+  if(btn){
+    btn.innerHTML='⏱ Session in progress — '+currentSessionLength+' min target';
+    btn.style.background='rgba(0,230,118,0.12)';
+    btn.style.color='var(--green)';
+    btn.style.border='1px solid rgba(0,230,118,0.3)';
+    btn.onclick=null;
+  }
+  haptic('success');
+  toast('Session started! '+currentSessionLength+' min target 💪');
+  const dayContents=document.getElementById('dayContents');
+  if(dayContents)setTimeout(()=>dayContents.scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
 let sessionTimerInterval=null;
 function startSessionTimer(){
   sessionStart=Date.now();
