@@ -410,7 +410,13 @@ body.font-lg .ex-name{font-size:16px}
 body.font-lg .set-inp{font-size:15px}
 body.font-lg .chip{font-size:13px}
 
-/* ══ SUPERSET BADGE ══ */
+/* ── SESSION LENGTH PILLS ── */
+.session-pill{flex-shrink:0;padding:6px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.session-pill.active{background:rgba(255,193,7,0.12);border-color:var(--accent);color:var(--accent)}
+/* ── SET ROW DELETE (hidden, shown on long-press) ── */
+.set-row .del-set-btn{display:none;background:rgba(255,82,82,0.15);border:1px solid rgba(255,82,82,0.3);border-radius:6px;color:var(--red);font-size:13px;cursor:pointer;padding:0 6px;height:32px;width:30px;align-items:center;justify-content:center}
+.set-row.long-pressed .del-set-btn{display:flex}
+.set-row.long-pressed .set-done-btn{display:none}
 .superset-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--accent3);font-weight:700;margin-bottom:6px}
 .superset-connector{margin:0 16px 0;border-left:2px solid rgba(167,139,250,0.3);padding-left:10px}
 
@@ -660,13 +666,31 @@ body.font-lg .chip{font-size:13px}
     <div class="top-bar-title">WORKOUT <span id="sessionTimerDisplay" style="font-size:14px;color:var(--accent);font-family:'DM Sans',sans-serif;font-weight:600"></span></div>
     <div class="top-bar-actions">
       <div class="icon-btn" onclick="toggleSpotifyWidget()" title="Music" style="font-size:16px;color:#1db954;border-color:rgba(30,215,96,0.3)">🎵</div>
-      <div class="icon-btn" onclick="openPRBoard()" title="Personal Records" style="font-size:13px">🏆</div>
-      <div class="icon-btn" onclick="openAICoach('workout')" title="AI Coach" style="font-size:13px">🤖</div>
-      <div class="icon-btn" onclick="openSessionNote()" title="Session note" style="font-size:14px">📝</div>
+      <div class="icon-btn" onclick="openPRBoard()" title="Personal Records">🏆</div>
+      <div class="icon-btn" onclick="openAICoach('workout')" title="AI Coach">🤖</div>
+      <div class="icon-btn" onclick="openSessionNote()" title="Session note">📝</div>
       <div class="icon-btn" onclick="showPostWorkout()" title="End workout">✅</div>
     </div>
   </div>
   <div class="phase-bar" id="wPhasebar"></div>
+  <!-- Session length selector -->
+  <div id="sessionSetupBanner" style="background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">⏱ How long today?</div>
+      <div id="sessionLengthLabel" style="font-size:11px;color:var(--accent);font-weight:700"></div>
+    </div>
+    <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px" id="sessionLengthPills">
+      <button onclick="setSessionLength(15)" class="session-pill">15m</button>
+      <button onclick="setSessionLength(30)" class="session-pill">30m</button>
+      <button onclick="setSessionLength(45)" class="session-pill active">45m</button>
+      <button onclick="setSessionLength(60)" class="session-pill">60m</button>
+      <button onclick="setSessionLength(75)" class="session-pill">75m</button>
+      <button onclick="setSessionLength(90)" class="session-pill">90m</button>
+    </div>
+    <button id="startSessionBtn" onclick="startWorkoutSession()" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;display:flex;align-items:center;justify-content:center;gap:8px">
+      ▶ Start Session
+    </button>
+  </div>
   <div class="day-tabs" id="dayTabs"></div>
   <div id="dayContents"></div>
 </div>
@@ -848,17 +872,16 @@ body.font-lg .chip{font-size:13px}
   <div class="top-bar">
     <div class="top-bar-title">HISTORY</div>
     <div class="top-bar-actions">
-      <div class="icon-btn" onclick="openPRBoard()" title="Personal Records" style="font-size:13px">🏆</div>
-      <div class="icon-btn" onclick="importJSON()" title="Restore backup" style="font-size:13px">📥</div>
-      <div class="icon-btn" onclick="exportJSON()" title="Backup all data" style="font-size:13px">💾</div>
-      <div class="icon-btn" onclick="exportData()" title="Export summary" style="font-size:13px">📄</div>
-      <div class="icon-btn btn-danger" onclick="clearAllHistory()" title="Clear history" style="font-size:13px">🗑</div>
+      <div class="icon-btn" onclick="openPRBoard()" title="Personal Records">🏆</div>
+      <div class="icon-btn" onclick="exportJSON()" title="Backup">💾</div>
+      <div class="icon-btn" onclick="importJSON()" title="Restore">📥</div>
+      <div class="icon-btn" onclick="showHistoryMore()" title="More options">⋯</div>
     </div>
   </div>
-  <div style="padding:8px 16px;background:rgba(29,233,182,0.06);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;gap:12px;align-items:center">
-    <span>📥 Restore</span><span style="color:var(--border)">·</span>
-    <span>💾 Full Backup (.json)</span><span style="color:var(--border)">·</span>
-    <span>📄 Text Summary</span>
+  <!-- History overflow menu -->
+  <div id="histMoreMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:200;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden">
+    <button onclick="exportData();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">📄 Text Summary</button>
+    <button onclick="clearAllHistory();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;color:var(--red);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Clear All History</button>
   </div>
   <div style="padding:10px 16px;font-size:12px;color:var(--muted)" id="histStats"></div>
   <div style="padding:0 16px 10px"><input type="text" id="histSearch" placeholder="🔍 Search exercises or notes..." oninput="renderHistory()" style="font-size:13px"></div>
@@ -1417,7 +1440,69 @@ function celebrate(){
 function getStartDate(){let d=ls('startDate');if(!d){d=new Date().toISOString().split('T')[0];ls('startDate',d);}return new Date(d);}
 function getProgramDay(){return Math.max(1,Math.floor((Date.now()-getStartDate())/86400000)+1);}
 function getProgramWeek(){return Math.ceil(getProgramDay()/7);}
-function getSets(base){const w=getProgramWeek();return w<=2?2:w<=4?3:base;}
+// ── SESSION LENGTH & DYNAMIC SETS ────────────────────────────
+let currentSessionLength = parseInt(ls('sessionLength')) || 45;
+
+function setSessionLength(mins) {
+  currentSessionLength = mins;
+  ls('sessionLength', mins);
+  // Update pill UI
+  document.querySelectorAll('.session-pill').forEach(p => {
+    p.classList.toggle('active', parseInt(p.textContent) === mins || p.textContent === mins+'m');
+  });
+  const label = document.getElementById('sessionLengthLabel');
+  const setsCount = getSetsByLength(mins);
+  if(label) label.textContent = `${setsCount} sets/exercise · ~${mins} min`;
+  // Rebuild workout with new set count
+  buildWorkout();
+}
+
+function getSetsByLength(mins) {
+  if(mins <= 15) return 1;
+  if(mins <= 30) return 2;
+  if(mins <= 45) return 3;
+  if(mins <= 60) return 3;
+  if(mins <= 75) return 4;
+  return 4; // 90 min — 4 sets + extra volume
+}
+
+function getSets(base) {
+  // Session length overrides program week if user has set it manually
+  const userLen = currentSessionLength;
+  const weekBased = getProgramWeek() <= 2 ? 2 : getProgramWeek() <= 4 ? 3 : base;
+  return Math.min(getSetsByLength(userLen), weekBased);
+}
+
+function startWorkoutSession() {
+  const btn = document.getElementById('startSessionBtn');
+  const banner = document.getElementById('sessionSetupBanner');
+  if(btn) {
+    btn.textContent = '⏱ Session in progress — ' + currentSessionLength + ' min target';
+    btn.style.background = 'rgba(0,230,118,0.12)';
+    btn.style.color = 'var(--green)';
+    btn.style.border = '1px solid rgba(0,230,118,0.3)';
+    btn.onclick = null; // disable re-clicking
+  }
+  startSessionTimer();
+  haptic('success');
+  toast('Session started! ' + currentSessionLength + ' min target 💪');
+  // Scroll to exercises
+  const dayContents = document.getElementById('dayContents');
+  if(dayContents) setTimeout(() => dayContents.scrollIntoView({behavior:'smooth', block:'start'}), 300);
+}
+
+// ── HISTORY OVERFLOW MENU ────────────────────────────────────
+function showHistoryMore() {
+  const menu = document.getElementById('histMoreMenu');
+  if(menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  // Close on outside tap
+  setTimeout(() => document.addEventListener('click', hideHistoryMore, {once:true}), 10);
+}
+function hideHistoryMore() {
+  const menu = document.getElementById('histMoreMenu');
+  if(menu) menu.style.display = 'none';
+}
+
 function getPhaseLabel(){const w=getProgramWeek();if(w<=2)return`Week ${w} · Foundation (15–20 min)`;if(w<=4)return`Week ${w} · Build (20–30 min)`;if(w<=6)return`Week ${w} · Load (30–35 min)`;return`Week ${w} · Advance (35–45 min)`;}
 function getPhaseDesc(){const w=getProgramWeek();if(w<=2)return'<b style="color:var(--accent)">Week 1–2:</b> 2 sets · Light weight · Perfect form. Sciatica first — stop if left leg pain increases.';if(w<=4)return'<b style="color:var(--accent)">Week 3–4:</b> 3 sets · Adding reps · You\'ve built the habit!';if(w<=6)return'<b style="color:var(--accent)">Week 5–6:</b> Full 3–4 sets · Adding weight · Feeling stronger!';return'<b style="color:var(--accent)">Week 7+:</b> Advanced loading · Resistance bands · Strong & consistent!';}
 function getAllSessions(){const all=[];DAY_ORDER.forEach(id=>(WORKOUTS[id]?.exercises||[]).forEach(ex=>(ls('w:'+ex.id)||[]).forEach(s=>all.push(s))));return all;}
@@ -1596,25 +1681,37 @@ function addRow(id){
   const noWeight=container.dataset.noweight==='1';
   const isTimed=container.dataset.timed==='1';
   const repTarget=parseInt(container.dataset.reptarget)||0;
-  // Get last session's set n for suggestion
   const prevSess=ls('w:'+id)||[];
   const prevSet=prevSess.length&&prevSess[0].sets[n-1]?prevSess[0].sets[n-1]:null;
   const wSug=prevSet&&!noWeight?prevSet.weight:'';
   const rSug=prevSet?prevSet.reps:(repTarget||'');
   const row=document.createElement('div');
   row.className='set-row';
-  row.style.gridTemplateColumns=noWeight?'22px 1fr 1fr 34px':'22px 1fr 1fr 1fr 34px';
+  row.style.gridTemplateColumns=noWeight?'22px 1fr 1fr 30px':'22px 1fr 1fr 1fr 30px';
   row.dataset.n=n;
   row.innerHTML=`<div class="set-num-badge">${n}</div>
     ${noWeight?'':`<input class="set-inp" type="number" placeholder="${wSug||'lbs'}" step="2.5" min="0" data-f="w" oninput="calcORM('${id}')" style="${wSug?'border-color:rgba(255,193,7,0.25);color:var(--accent)':''}" value="${wSug}">`}
     <input class="set-inp" type="number" placeholder="${rSug||'—'}" min="0" data-f="r" oninput="calcORM('${id}')" style="${rSug?'border-color:rgba(0,230,118,0.25);color:var(--green)':''}" value="${rSug}">
     <input class="set-inp" type="number" placeholder="RIR" min="0" max="10" data-f="rir">
-    <button class="set-done-btn" onclick="markDone(this,'${id}',${restSecs})">○</button>`;
+    <button class="set-done-btn" onclick="markDone(this,'${id}',${restSecs})">○</button>
+    <button class="del-set-btn" onclick="deleteRow(this)" title="Delete set">✕</button>`;
+  // Long-press to reveal delete
+  let pressTimer;
+  row.addEventListener('pointerdown',()=>{pressTimer=setTimeout(()=>{row.classList.add('long-pressed');haptic('warning');},600);});
+  row.addEventListener('pointerup',()=>clearTimeout(pressTimer));
+  row.addEventListener('pointercancel',()=>clearTimeout(pressTimer));
+  // Tap anywhere else on screen cancels long-press state
   container.appendChild(row);
+}
+function deleteRow(btn){
+  const row=btn.closest('.set-row');
+  if(row){row.remove();haptic('light');}
 }
 function markDone(btn,id,restSecs){
   btn.classList.toggle('done');
   btn.textContent=btn.classList.contains('done')?'✓':'○';
+  // Cancel long-press mode when done
+  btn.closest('.set-row')?.classList.remove('long-pressed');
   if(btn.classList.contains('done')){haptic('setDone');startRest(id,restSecs);}
 }
 
@@ -3476,6 +3573,8 @@ buildWorkout();
 refreshHome();
 checkOnboarding();
 checkDeload();
+// Init session length UI
+setSessionLength(currentSessionLength);
 // Spotify — handle redirect callback or restore existing token
 spotifyHandleCallback();
 if(!spotifyToken&&spotifyLoadToken())spotifyInit();
