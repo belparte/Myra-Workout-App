@@ -187,8 +187,10 @@ textarea{resize:none}
 .ex-chips{display:flex;gap:5px;flex-wrap:wrap}
 .ex-arrow{color:var(--muted);font-size:18px;transition:transform 0.3s;flex-shrink:0}
 .ex-card.open .ex-arrow{transform:rotate(180deg)}
-.ex-body{display:none;border-top:1px solid var(--border);padding:14px}
+.ex-body{display:none;border-top:1px solid var(--border);padding:14px;animation:slideDown 0.2s ease}
 .ex-card.open .ex-body{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.done-chip{background:rgba(0,230,118,0.15);border-color:rgba(0,230,118,0.4)!important;color:var(--green)!important;font-weight:700!important}
 .sci-note{background:rgba(240,98,146,0.07);border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:8px 12px;font-size:11px;color:var(--pink);margin-bottom:10px;line-height:1.5}
 .video-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;margin-bottom:12px;transition:all 0.2s}
 .video-btn:hover{background:rgba(41,182,246,0.2)}
@@ -2037,10 +2039,51 @@ function saveSession(exId,exName,dayId){
   if(!completed[today].includes(exId))completed[today].push(exId);
   ls('completedDays',completed);
 
-  loadPrevSessions(exId);toast('✅ Saved!');haptic('medium');
+  loadPrevSessions(exId);
+  haptic('success');
+
   const card=document.getElementById('exc-'+exId);
-  if(card){card.style.borderColor='var(--green)';const arrow=card.querySelector('.ex-arrow');if(arrow)arrow.textContent='✓';}
-  if([...rows].every(r=>r.querySelector('.set-done-btn')?.classList.contains('done')))celebrate();
+  if(card){
+    // 1. Flash green border
+    card.style.borderColor='var(--green)';
+    card.style.boxShadow='0 0 0 2px rgba(0,230,118,0.3)';
+
+    // 2. Update header to show done state
+    const arrow=card.querySelector('.ex-arrow');
+    const exName=card.querySelector('.ex-name');
+    if(arrow){arrow.textContent='✓';arrow.style.color='var(--green)';arrow.style.fontSize='18px';}
+
+    // 3. Show a "Saved!" flash on the save button before collapsing
+    const saveBtn=card.querySelector('.save-session-btn');
+    if(saveBtn){
+      const orig=saveBtn.innerHTML;
+      saveBtn.innerHTML='✅ Saved!';
+      saveBtn.style.background='var(--green)';
+      saveBtn.style.color='#000';
+      // 4. Auto-collapse after 600ms — enough to see the feedback
+      setTimeout(()=>{
+        card.classList.remove('open');
+        // Add done badge to the collapsed header
+        const chips=card.querySelector('.ex-chips');
+        if(chips&&!chips.querySelector('.done-chip')){
+          const chip=document.createElement('span');
+          chip.className='chip done-chip';
+          chip.style.cssText='background:rgba(0,230,118,0.15);border-color:rgba(0,230,118,0.4);color:var(--green);font-weight:700';
+          chip.textContent='✓ Saved';
+          chips.appendChild(chip);
+        }
+        // Reset save button text for if they reopen
+        saveBtn.innerHTML=orig;
+        saveBtn.style.background='';
+        saveBtn.style.color='';
+      },600);
+    }
+  }
+
+  if([...rows].every(r=>r.querySelector('.set-done-btn')?.classList.contains('done'))){
+    celebrate();
+    haptic('pr');
+  }
   checkDayCompletion(dayId);
 }
 function loadPrevSessions(id){
@@ -4345,12 +4388,23 @@ Estimate the nutritional content. Respond ONLY in this JSON format:
 function showPostWorkout(){
   const now=Date.now();
   const start=sessionStart||now;
-  const all=getAllSessions().filter(s=>s.timestamp&&s.timestamp>start-1000);
+  const today=new Date().toDateString();
+
+  // Use ALL of today's saved sessions — not just since sessionStart
+  // This handles the case where Complete is tapped before or after Start Session
+  const all=getAllSessions().filter(s=>{
+    if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;
+    if(s.date){try{return new Date(s.date).toDateString()===today;}catch(e){}}
+    return false;
+  });
+
   const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
-  const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
+  const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{
+    const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;
+  },0),0);
   const mins=sessionStart?Math.max(0,Math.round((now-start)/60000)):0;
 
-  // Find PRs — check if any 1RM is a new all-time best
+  // Find new PRs — check if any 1RM is a new all-time best
   const newPRs=[];
   all.forEach(s=>{
     if(!s.estimatedORM)return;
@@ -4358,40 +4412,39 @@ function showPostWorkout(){
     const prevBest=hist.slice(1).reduce((best,sess)=>{
       const m=sess.estimatedORM||0;return m>best?m:best;
     },0);
-    if(s.estimatedORM>prevBest&&prevBest>0)newPRs.push({name:s.exName,orm:s.estimatedORM,prev:prevBest});
+    if(s.estimatedORM>prevBest&&prevBest>0)
+      newPRs.push({name:s.exName,orm:s.estimatedORM,prev:prevBest});
   });
 
-  // Calculate recomp score for context
   const recomp=calcRecompScore();
 
-  document.getElementById('pwsSub').textContent=`${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}${mins>0?' · '+mins+' min':''}`;
+  document.getElementById('pwsSub').textContent=
+    `${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}${mins>0?' · '+mins+' min':''}`;
 
   document.getElementById('pwsStats').innerHTML=`
     <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
     <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${Math.round(totalVol/1000*10)/10||0}k</div><div class="pws-stat-label">lbs Moved</div></div>
+    <div class="pws-stat"><div class="pws-stat-val">${totalVol>0?(Math.round(totalVol/100)/10)+'k':'0'}</div><div class="pws-stat-label">lbs Moved</div></div>
     <div class="pws-stat" style="background:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.1);border-color:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.3)">
       <div class="pws-stat-val" style="color:${recomp.total>=75?'var(--green)':recomp.total>=55?'var(--accent)':'var(--accent2)'}">${recomp.total}</div>
       <div class="pws-stat-label">Recomp Score</div>
     </div>`;
 
-  // PR callouts
   const prEl=document.getElementById('pwsPRs');
   if(newPRs.length){
     prEl.style.display='block';
-    prEl.innerHTML=newPRs.map(pr=>`<div style="display:flex;align-items:center;gap:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-      <span style="font-size:20px">🏆</span>
-      <div><div style="font-size:13px;font-weight:700">New PR — ${pr.name}!</div>
-      <div style="font-size:11px;color:var(--muted)">${pr.prev} → <b style="color:var(--accent)">${pr.orm} lbs</b> est. 1RM</div></div>
-    </div>`).join('');
+    prEl.innerHTML=newPRs.map(pr=>`
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+        <span style="font-size:20px">🏆</span>
+        <div><div style="font-size:13px;font-weight:700">New PR — ${pr.name}!</div>
+        <div style="font-size:11px;color:var(--muted)">${pr.prev} → <b style="color:var(--accent)">${pr.orm} lbs</b> est. 1RM</div></div>
+      </div>`).join('');
     haptic('pr');
   } else {prEl.style.display='none';}
 
   document.getElementById('pwsOverlay').classList.add('show');
   celebrate();
-
-  // Animate stats counting up
-  animateStats();
+  setTimeout(animateStats,200);
 }
 
 function animateStats(){
