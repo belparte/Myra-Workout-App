@@ -196,7 +196,7 @@ textarea{resize:none}
 /* SET TABLE */
 .set-header-row{display:grid;grid-template-columns:22px 1fr 1fr 1fr 34px;gap:5px;margin-bottom:5px}
 .set-col-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;text-align:center;font-weight:700}
-.set-row{display:grid;grid-template-columns:22px 1fr 1fr 1fr 34px;gap:5px;margin-bottom:5px;align-items:center}
+.set-row{display:grid;gap:4px;margin-bottom:6px;align-items:center}
 .set-num-badge{width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted)}
 .set-inp{background:var(--card2);border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;text-align:center;transition:border-color 0.2s;outline:none}
 .set-inp:focus{border-color:var(--accent)}
@@ -422,9 +422,8 @@ body.font-lg .chip{font-size:13px}
 .session-pill{flex-shrink:0;padding:6px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
 .session-pill.active{background:rgba(255,193,7,0.12);border-color:var(--accent);color:var(--accent)}
 /* ── SET ROW DELETE (hidden, shown on long-press) ── */
-.set-row .del-set-btn{display:none;background:rgba(255,82,82,0.15);border:1px solid rgba(255,82,82,0.3);border-radius:6px;color:var(--red);font-size:13px;cursor:pointer;padding:0 6px;height:32px;width:30px;align-items:center;justify-content:center}
-.set-row.long-pressed .del-set-btn{display:flex}
-.set-row.long-pressed .set-done-btn{display:none}
+.set-done-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
+.set-done-btn.done{background:var(--green);border-color:var(--green);color:#000}
 .superset-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--accent3);font-weight:700;margin-bottom:6px}
 .superset-connector{margin:0 16px 0;border-left:2px solid rgba(167,139,250,0.3);padding-left:10px}
 
@@ -491,7 +490,8 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
 
-  <!-- TODAY'S WORKOUT - TOP PRIORITY -->
+  <!-- RECOMP SCORE -->
+  <div id="recompScoreCard" style="margin:0 16px 10px;background:var(--card);border:1px solid rgba(255,193,7,0.2);border-radius:16px;padding:14px 16px"></div>
   <div class="today-workout" id="todayWorkout" style="margin:10px 16px">
     <div class="tw-label">Today's Session</div>
     <div class="tw-title" id="twTitle"></div>
@@ -1007,7 +1007,8 @@ body.font-lg .chip{font-size:13px}
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-green" style="flex:1" onclick="logMeal()">+ Log Meal</button>
-        <button class="btn btn-outline" onclick="openAICoach('nutrition')">🤖 Ask AI Coach</button>
+        <button id="mealPhotoBtn" onclick="document.getElementById('mealPhotoInput').click()" class="btn btn-outline" style="padding:10px 14px">📸 Photo</button>
+        <button onclick="openAICoach('nutrition')" class="btn btn-outline" style="padding:10px 14px">🤖 AI</button>
       </div>
     </div>
     <!-- Quick add buttons -->
@@ -1040,7 +1041,33 @@ body.font-lg .chip{font-size:13px}
   </div>
 </div>
 
-<!-- ══ DAILY IGNITION OVERLAY ══ -->
+<!-- ══ STRETCH ROUTINE OVERLAY ══ -->
+<div id="stretchOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent3);margin-bottom:8px">RECOVERY ROUTINE</div>
+    <div id="stretchIcon" style="font-size:48px;margin-bottom:8px">🦵</div>
+    <div id="stretchName" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#fff;margin-bottom:6px"></div>
+    <div id="stretchDesc" style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;min-height:40px"></div>
+    <!-- Ring timer -->
+    <div style="position:relative;width:160px;height:160px;margin:0 auto 20px">
+      <svg width="160" height="160" viewBox="0 0 180 180" style="transform:rotate(-90deg)">
+        <circle r="82" cx="90" cy="90" fill="none" stroke="var(--border)" stroke-width="8"/>
+        <circle id="stretchRingFill" r="82" cx="90" cy="90" fill="none" stroke="var(--accent3)" stroke-width="8" stroke-linecap="round" stroke-dasharray="515" stroke-dashoffset="0" style="transition:stroke-dashoffset 0.9s linear"/>
+      </svg>
+      <div id="stretchTime" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:52px;color:#fff"></div>
+    </div>
+    <!-- Dots -->
+    <div id="stretchDots" style="display:flex;gap:5px;justify-content:center;margin-bottom:8px"></div>
+    <div id="stretchProgress" style="font-size:11px;color:var(--muted);margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="skipStretch()" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px;padding:10px 20px;cursor:pointer;font-family:'DM Sans',sans-serif">Skip</button>
+      <button onclick="closeStretch()" style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.25);border-radius:10px;color:var(--red);font-size:13px;padding:10px 20px;cursor:pointer;font-family:'DM Sans',sans-serif">End Routine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MEAL PHOTO INPUT ══ -->
+<input type="file" id="mealPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="analyzeMealPhoto(this.files[0])">
 <div id="ignitionOverlay" style="position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <!-- Particle background -->
   <canvas id="ignitionCanvas" style="position:absolute;inset:0;opacity:0.4"></canvas>
@@ -1412,54 +1439,64 @@ body.font-lg .chip{font-size:13px}
 // DATA
 // ══════════════════════════════════════════════════════════════
 const WORKOUTS={
-  day1:{label:'Day 1',title:'Upper Push',sub:'Chest · Shoulders · Triceps',type:'push',
+  day1:{label:'Push',title:'Push Day',sub:'Chest · Shoulders · Triceps',type:'push',
     warmup:'5 min: arm circles, band pull-aparts, 5 slow push-up negatives',sciWarn:false,
     exercises:[
-      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',sciNote:null},
-      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',sciNote:null},
-      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',sciNote:null},
-      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',sciNote:null},
-      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',sciNote:null},
-      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',repTarget:15,rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',sciNote:null,noWeight:true},
+      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',sciNote:null,priority:1},
+      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',sciNote:null,priority:2},
+      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',sciNote:null,priority:3},
+      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',sciNote:null,priority:4},
+      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',sciNote:null,priority:5},
+      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',repTarget:15,rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',sciNote:null,noWeight:true,priority:6},
     ]},
-  day2:{label:'Day 2',title:'Lower + Core',sub:'Quads · Hamstrings · Core',type:'lower',
+  day2:{label:'Lower',title:'Lower + Core',sub:'Quads · Hamstrings · Core',type:'lower',
     warmup:'5 min: glute bridges x10, leg swings, hip circles, piriformis stretch',
     sciWarn:'🦵 Sciatica note: Do glute bridges first every session. Skip reverse lunges if left leg tingles — substitute with right leg only.',
     exercises:[
-      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',sciNote:'Keep weight light. Widen stance slightly if left leg tingles.'},
-      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',sciNote:'Best exercise for sciatica relief. Squeeze glutes 2s at top.',noWeight:true},
-      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',sciNote:'Wk 1–2: right leg only. Add left from wk 3 if pain-free.',noWeight:true},
-      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',sciNote:'Gentle on sciatica. Keep hips level throughout.',noWeight:true},
-      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',sciNote:'Core without spinal loading — ideal for sciatica.',noWeight:true},
-      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',sciNote:null,noWeight:true},
+      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',sciNote:'Keep weight light. Widen stance slightly if left leg tingles.',priority:1},
+      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',sciNote:'Best exercise for sciatica relief. Squeeze glutes 2s at top.',noWeight:true,priority:2},
+      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',sciNote:'Wk 1–2: right leg only. Add left from wk 3 if pain-free.',noWeight:true,priority:3},
+      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',sciNote:'Gentle on sciatica. Keep hips level throughout.',noWeight:true,priority:4},
+      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',sciNote:'Core without spinal loading — ideal for sciatica.',noWeight:true,priority:5},
+      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',sciNote:null,noWeight:true,priority:6},
     ]},
-  day3:{label:'Day 3',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,sciWarn:false,exercises:[]},
-  day4:{label:'Day 4',title:'Upper Pull',sub:'Back · Biceps · Rear Delts',type:'pull',
+  day3:{label:'Recovery',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,sciWarn:false,exercises:[]},
+  day4:{label:'Pull',title:'Upper Pull',sub:'Back · Biceps · Rear Delts',type:'pull',
     warmup:'5 min: band pull-aparts, shoulder rolls, light row x10',
     sciWarn:'Row at 45° — not parallel. Brace core on every rep. Never round lower back.',
     exercises:[
-      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',sciNote:null},
-      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',sciNote:null},
-      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',sciNote:null},
-      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',sciNote:null,noWeight:true},
-      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',sciNote:null},
-      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',sciNote:null},
+      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',sciNote:null,priority:1},
+      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',sciNote:null,priority:2},
+      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',sciNote:null,priority:3},
+      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',sciNote:null,noWeight:true,priority:4},
+      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',sciNote:null,priority:5},
+      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',sciNote:null,priority:6},
     ]},
-  day5:{label:'Day 5',title:'Lower + Glutes',sub:'Glutes · Hamstrings · Core',type:'lower',
-    warmup:'5 min: glute bridges x10, lateral band walks x10 each side, piriformis stretch',
-    sciWarn:'🦵 Hip thrusts directly reduce sciatic nerve compression — prioritise them. Move controlled, squeeze at top.',
+  day5:{label:'Core & Power',title:'Lower Power + Core',sub:'Hamstrings · Abs · Core · Calves',type:'lower',
+    warmup:'5 min: leg swings x10, hip circles, dead bug x5, piriformis stretch 30s each side',
+    sciWarn:'🦵 Romanian deadlifts — hinge at hips, soft knees, neutral spine throughout. Stop if left leg tingles.',
     exercises:[
-      {id:'d5e1',icon:'🍑',name:'Barbell Hip Thrust',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=barbell+hip+thrust+form+beginners',sciNote:'Best long-term fix for sciatica. Full glute squeeze at top.'},
-      {id:'d5e2',icon:'📦',name:'Step-Ups (Low Step)',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+step+ups+form+tutorial',sciNote:'Wk 1–2: bodyweight only. Lead with right leg.',noWeight:true},
-      {id:'d5e3',icon:'🏋️',name:'Sumo Squat',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=sumo+squat+dumbbell+form',sciNote:'Wide stance reduces stress on piriformis.'},
-      {id:'d5e4',icon:'🦀',name:'Lateral Band Walks',sets:3,reps:'15 ea',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+band+walk+glute+med+activation',sciNote:'Activates glute med — counters sciatica weakness directly.',noWeight:true},
-      {id:'d5e5',icon:'⚽',name:'Stability Ball Glute Bridge',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=stability+ball+glute+bridge+tutorial',sciNote:null,noWeight:true},
-      {id:'d5e6',icon:'🪵',name:'Plank Hold',sets:3,reps:'20–30s',repTarget:30,rest:45,url:'https://www.youtube.com/results?search_query=plank+form+core+beginners',sciNote:'Start 20s. Do not let lower back sag.',noWeight:true,timed:true},
+      {id:'d5e1',icon:'🏋️',name:'Romanian Deadlift',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=romanian+deadlift+dumbbell+form+beginners',sciNote:'Hinge at hips, soft knees, neutral spine. Stop if left leg tingles.',priority:1},
+      {id:'d5e2',icon:'🦵',name:'Bulgarian Split Squat',sets:3,reps:'8–10 ea',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bulgarian+split+squat+dumbbell+form',sciNote:'Wk 1–2: bodyweight only. Right leg lead. Add left from wk 3 if pain-free.',noWeight:true,priority:2},
+      {id:'d5e3',icon:'🦵',name:'Standing Calf Raises',sets:3,reps:'15–20',repTarget:18,rest:45,url:'https://www.youtube.com/results?search_query=standing+calf+raise+dumbbell+form',sciNote:null,priority:5},
+      {id:'d5e4',icon:'🎡',name:'Ab Wheel Rollout',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form+beginners',sciNote:'Never let lower back sag. Go only as far as you can control.',noWeight:true,priority:3},
+      {id:'d5e5',icon:'🏋️',name:'Hanging Knee Raises',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=hanging+knee+raise+lower+abs+form',sciNote:'Use a door frame or bar. Control the descent.',noWeight:true,priority:4},
+      {id:'d5e6',icon:'💪',name:'Pallof Press (Band)',sets:3,reps:'12 ea',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=pallof+press+resistance+band+form',sciNote:'Anti-rotation core — extremely safe for sciatica. Anchor band at chest height.',noWeight:true,priority:6},
     ]},
+};
+
+// ── Session plan: how many exercises + sets per time slot ──────
+const SESSION_PLAN={
+  15:{exercises:2, sets:2},
+  30:{exercises:3, sets:2},
+  45:{exercises:4, sets:3},
+  60:{exercises:5, sets:3},
+  75:{exercises:6, sets:4},
+  90:{exercises:6, sets:4},
 };
 const DAY_ORDER=['day1','day2','day3','day4','day5'];
 const DAY_TYPE_CLASS={push:'push-tab',pull:'pull-tab',lower:'lower-tab',recovery:'recovery-tab'};
-const DAY_NAMES={day1:'Push Day',day2:'Lower Body',day3:'Active Recovery',day4:'Pull Day',day5:'Glutes Day'};
+const DAY_NAMES={day1:'Push',day2:'Lower',day3:'Recovery',day4:'Pull',day5:'Core & Power'};
 
 // ══════════════════════════════════════════════════════════════
 // STORAGE
@@ -1535,26 +1572,45 @@ function setSessionLength(mins) {
     p.classList.toggle('active', parseInt(p.textContent) === mins || p.textContent === mins+'m');
   });
   const label = document.getElementById('sessionLengthLabel');
-  const setsCount = getSetsByLength(mins);
-  if(label) label.textContent = `${setsCount} sets/exercise · ~${mins} min`;
-  // Rebuild workout with new set count
+  const plan = SESSION_PLAN[Object.keys(SESSION_PLAN).map(Number).sort((a,b)=>a-b).find(k=>mins<=k)||90];
+  if(label) label.textContent = `${plan.exercises} exercises · ${plan.sets} sets · ~${mins} min`;
+  // Rebuild workout HTML (updates set count chips on collapsed cards)
   buildWorkout();
+  // Also reinitialize rows on any currently open (expanded) exercise cards
+  DAY_ORDER.forEach(dayId=>{
+    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+      const card=document.getElementById('exc-'+ex.id);
+      if(card&&card.classList.contains('open')){
+        initRows(ex.id, getSets(ex.sets));
+        loadPrevSessions(ex.id);
+      }
+    });
+  });
+  toast(`${plan.exercises} exercises · ${plan.sets} sets · ~${mins} min`);
 }
 
-function getSetsByLength(mins) {
-  if(mins <= 15) return 1;
-  if(mins <= 30) return 2;
-  if(mins <= 45) return 3;
-  if(mins <= 60) return 3;
-  if(mins <= 75) return 4;
-  return 4; // 90 min — 4 sets + extra volume
+function getSessionPlan(){
+  const mins=currentSessionLength||45;
+  // Find closest plan key
+  const keys=Object.keys(SESSION_PLAN).map(Number).sort((a,b)=>a-b);
+  const key=keys.find(k=>mins<=k)||keys[keys.length-1];
+  return SESSION_PLAN[key]||{exercises:4,sets:3};
 }
 
-function getSets(base) {
-  // Session length overrides program week if user has set it manually
-  const userLen = currentSessionLength;
-  const weekBased = getProgramWeek() <= 2 ? 2 : getProgramWeek() <= 4 ? 3 : base;
-  return Math.min(getSetsByLength(userLen), weekBased);
+function getActiveExercises(dayId){
+  const exercises=WORKOUTS[dayId]?.exercises||[];
+  if(!exercises.length)return[];
+  const plan=getSessionPlan();
+  // Sort by priority, take top N
+  return [...exercises]
+    .sort((a,b)=>(a.priority||99)-(b.priority||99))
+    .slice(0,plan.exercises);
+}
+
+function getSets(base){
+  const plan=getSessionPlan();
+  const weekBased=getProgramWeek()<=2?2:getProgramWeek()<=4?3:base;
+  return Math.min(plan.sets,weekBased);
 }
 
 function startWorkoutSession(){
@@ -1625,6 +1681,7 @@ function refreshHome(){
   calcWeightTrendPrediction();
   calcConsistencyScore();
   setupPWABadge();
+  renderRecompScore();
   scheduleNotifications();
 }
 function calcStreak(logs){if(!logs.length)return 0;let s=0,d=new Date();for(let i=0;i<90;i++){if(logs.includes(d.toDateString()))s++;else if(i>0)break;d.setDate(d.getDate()-1);}return s;}
@@ -1664,11 +1721,20 @@ function buildDayHTML(dayId,w){
     <div class="rec-item-card"><div class="rec-item-icon">🐈</div><div><div class="rec-item-title">Cat-Cow</div><div class="rec-item-desc">On hands and knees, arch and round slowly. 10 reps. Mobilises spine and reduces nerve tension.</div></div></div>
     <div class="rec-item-card"><div class="rec-item-icon">🧻</div><div><div class="rec-item-title">Foam Roll</div><div class="rec-item-desc">Focus on left glute, IT band, quads. 60s per area. Reduces inflammation around sciatic nerve.</div></div></div>
     <div class="rec-item-card"><div class="rec-item-icon">💧</div><div><div class="rec-item-title">Hydration & Nutrition</div><div class="rec-item-desc">100+ oz water. Hit your 160–180g protein target. Recovery happens in the kitchen.</div></div></div>
+    <button onclick="openStretchRoutine()" style="width:calc(100% - 32px);margin:8px 16px;padding:14px;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(41,182,246,0.15));border:1px solid rgba(167,139,250,0.35);border-radius:14px;color:var(--accent3);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">🧘 Start Guided Stretch Routine · 10 steps · ~8 min</button>
   </div>`;
   let h='';
   if(w.warmup)h+=`<div class="warmup-strip"><span class="wi">🔥</span>${w.warmup}</div>`;
   if(w.sciWarn)h+=`<div class="sci-warn"><span style="font-size:18px;flex-shrink:0">⚠️</span><div><strong>Form & Sciatica</strong><p>${w.sciWarn}</p></div></div>`;
-  w.exercises.forEach(ex=>{
+
+  // Sort by priority and split into active/skipped based on session plan
+  const plan=getSessionPlan();
+  const sorted=[...w.exercises].sort((a,b)=>(a.priority||99)-(b.priority||99));
+  const active=sorted.slice(0,plan.exercises);
+  const skipped=sorted.slice(plan.exercises);
+
+  // Render active exercises
+  active.forEach(ex=>{
     const sets=getSets(ex.sets);
     const bgClass=w.type==='push'?'push-bg':w.type==='pull'?'pull-bg':'lower-bg';
     h+=`<div class="ex-card" id="exc-${ex.id}">
@@ -1702,7 +1768,6 @@ function buildDayHTML(dayId,w){
         </div>
         <div id="rows-${ex.id}" data-noweight="${ex.noWeight?'1':'0'}" data-timed="${ex.timed?'1':'0'}" data-reptarget="${ex.repTarget||0}"></div>
         <button class="add-set-row" onclick="addRow('${ex.id}')">+ Add Set</button>
-        <div style="font-size:10px;color:var(--border);text-align:center;margin-top:-6px;margin-bottom:8px">Hold a set row to delete it</div>
         <div class="orm-box" id="orm-${ex.id}">
           <div class="orm-title">Estimated 1 Rep Max</div>
           <div class="orm-value" id="ormV-${ex.id}">—</div>
@@ -1723,6 +1788,24 @@ function buildDayHTML(dayId,w){
       </div>
     </div>`;
   });
+
+  // Skipped exercises — greyed out with time upgrade hint
+  if(skipped.length){
+    const nextPlan=Object.entries(SESSION_PLAN).find(([k,v])=>v.exercises>plan.exercises);
+    const nextMins=nextPlan?nextPlan[0]:null;
+    h+=`<div style="margin:4px 0 4px;padding:8px 12px;background:rgba(255,193,7,0.05);border:1px solid rgba(255,193,7,0.1);border-radius:10px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px">⏱</span>
+      <span style="font-size:11px;color:var(--muted)">${nextMins?`Select ${nextMins}m or more to unlock ${skipped.length} more exercise${skipped.length>1?'s':''}`:''}</span>
+    </div>`;
+    skipped.forEach(ex=>{
+      h+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;padding:12px 14px;opacity:0.45;display:flex;align-items:center;gap:10px;pointer-events:none">
+        <div style="font-size:20px">${ex.icon}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--muted)">${ex.name}</div><div style="font-size:11px;color:var(--border)">${ex.reps} reps · ${ex.rest}s rest</div></div>
+        <div style="font-size:14px;color:var(--border)">🔒</div>
+      </div>`;
+    });
+  }
+
   // Complete Workout button
   if(w.exercises.length>0){
     h+=`<div style="padding:16px">
@@ -1746,42 +1829,66 @@ function toggleEx(id){
 }
 const RC={};
 function initRows(id,n){RC[id]=0;document.getElementById('rows-'+id).innerHTML='';for(let i=0;i<n;i++)addRow(id);}
+
+function calcProgressiveWeight(id,setIndex,noWeight){
+  if(noWeight)return{weight:'',reps:'',badge:null};
+  const sessions=ls('w:'+id)||[];
+  if(!sessions.length)return{weight:'',reps:'',badge:null};
+  const last=sessions[0];
+  const prevSet=last.sets[setIndex];
+  if(!prevSet)return{weight:'',reps:'',badge:null};
+  const prevWeight=parseFloat(prevSet.weight)||0;
+  if(!prevWeight)return{weight:'',reps:prevSet.reps||'',badge:null};
+  const avgRIR=last.sets.reduce((a,s)=>{const r=parseFloat(s.rir);return a+(isNaN(r)?3:r);},0)/last.sets.length;
+  let newWeight=prevWeight,badge=null;
+  if(avgRIR>=4){
+    const inc=prevWeight>=45?5:2.5;
+    newWeight=prevWeight+inc;
+    badge={text:`+${inc} lbs 📈`,color:'rgba(0,230,118,0.85)',reason:`RIR ${avgRIR.toFixed(1)} last session — ready to go heavier`};
+  } else if(avgRIR>=2){
+    newWeight=prevWeight+2.5;
+    badge={text:'+2.5 lbs 📈',color:'rgba(255,193,7,0.85)',reason:'Steady progress'};
+  } else {
+    newWeight=prevWeight;
+    badge={text:'Same weight 🎯',color:'rgba(41,182,246,0.85)',reason:`RIR ${avgRIR.toFixed(1)} — consolidate before adding`};
+  }
+  newWeight=Math.round(newWeight/2.5)*2.5;
+  return{weight:newWeight,reps:prevSet.reps||'',badge};
+}
+
 function addRow(id){
   RC[id]=(RC[id]||0)+1;const n=RC[id];
   const ex=findEx(id);const restSecs=ex?ex.rest:60;
   const container=document.getElementById('rows-'+id);
+  if(!container)return;
   const noWeight=container.dataset.noweight==='1';
-  const isTimed=container.dataset.timed==='1';
   const repTarget=parseInt(container.dataset.reptarget)||0;
-  const prevSess=ls('w:'+id)||[];
-  const prevSet=prevSess.length&&prevSess[0].sets[n-1]?prevSess[0].sets[n-1]:null;
-  const wSug=prevSet&&!noWeight?prevSet.weight:'';
-  const rSug=prevSet?prevSet.reps:(repTarget||'');
+  const prog=calcProgressiveWeight(id,n-1,noWeight);
+  const wSug=prog.weight||'';
+  const rSug=prog.reps||(repTarget||'');
+  // Show progression badge before first row
+  if(prog.badge&&wSug&&n===1){
+    const existing=container.querySelector('.prog-badge');
+    if(!existing){
+      const badge=document.createElement('div');
+      badge.className='prog-badge';
+      badge.style.cssText=`background:${prog.badge.color};color:#000;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px`;
+      badge.innerHTML=`${prog.badge.text}&nbsp;<span style="font-weight:500;opacity:0.75">${prog.badge.reason}</span>`;
+      container.appendChild(badge);
+    }
+  }
   const row=document.createElement('div');
   row.className='set-row';
-  row.style.gridTemplateColumns=noWeight?'22px 1fr 1fr 30px':'22px 1fr 1fr 1fr 30px';
+  row.style.cssText=`display:grid;grid-template-columns:${noWeight?'22px 1fr 1fr 32px 28px':'22px 1fr 1fr 1fr 32px 28px'};gap:4px;margin-bottom:6px;align-items:center`;
   row.dataset.n=n;
-  row.innerHTML=`<div class="set-num-badge">${n}</div>
-    ${noWeight?'':`<input class="set-inp" type="number" placeholder="${wSug||'lbs'}" step="2.5" min="0" data-f="w" oninput="calcORM('${id}')" style="${wSug?'border-color:rgba(255,193,7,0.25);color:var(--accent)':''}" value="${wSug}">`}
-    <input class="set-inp" type="number" placeholder="${rSug||'—'}" min="0" data-f="r" oninput="calcORM('${id}')" style="${rSug?'border-color:rgba(0,230,118,0.25);color:var(--green)':''}" value="${rSug}">
+  row.innerHTML=`
+    <div class="set-num-badge">${n}</div>
+    ${noWeight?'':`<input class="set-inp" type="number" placeholder="${wSug||'lbs'}" step="2.5" min="0" data-f="w" oninput="calcORM('${id}')" value="${wSug}" style="${wSug?'border-color:rgba(0,230,118,0.35);background:rgba(0,230,118,0.04)':''}">`}
+    <input class="set-inp" type="number" placeholder="${rSug||'reps'}" min="0" data-f="r" oninput="calcORM('${id}')" value="${rSug}" style="${rSug?'border-color:rgba(0,230,118,0.25)':''}">
     <input class="set-inp" type="number" placeholder="RIR" min="0" max="10" data-f="rir">
     <button class="set-done-btn" onclick="markDone(this,'${id}',${restSecs})">○</button>
-    <button class="del-set-btn" onclick="deleteRow(this)" title="Delete set">✕</button>`;
-  // Long-press to reveal delete — works on both touch and mouse
-  let pressTimer;
-  const startPress=()=>{pressTimer=setTimeout(()=>{row.classList.add('long-pressed');haptic('warning');},500);};
-  const cancelPress=()=>clearTimeout(pressTimer);
-  row.addEventListener('touchstart',startPress,{passive:true});
-  row.addEventListener('touchend',cancelPress);
-  row.addEventListener('touchmove',cancelPress,{passive:true});
-  row.addEventListener('mousedown',startPress);
-  row.addEventListener('mouseup',cancelPress);
-  // Tap anywhere outside to dismiss delete button
-  row.addEventListener('touchend',e=>{
-    if(row.classList.contains('long-pressed')&&!e.target.classList.contains('del-set-btn')){
-      setTimeout(()=>row.classList.remove('long-pressed'),2000); // auto-dismiss after 2s
-    }
-  });
+    <button onclick="deleteRow(this)" style="background:rgba(255,82,82,0.12);border:1px solid rgba(255,82,82,0.25);border-radius:6px;color:#ff5252;font-size:13px;cursor:pointer;padding:0;height:32px;width:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Remove set">✕</button>`;
+  container.appendChild(row);
 }
 function deleteRow(btn){
   const row=btn.closest('.set-row');
@@ -1790,8 +1897,6 @@ function deleteRow(btn){
 function markDone(btn,id,restSecs){
   btn.classList.toggle('done');
   btn.textContent=btn.classList.contains('done')?'✓':'○';
-  // Cancel long-press mode when done
-  btn.closest('.set-row')?.classList.remove('long-pressed');
   if(btn.classList.contains('done')){haptic('setDone');startRest(id,restSecs);}
 }
 
@@ -1991,28 +2096,9 @@ function completeWorkout(dayId){
   refreshHome();
 }
 let sessionStart=null; // only set when user explicitly taps Start Session
-function showPostWorkout(){
-  const now=Date.now();
-  const start=sessionStart||now; // if no session started, treat as 0 mins
-  const all=getAllSessions().filter(s=>s.timestamp&&s.timestamp>start-1000);
-  const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
-  const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
-  const mins=sessionStart?Math.max(0,Math.round((now-start)/60000)):0;
-  const prs=all.filter(s=>s.estimatedORM&&(ls('w:'+s.exId)||[]).length>1);
-  document.getElementById('pwsSub').textContent=`${new Date().toLocaleDateString('en-US',{weekday:'long'})}${mins>0?' · '+mins+' min':''}`;
-  document.getElementById('pwsStats').innerHTML=`
-    <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${Math.round(totalVol).toLocaleString()}</div><div class="pws-stat-label">Total lbs Moved</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${all.length}</div><div class="pws-stat-label">Exercises</div></div>`;
-  const prEl=document.getElementById('pwsPRs');
-  if(prs.length){prEl.style.display='block';prEl.innerHTML='🏆 New PRs: '+prs.map(s=>s.exName).join(', ');}
-  document.getElementById('pwsOverlay').classList.add('show');
-  celebrate();
-}
 function closePWS(){
   document.getElementById('pwsOverlay').classList.remove('show');
-  stopSessionTimer(); // resets sessionStart to null and resets button
+  stopSessionTimer();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2248,12 +2334,12 @@ const EX_INFO={
   d4e4:{muscles:{primary:['rear-delts','traps'],secondary:['rotator-cuff']},steps:'1. Anchor band at face height\n2. Grip with thumbs up, elbows high\n3. Pull to face, elbows flaring out\n4. Pause when hands reach temples\n5. Return slowly — great for posture',mistakes:'Elbows dropping below shoulder · Pulling with biceps not shoulders · Too fast · Shrugging traps'},
   d4e5:{muscles:{primary:['biceps'],secondary:['forearms']},steps:'1. Lie on incline bench at 45–60°\n2. Let arms hang fully extended\n3. Curl without lifting shoulders\n4. Full range from extended to contracted\n5. The incline forces full stretch — use it',mistakes:'Shoulders lifting off bench · Partial reps · Too heavy a weight · Rushing the movement'},
   d4e6:{muscles:{primary:['rear-delts'],secondary:['traps','rhomboids']},steps:'1. Hinge forward at hips 45°\n2. Dumbbells hanging, palms facing in\n3. Raise arms out to sides like a T\n4. Squeeze rear delts at top\n5. Lower slowly — 3 second descent',mistakes:'Shrugging traps instead of rear delts · Going too heavy · Standing too upright · Bending elbows too much'},
-  d5e1:{muscles:{primary:['glutes'],secondary:['hamstrings','core']},steps:'1. Sit on floor, upper back against bench\n2. Roll barbell over hips, pad for comfort\n3. Drive hips up by squeezing glutes\n4. At top: hips parallel to floor, squeeze 2s\n5. Lower slowly — don\'t touch floor fully',mistakes:'Chin tucking down · Using lower back not glutes · Partial range of motion · Feet too close to glutes'},
-  d5e2:{muscles:{primary:['quads','glutes'],secondary:['hamstrings','calves']},steps:'1. Stand facing a low step or box\n2. Step up with full foot on platform\n3. Drive through heel to stand fully\n4. Step back down with control\n5. Don\'t push off back foot',mistakes:'Pushing off the back foot · Knee caving in · Step too high initially · Not fully standing at top'},
-  d5e3:{muscles:{primary:['glutes','inner-thighs'],secondary:['quads','hamstrings']},steps:'1. Wide stance, toes pointing out 45°\n2. Hold dumbbell at chest or between legs\n3. Lower keeping back straight\n4. Knees track over toes throughout\n5. Drive through heels to stand',mistakes:'Knees collapsing inward · Back rounding · Rising on toes · Too narrow a stance'},
-  d5e4:{muscles:{primary:['glutes'],secondary:['hip-abductors']},steps:'1. Place band just above knees\n2. Slight squat position throughout\n3. Step sideways maintaining tension\n4. Don\'t let feet come together fully\n5. Keep toes forward the whole time',mistakes:'Standing upright instead of hinge · Feet coming together · Leaning side to side · Too light a band'},
-  d5e5:{muscles:{primary:['glutes','hamstrings'],secondary:['core']},steps:'1. Heels on stability ball, back flat\n2. Bridge hips up, keep core tight\n3. Hold position for full rep count\n4. Don\'t let hips drop during set\n5. Controlled breathing throughout',mistakes:'Hips dropping · Ball rolling sideways · Rushing reps · Losing lower back position'},
-  d5e6:{muscles:{primary:['core'],secondary:['shoulders','glutes']},steps:'1. Forearms on floor, elbows under shoulders\n2. Body in straight line head to heels\n3. Brace core — imagine bracing for a punch\n4. Breathe normally, hold steady\n5. Start with 20s, build each week',mistakes:'Hips piking up or sagging · Holding breath · Neck straining forward · Shrugging shoulders'},
+  d5e1:{muscles:{primary:['hamstrings'],secondary:['glutes','lower-back']},steps:'1. Hold dumbbells in front of thighs\n2. Hinge at hips — push them back\n3. Lower weights down your legs, soft knees\n4. Feel the stretch in your hamstrings\n5. Drive hips forward to return — squeeze glutes at top',mistakes:'Rounding lower back · Bending knees too much · Not hinging at hips · Going too heavy too soon'},
+  d5e2:{muscles:{primary:['quads','glutes'],secondary:['hamstrings','core']},steps:'1. Rear foot elevated on bench behind you\n2. Front foot forward, torso upright\n3. Lower rear knee toward floor\n4. Drive through front heel to stand\n5. Keep front knee tracking over toes',mistakes:'Leaning too far forward · Front knee caving in · Back foot too close · Pushing off back foot'},
+  d5e3:{muscles:{primary:['calves'],secondary:[]},steps:'1. Stand on edge of step or flat floor\n2. Hold dumbbells at sides for resistance\n3. Rise up onto toes as high as possible\n4. Hold 1 second at top\n5. Lower slowly — full range of motion',mistakes:'Bouncing at bottom · Partial range · Going too fast · Not holding at top'},
+  d5e4:{muscles:{primary:['core'],secondary:['shoulders','lats']},steps:'1. Kneel behind ab wheel, arms extended\n2. Roll forward slowly keeping core braced\n3. Go only as far as you can control\n4. Pull back using abs, not arms\n5. Never let lower back sag',mistakes:'Going too far too soon · Sagging lower back · Using hip flexors instead of abs · Rushing back'},
+  d5e5:{muscles:{primary:['core'],secondary:['hip-flexors']},steps:'1. Hang from bar or door frame\n2. Bend knees and raise them to chest\n3. Control the descent — do not swing\n4. Pause at top for 1 second\n5. Lower slowly over 2–3 seconds',mistakes:'Swinging for momentum · Partial range · Letting legs drop fast · Shrugging shoulders'},
+  d5e6:{muscles:{primary:['core'],secondary:['shoulders']},steps:'1. Anchor band at chest height\n2. Hold with both hands, arms extended\n3. Resist the band pulling you sideways\n4. Hold 2 seconds, return slowly\n5. Do not rotate your torso at all',mistakes:'Rotating hips · Arms bent · Moving too fast · Band tension too light'},
 };
 
 function openExInfo(exId){
@@ -2667,7 +2753,7 @@ const WARMUP_STEPS={
   day2:[{name:'Glute Bridges × 10',secs:50},{name:'Leg Swings',secs:40},{name:'Hip Circles',secs:40},{name:'Piriformis Stretch',secs:60}],
   day3:[],
   day4:[{name:'Band Pull-Aparts',secs:40},{name:'Shoulder Rolls',secs:30},{name:'Light Band Row × 10',secs:50},{name:'Arm Swings',secs:30}],
-  day5:[{name:'Glute Bridges × 10',secs:50},{name:'Lateral Band Walks × 10',secs:50},{name:'Hip Circles',secs:40},{name:'Piriformis Stretch',secs:60}],
+  day5:[{name:'Leg Swings × 10',secs:40},{name:'Hip Circles × 10',secs:40},{name:'Dead Bug × 5',secs:50},{name:'Piriformis Stretch',secs:60}],
 };
 let wtTimer=null,wtCurrentStep=0,wtSteps=[],wtDayId='';
 const CIRC=2*Math.PI*82;
@@ -4050,6 +4136,275 @@ function toggleSpotifyExpand(){
   const panel=document.getElementById('spotifyExpanded');const chevron=document.getElementById('spotifyChevron');
   if(panel)panel.style.display=spotifyExpanded_state?'block':'none';
   if(chevron)chevron.textContent=spotifyExpanded_state?'▼':'▲';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RECOMP SCORE
+// ══════════════════════════════════════════════════════════════
+function calcRecompScore(){
+  const today=new Date();
+  const weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
+
+  // 1. Training consistency (0-40 pts) — scheduled days hit
+  const logs=ls('streakLogs')||[];
+  const weekDays=[0,1,2,3,4,5,6].map(i=>{const d=new Date(today);d.setDate(today.getDate()-i);return d.toDateString();});
+  const scheduledDays=weekDays.filter(d=>{const dow=new Date(d).getDay();return[1,2,4,5].includes(dow);});
+  const hitDays=scheduledDays.filter(d=>logs.includes(d));
+  const consistencyScore=scheduledDays.length>0?Math.round((hitDays.length/scheduledDays.length)*40):0;
+
+  // 2. Nutrition adherence (0-30 pts) — protein target hit
+  const targets=ls('nutTargets')||{cal:2000,prot:170};
+  let protDaysHit=0,protDaysTotal=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const k='meals:'+d.toISOString().split('T')[0];
+    const meals=ls(k)||[];
+    if(meals.length>0){
+      protDaysTotal++;
+      const totalProt=meals.reduce((a,m)=>a+(m.prot||0),0);
+      if(totalProt>=targets.prot*0.9)protDaysHit++;
+    }
+  }
+  const nutritionScore=protDaysTotal>0?Math.round((protDaysHit/protDaysTotal)*30):15; // default 15 if no data
+
+  // 3. Weight trend (0-30 pts)
+  const bw=ls('bodyweight')||[];
+  const target=ls('targetWeight');
+  let weightScore=15; // neutral default
+  if(bw.length>=2&&target){
+    const recent=bw.slice(0,Math.min(bw.length,7));
+    const oldest=recent[recent.length-1].weight;
+    const newest=recent[0].weight;
+    const change=newest-oldest;
+    const goingRight=(target.weight<oldest&&change<0)||(target.weight>oldest&&change>0);
+    const stable=Math.abs(change)<0.5;
+    weightScore=goingRight?30:stable?20:10;
+  }
+
+  const total=consistencyScore+nutritionScore+weightScore;
+  const grade=total>=85?'A+':total>=75?'A':total>=65?'B+':total>=55?'B':total>=45?'C+':'C';
+  const msg=total>=85?'Outstanding recomp! 🔥':total>=70?'Great progress! 💪':total>=55?'On track — keep going 👍':total>=40?'Room to improve 📈':'Let\'s get consistent 🎯';
+
+  return{total,grade,msg,consistencyScore,nutritionScore,weightScore,
+    consistencyLabel:`${hitDays.length}/${scheduledDays.length} workouts`,
+    nutritionLabel:protDaysTotal>0?`${protDaysHit}/${protDaysTotal} protein days`:'Log meals to score',
+    weightLabel:bw.length>=2?`${bw[0].weight} lbs`:'Log weight to score'};
+}
+
+function renderRecompScore(){
+  const el=document.getElementById('recompScoreCard');
+  if(!el)return;
+  const s=calcRecompScore();
+  const color=s.total>=75?'var(--green)':s.total>=55?'var(--accent)':'var(--accent2)';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:${color}">⚡ Weekly Recomp Score</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:${color};line-height:1">${s.total}<span style="font-size:14px;opacity:0.7">/100</span></div>
+    </div>
+    <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px">
+      <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,${color},${color}88);transition:width 0.8s ease;width:${s.total}%"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text);margin-bottom:10px;font-weight:600">${s.grade} — ${s.msg}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">${s.consistencyScore}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Training</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px">${s.consistencyLabel}</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green)">${s.nutritionScore}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Nutrition</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px">${s.nutritionLabel}</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--blue)">${s.weightScore}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Progress</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px">${s.weightLabel}</div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// REST DAY GUIDED STRETCHING
+// ══════════════════════════════════════════════════════════════
+const STRETCH_ROUTINE=[
+  {name:'Piriformis Stretch (Left)',secs:45,desc:'Cross left ankle over right knee, lean forward gently',icon:'🦵'},
+  {name:'Piriformis Stretch (Right)',secs:45,desc:'Cross right ankle over left knee, lean forward gently',icon:'🦵'},
+  {name:'Cat-Cow',secs:50,desc:'On hands and knees — arch up then dip down slowly, 10 reps',icon:'🐈'},
+  {name:'Hip Flexor Stretch (Left)',secs:40,desc:'Kneel on left knee, right foot forward, push hips forward gently',icon:'🏃'},
+  {name:'Hip Flexor Stretch (Right)',secs:40,desc:'Kneel on right knee, left foot forward, push hips forward gently',icon:'🏃'},
+  {name:'Child\'s Pose',secs:50,desc:'Sit back onto heels, arms extended forward, breathe deeply',icon:'🧘'},
+  {name:'Hamstring Stretch',secs:40,desc:'Sit with legs extended, reach toward toes, hold gently',icon:'🦵'},
+  {name:'Spinal Twist (Left)',secs:35,desc:'Seated, cross left knee, twist torso left, breathe',icon:'🔄'},
+  {name:'Spinal Twist (Right)',secs:35,desc:'Seated, cross right knee, twist torso right, breathe',icon:'🔄'},
+  {name:'Foam Roll — Left Glute',secs:60,desc:'Sit on foam roller, cross left ankle over right knee, roll slowly',icon:'🧻'},
+];
+
+let stretchStep=0,stretchTimer=null;
+const STRETCH_CIRC=2*Math.PI*82;
+
+function openStretchRoutine(){
+  stretchStep=0;
+  const o=document.getElementById('stretchOverlay');
+  o.style.display='flex';
+  renderStretchStep();
+}
+function renderStretchStep(){
+  const step=STRETCH_ROUTINE[stretchStep];
+  document.getElementById('stretchIcon').textContent=step.icon;
+  document.getElementById('stretchName').textContent=step.name;
+  document.getElementById('stretchDesc').textContent=step.desc;
+  document.getElementById('stretchDots').innerHTML=STRETCH_ROUTINE.map((_,i)=>`<div style="width:7px;height:7px;border-radius:50%;background:${i<stretchStep?'var(--green)':i===stretchStep?'var(--accent)':'var(--border)'}"></div>`).join('');
+  document.getElementById('stretchProgress').textContent=`${stretchStep+1} of ${STRETCH_ROUTINE.length}`;
+  runStretchCountdown(step.secs);
+}
+function runStretchCountdown(secs){
+  clearInterval(stretchTimer);
+  let rem=secs;
+  const fill=document.getElementById('stretchRingFill');
+  const tick=()=>{
+    const m=Math.floor(rem/60),s=rem%60;
+    document.getElementById('stretchTime').textContent=m+':'+(s<10?'0':'')+s;
+    if(fill)fill.style.strokeDashoffset=STRETCH_CIRC*(1-rem/secs);
+    if(rem===3)playWarningBeep();
+    if(rem<=0){clearInterval(stretchTimer);playDoneBeep();haptic('success');setTimeout(nextStretch,800);}
+    rem--;
+  };
+  tick();stretchTimer=setInterval(tick,1000);
+}
+function nextStretch(){
+  stretchStep++;
+  if(stretchStep>=STRETCH_ROUTINE.length){
+    clearInterval(stretchTimer);
+    document.getElementById('stretchOverlay').style.display='none';
+    celebrate();toast('🧘 Recovery routine complete! Your sciatica thanks you 🦵');
+    return;
+  }
+  renderStretchStep();haptic('light');
+}
+function skipStretch(){clearInterval(stretchTimer);nextStretch();}
+function closeStretch(){clearInterval(stretchTimer);document.getElementById('stretchOverlay').style.display='none';}
+
+// ══════════════════════════════════════════════════════════════
+// MEAL PHOTO → MACRO ESTIMATION
+// ══════════════════════════════════════════════════════════════
+async function analyzeMealPhoto(file){
+  const targets=ls('nutTargets')||{cal:2000,prot:170};
+  const bw=ls('bodyweight')||[];
+  const weight=bw[0]?.weight||205;
+
+  // Show loading state
+  const btn=document.getElementById('mealPhotoBtn');
+  if(btn){btn.textContent='⏳ Analyzing...';btn.disabled=true;}
+
+  try{
+    const reader=new FileReader();
+    const base64=await new Promise(res=>{reader.onload=e=>res(e.target.result.split(',')[1]);reader.readAsDataURL(file);});
+    const mediaType=file.type||'image/jpeg';
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:400,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+          {type:'text',text:`Analyze this meal photo. The person weighs ${weight} lbs and has a daily protein target of ${targets.prot}g and calorie target of ${targets.cal} kcal.
+
+Estimate the nutritional content. Respond ONLY in this JSON format:
+{"name":"meal name","calories":number,"protein":number,"carbs":number,"fat":number,"confidence":"Low/Medium/High","notes":"brief observation"}`}
+        ]}]
+      })
+    });
+
+    const data=await resp.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'{}';
+    const meal=JSON.parse(text.replace(/```json|```/g,'').trim());
+
+    // Pre-fill the meal form
+    const nameEl=document.getElementById('mealName');
+    const calEl=document.getElementById('mealCal');
+    const protEl=document.getElementById('mealProt');
+    const carbEl=document.getElementById('mealCarbs');
+    if(nameEl)nameEl.value=meal.name||'Meal from photo';
+    if(calEl)calEl.value=meal.calories||'';
+    if(protEl)protEl.value=meal.protein||'';
+    if(carbEl)carbEl.value=meal.carbs||'';
+
+    toast(`📸 ${meal.name||'Meal'} estimated — ${meal.calories||'?'} cal · ${meal.protein||'?'}g protein (${meal.confidence} confidence)`);
+    haptic('success');
+  }catch(e){
+    toast('Photo analysis failed — fill in manually','err');
+  }finally{
+    if(btn){btn.textContent='📸 Photo';btn.disabled=false;}
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// POST-WORKOUT CELEBRATION UPGRADE
+// ══════════════════════════════════════════════════════════════
+function showPostWorkout(){
+  const now=Date.now();
+  const start=sessionStart||now;
+  const all=getAllSessions().filter(s=>s.timestamp&&s.timestamp>start-1000);
+  const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
+  const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
+  const mins=sessionStart?Math.max(0,Math.round((now-start)/60000)):0;
+
+  // Find PRs — check if any 1RM is a new all-time best
+  const newPRs=[];
+  all.forEach(s=>{
+    if(!s.estimatedORM)return;
+    const hist=ls('w:'+s.exId)||[];
+    const prevBest=hist.slice(1).reduce((best,sess)=>{
+      const m=sess.estimatedORM||0;return m>best?m:best;
+    },0);
+    if(s.estimatedORM>prevBest&&prevBest>0)newPRs.push({name:s.exName,orm:s.estimatedORM,prev:prevBest});
+  });
+
+  // Calculate recomp score for context
+  const recomp=calcRecompScore();
+
+  document.getElementById('pwsSub').textContent=`${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}${mins>0?' · '+mins+' min':''}`;
+
+  document.getElementById('pwsStats').innerHTML=`
+    <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
+    <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
+    <div class="pws-stat"><div class="pws-stat-val">${Math.round(totalVol/1000*10)/10||0}k</div><div class="pws-stat-label">lbs Moved</div></div>
+    <div class="pws-stat" style="background:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.1);border-color:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.3)">
+      <div class="pws-stat-val" style="color:${recomp.total>=75?'var(--green)':recomp.total>=55?'var(--accent)':'var(--accent2)'}">${recomp.total}</div>
+      <div class="pws-stat-label">Recomp Score</div>
+    </div>`;
+
+  // PR callouts
+  const prEl=document.getElementById('pwsPRs');
+  if(newPRs.length){
+    prEl.style.display='block';
+    prEl.innerHTML=newPRs.map(pr=>`<div style="display:flex;align-items:center;gap:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+      <span style="font-size:20px">🏆</span>
+      <div><div style="font-size:13px;font-weight:700">New PR — ${pr.name}!</div>
+      <div style="font-size:11px;color:var(--muted)">${pr.prev} → <b style="color:var(--accent)">${pr.orm} lbs</b> est. 1RM</div></div>
+    </div>`).join('');
+    haptic('pr');
+  } else {prEl.style.display='none';}
+
+  document.getElementById('pwsOverlay').classList.add('show');
+  celebrate();
+
+  // Animate stats counting up
+  animateStats();
+}
+
+function animateStats(){
+  document.querySelectorAll('.pws-stat-val').forEach(el=>{
+    const target=parseFloat(el.textContent);
+    if(isNaN(target)||target===0)return;
+    let current=0;const inc=target/30;
+    const timer=setInterval(()=>{
+      current=Math.min(current+inc,target);
+      el.textContent=target%1===0?Math.round(current):current.toFixed(1);
+      if(current>=target)clearInterval(timer);
+    },30);
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
