@@ -1521,25 +1521,35 @@ function getProgramWeek(){return Math.ceil(getProgramDay()/7);}
 // Reload today's already-logged sets into the workout UI after restore
 function reloadTodaySets(){
   const today=new Date().toDateString();
-  // First find which day has today's sessions and select that tab
+
+  // First clear ALL rest timer panels — they shouldn't show on load
+  Object.keys(RT).forEach(id=>{
+    clearInterval(RT[id]);
+    const p=document.getElementById('rt-'+id);
+    if(p)p.classList.remove('show');
+  });
+
+  // Find which day has today's sessions and select that tab
   let todayDayId=null;
   DAY_ORDER.forEach(dayId=>{
     (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
       const sessions=ls('w:'+ex.id)||[];
-      const todaySess=sessions.find(s=>{
+      const found=sessions.find(s=>{
         if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;
         if(s.date){try{return new Date(s.date).toDateString()===today;}catch(e){}}
         return false;
       });
-      if(todaySess&&!todayDayId)todayDayId=dayId;
+      if(found&&!todayDayId)todayDayId=dayId;
     });
   });
+
   // Select today's day tab if found
   if(todayDayId){
     const tabs=document.querySelectorAll('.day-tab');
-    tabs.forEach(t=>{if(t.dataset.day===todayDayId){t.click();}});
+    tabs.forEach(t=>{if(t.dataset.day===todayDayId)t.click();});
   }
-  // Now fill in the set data
+
+  // Fill in today's set data for each exercise
   DAY_ORDER.forEach(dayId=>{
     (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
       const sessions=ls('w:'+ex.id)||[];
@@ -1556,11 +1566,34 @@ function reloadTodaySets(){
         addRow(ex.id);
         const rows=container.querySelectorAll('.set-row');
         const row=rows[rows.length-1];if(!row)return;
-        const wInp=row.querySelector('[data-f="w"]');if(wInp&&st.weight)wInp.value=st.weight;
-        const rInp=row.querySelector('[data-f="r"]');if(rInp&&st.reps)rInp.value=st.reps;
-        const rirInp=row.querySelector('[data-f="rir"]');if(rirInp&&st.rir!=null)rirInp.value=st.rir;
-        if(st.done){const doneBtn=row.querySelector('.set-done-btn');if(doneBtn){doneBtn.classList.add('done');doneBtn.textContent='✓';}}
+        const wInp=row.querySelector('[data-f="w"]');if(wInp&&st.weight&&st.weight!=='BW')wInp.value=st.weight;
+        const rInp=row.querySelector('[data-f="r"]');if(rInp&&st.reps&&st.reps!=='—')rInp.value=st.reps;
+        const rirInp=row.querySelector('[data-f="rir"]');if(rirInp&&st.rir&&st.rir!=='—')rirInp.value=st.rir;
+        // Mark done — check multiple possible truthy values from old/new format
+        const isDone=st.done===true||st.done==='true'||st.done==='✓';
+        if(isDone){
+          const doneBtn=row.querySelector('.set-done-btn');
+          if(doneBtn){doneBtn.classList.add('done');doneBtn.textContent='✓';}
+        }
       });
+      // If all sets are done, show the saved chip on the card
+      const allDone=todaySess.sets.every(st=>st.done===true||st.done==='true'||st.done==='✓');
+      if(allDone){
+        const card=document.getElementById('exc-'+ex.id);
+        if(card){
+          card.style.borderColor='var(--green)';
+          const arrow=card.querySelector('.ex-arrow');
+          if(arrow){arrow.textContent='✓';arrow.style.color='var(--green)';}
+          const chips=card.querySelector('.ex-chips');
+          if(chips&&!chips.querySelector('.done-chip')){
+            const chip=document.createElement('span');
+            chip.className='chip done-chip';
+            chip.style.cssText='background:rgba(0,230,118,0.15);border-color:rgba(0,230,118,0.4);color:var(--green);font-weight:700';
+            chip.textContent='✓ Saved';
+            chips.appendChild(chip);
+          }
+        }
+      }
     });
   });
 }
@@ -1933,21 +1966,24 @@ function playDoneBeep(){
 // ══════════════════════════════════════════════════════════════
 const RT={};
 function startRest(id,secs){
+  // Don't run rest timer if no session is in progress
+  if(!sessionStart){return;}
   clearInterval(RT[id]);
   const panel=document.getElementById('rt-'+id),count=document.getElementById('rtc-'+id);
+  if(!panel||!count)return;
   panel.classList.add('show');
   let rem=secs;let warned=false;
   const tick=()=>{
     const m=Math.floor(rem/60),s=rem%60;
     count.textContent=m+':'+(s<10?'0':'')+s;
-    count.classList.toggle('urgent',rem<=5);
-    if(rem===3&&!warned){warned=true;playWarningBeep();}
+    count.classList.toggle('urgent',rem<=10);
+    if(rem<=15&&!warned){warned=true;playWarningBeep();}
     if(rem<=0){clearInterval(RT[id]);panel.classList.remove('show');playDoneBeep();haptic('restOver');toast('⏱ Rest done — next set!','warn');}
     rem--;
   };
   tick();RT[id]=setInterval(tick,1000);
 }
-function skipRest(id){clearInterval(RT[id]);document.getElementById('rt-'+id).classList.remove('show');playDoneBeep();toast('Skipped — let\'s go! 💥');}
+function skipRest(id){clearInterval(RT[id]);const p=document.getElementById('rt-'+id);if(p)p.classList.remove('show');playDoneBeep();toast('Skipped — let\'s go! 💥');}
 
 // ══════════════════════════════════════════════════════════════
 // 1RM
