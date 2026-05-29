@@ -500,6 +500,9 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
 
+  <!-- MEDICATION DUE INDICATOR -->
+  <div id="medDueIndicator" style="display:none"></div>
+
   <!-- RECOMP SCORE — collapsible -->
   <div id="recompScoreCardWrap" class="home-collapse-card" style="margin:0 16px 10px">
     <div onclick="toggleHomeCard('recompScoreCardWrap')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:14px 16px;background:var(--card);border:1px solid rgba(255,193,7,0.2);border-radius:16px 16px 0 0" id="recompScoreCardHeader">
@@ -1441,6 +1444,18 @@ body.font-lg .chip{font-size:13px}
       <button onclick="setHaptic(true)" id="hapticOnBtn" class="btn btn-outline" style="flex:1">✅ On</button>
       <button onclick="setHaptic(false)" id="hapticOffBtn" class="btn btn-outline" style="flex:1">Off</button>
     </div>
+    <div class="divider"></div>
+    <div class="label">💊 Medication Reminders</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+      <div><div style="font-size:13px;font-weight:700">Daily Medication Reminders</div><div style="font-size:11px;color:var(--muted)" id="medToggleDesc">Set times below</div></div>
+      <div onclick="toggleMedReminders()" id="medToggleBtn" style="width:44px;height:24px;border-radius:12px;background:var(--border);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0"><div id="medToggleThumb" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div></div>
+    </div>
+    <div id="medSettingsBody" style="display:none">
+      <input type="text" id="medName" placeholder="Medication name (optional)" style="margin-bottom:10px;font-size:13px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Reminder Times (up to 4)</div>
+      <div id="medTimesList" style="margin-bottom:8px"></div>
+      <button onclick="addMedTime()" style="width:100%;padding:9px;background:rgba(167,139,250,0.1);border:1px dashed rgba(167,139,250,0.4);border-radius:10px;color:var(--accent3);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">+ Add Reminder Time</button>
+    </div>
     <div class="label">Program Start Date</div>
     <input type="text" id="startDateInput" placeholder="YYYY-MM-DD" style="margin-bottom:8px">
     <button onclick="resetStartDate()" class="btn btn-outline" style="width:100%;margin-bottom:14px">Update Start Date</button>
@@ -1939,6 +1954,7 @@ function refreshHome(){
   setupPWABadge();
   renderRecompScore();
   renderPushupTracker();
+  renderMedDueIndicator();
   scheduleNotifications();
 }
 function calcStreak(logs){if(!logs.length)return 0;let s=0,d=new Date();for(let i=0;i<90;i++){if(logs.includes(d.toDateString()))s++;else if(i>0)break;d.setDate(d.getDate()-1);}return s;}
@@ -3027,6 +3043,8 @@ function openSettings(){
   const tier=getEquipmentTier();
   const el=document.getElementById('settingsEquipLabel');
   if(el)el.textContent=EQUIPMENT_TIERS[tier]?.label||'🏋️ Home Gym';
+  // Load medication state
+  renderMedToggle();
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
 }
 function closeSettings(e){
@@ -4497,8 +4515,180 @@ function toggleSpotifyExpand(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// PUSHUP DAILY TRACKER
+// MEDICATION REMINDERS
 // ══════════════════════════════════════════════════════════════
+function getMedSettings(){return ls('medSettings')||{enabled:false,name:'',times:[]};}
+function medTodayKey(){return'med:'+new Date().toISOString().split('T')[0];}
+
+function toggleMedReminders(){
+  const s=getMedSettings();
+  s.enabled=!s.enabled;
+  ls('medSettings',s);
+  renderMedToggle();
+  if(s.enabled){
+    requestNotifPermission();
+    toast('💊 Medication reminders on');
+  } else {
+    toast('Medication reminders off');
+  }
+}
+
+function renderMedToggle(){
+  const s=getMedSettings();
+  const btn=document.getElementById('medToggleBtn');
+  const thumb=document.getElementById('medToggleThumb');
+  const body=document.getElementById('medSettingsBody');
+  const desc=document.getElementById('medToggleDesc');
+  if(btn){btn.style.background=s.enabled?'var(--accent3)':'var(--border)';}
+  if(thumb){thumb.style.left=s.enabled?'22px':'2px';}
+  if(body){body.style.display=s.enabled?'block':'none';}
+  if(desc){desc.textContent=s.enabled?(s.times.length?s.times.length+' reminder'+( s.times.length>1?'s':'')+' set':'Tap to add times'):'Tap to enable';}
+  if(s.enabled){
+    const nameEl=document.getElementById('medName');
+    if(nameEl)nameEl.value=s.name||'';
+    renderMedTimes();
+    renderMedTodayLog();
+  }
+}
+
+function renderMedTimes(){
+  const s=getMedSettings();
+  const list=document.getElementById('medTimesList');
+  if(!list)return;
+  if(!s.times.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">No times set yet — tap Add below</div>';
+    return;
+  }
+  list.innerHTML=s.times.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+      <span style="font-size:16px">⏰</span>
+      <input type="time" value="${t}" onchange="updateMedTime(${i},this.value)" style="flex:1;font-size:14px;font-weight:700;color:var(--accent3);background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif">
+      <button onclick="removeMedTime(${i})" style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.2);border-radius:6px;color:var(--red);font-size:12px;cursor:pointer;padding:4px 8px;font-family:'DM Sans',sans-serif">✕</button>
+    </div>`).join('');
+}
+
+function addMedTime(){
+  const s=getMedSettings();
+  if(s.times.length>=4){toast('Maximum 4 reminder times','warn');return;}
+  // Default to a sensible next time
+  const defaults=['08:00','13:00','18:00','21:00'];
+  const next=defaults.find(t=>!s.times.includes(t))||'09:00';
+  s.times.push(next);
+  s.times.sort();
+  ls('medSettings',s);
+  renderMedTimes();
+}
+
+function removeMedTime(idx){
+  const s=getMedSettings();
+  s.times.splice(idx,1);
+  ls('medSettings',s);
+  renderMedTimes();
+  renderMedToggle();
+}
+
+function updateMedTime(idx,val){
+  const s=getMedSettings();
+  s.times[idx]=val;
+  s.times.sort();
+  ls('medSettings',s);
+}
+
+function saveMedSettings(){
+  const s=getMedSettings();
+  const nameEl=document.getElementById('medName');
+  if(nameEl)s.name=nameEl.value.trim();
+  ls('medSettings',s);
+  renderMedToggle();
+  toast(`💊 ${s.name||'Medication'} reminders saved!`);
+  haptic('success');
+}
+
+function renderMedTodayLog(){
+  const log=ls(medTodayKey())||[];
+  const el=document.getElementById('medTodayLog');
+  if(!el)return;
+  const s=getMedSettings();
+  if(!log.length&&!s.times.length){el.textContent='No doses logged yet today';return;}
+  if(!s.times.length){el.textContent='Add reminder times above';return;}
+  el.innerHTML=s.times.map(t=>{
+    const entry=log.find(l=>l.time===t);
+    const status=entry?.taken?'✅ Taken':'❌ Missed/Pending';
+    const color=entry?.taken?'var(--green)':new Date().toTimeString().slice(0,5)>t?'var(--red)':'var(--muted)';
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;font-weight:700">${t}</span>
+      <span style="font-size:12px;color:${color}">${status}</span>
+      ${!entry?.taken?`<button onclick="logMedDose('${t}',true)" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);border-radius:6px;color:var(--green);font-size:11px;padding:4px 8px;cursor:pointer;font-family:'DM Sans',sans-serif">Mark Taken</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function logMedDose(time,taken){
+  const log=ls(medTodayKey())||[];
+  const existing=log.findIndex(l=>l.time===time);
+  const entry={time,taken,loggedAt:new Date().toISOString()};
+  if(existing>=0)log[existing]=entry;else log.push(entry);
+  ls(medTodayKey(),log);
+  renderMedTodayLog();
+  if(taken){toast('💊 Dose logged — well done!');haptic('success');}
+}
+
+// Notification for medication
+function fireMedNotification(medName,time){
+  if(Notification.permission!=='granted')return;
+  const n=new Notification(`💊 ${medName||'Medication'} reminder`,{
+    body:`Time to take your ${medName||'medication'} (${time}). Stay consistent!`,
+    icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💊</text></svg>',
+    tag:'med-'+time,
+    requireInteraction:true
+  });
+  // Clicking notification opens app and marks as prompted
+  n.onclick=()=>{
+    window.focus();
+    openSettings();
+    renderMedTodayLog();
+  };
+  // Auto-snooze after 5 min if not dismissed
+  setTimeout(()=>{
+    const log=ls(medTodayKey())||[];
+    const taken=log.find(l=>l.time===time&&l.taken);
+    if(!taken){
+      // Show snooze notification
+      new Notification(`💊 Reminder: ${medName||'Medication'} not logged`,{
+        body:'Did you take it? Tap to log in the app.',
+        tag:'med-snooze-'+time
+      });
+    }
+  },5*60*1000);
+}
+
+// Check medication times every minute
+function checkMedReminders(){
+  const s=getMedSettings();
+  if(!s.enabled||!s.times.length)return;
+  if(Notification.permission!=='granted')return;
+  const now=new Date();
+  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  if(s.times.includes(hhmm)){
+    const log=ls(medTodayKey())||[];
+    const alreadyFired=log.find(l=>l.time===hhmm);
+    if(!alreadyFired){
+      fireMedNotification(s.name,hhmm);
+      // Mark as prompted (not taken yet)
+      log.push({time:hhmm,taken:false,prompted:true,loggedAt:new Date().toISOString()});
+      ls(medTodayKey(),log);
+    }
+  }
+}
+
+// Add to the per-minute check interval
+setInterval(checkMedReminders,60000);
+
+function requestNotifPermission(){
+  if('Notification' in window&&Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
 const PUSHUP_BASE_GOAL=5; // minimum goal if no history
 const PUSHUP_NOTIF_TIMES=['09:00','18:00'];
 
@@ -4659,6 +4849,35 @@ function schedulePushupNotifs(){
 
 // Check every minute for notification time
 setInterval(schedulePushupNotifs, 60000);
+function renderMedDueIndicator(){
+  const s=getMedSettings();
+  const el=document.getElementById('medDueIndicator');
+  if(!el)return;
+  if(!s.enabled||!s.times.length){el.style.display='none';return;}
+  const now=new Date();
+  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const log=ls(medTodayKey())||[];
+  const overdue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t<hhmm);
+  const nextDue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t>=hhmm);
+  const allDone=s.times.every(t=>log.find(l=>l.time===t&&l.taken));
+  if(overdue){
+    el.style.display='block';
+    el.innerHTML=`<div style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">💊</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--red)">Missed dose — ${overdue}</div><div style="font-size:11px;color:var(--muted)">${s.name||'Medication'}</div></div>
+      <button onclick="logMedDose('${overdue}',true);renderMedDueIndicator()" style="background:var(--green);border:none;border-radius:8px;color:#000;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Taken</button>
+    </div>`;
+  } else if(allDone){
+    el.style.display='block';
+    el.innerHTML=`<div style="background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">✅</span><div style="font-size:13px;font-weight:700;color:var(--green)">All ${s.name||'medication'} doses taken today</div></div>`;
+  } else if(nextDue){
+    el.style.display='block';
+    el.innerHTML=`<div style="background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">💊</span><div style="font-size:13px;font-weight:700;color:var(--accent3)">Next ${s.name||'medication'} dose at ${nextDue}</div></div>`;
+  } else {
+    el.style.display='none';
+  }
+}
+
 function calcRecompScore(){
   const today=new Date();
   const weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
