@@ -4424,7 +4424,7 @@ function showPostWorkout(){
   document.getElementById('pwsStats').innerHTML=`
     <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
     <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${totalVol>0?(Math.round(totalVol/100)/10)+'k':'0'}</div><div class="pws-stat-label">lbs Moved</div></div>
+    <div class="pws-stat"><div class="pws-stat-val">${totalVol>0?totalVol>=1000?(Math.round(totalVol/100)/10)+'k':Math.round(totalVol).toLocaleString():'0'}</div><div class="pws-stat-label">lbs Moved</div></div>
     <div class="pws-stat" style="background:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.1);border-color:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.3)">
       <div class="pws-stat-val" style="color:${recomp.total>=75?'var(--green)':recomp.total>=55?'var(--accent)':'var(--accent2)'}">${recomp.total}</div>
       <div class="pws-stat-label">Recomp Score</div>
