@@ -68,7 +68,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .top-bar-actions{display:flex;gap:8px}
 
 /* ── BOTTOM NAV ── */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);align-items:flex-start;padding-top:6px;z-index:100}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:flex-start;padding-top:6px;z-index:100}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:8px;font-weight:700;cursor:pointer;padding:0;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;position:relative}
 .nav-btn .ni{font-size:19px;line-height:1.2}
 .nav-btn.active{color:var(--accent)}
@@ -142,9 +142,9 @@ textarea{resize:none}
 .tw-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
 .tw-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 
-.sciatica-banner{margin:0 16px 10px;background:linear-gradient(135deg,rgba(240,98,146,0.1),rgba(167,139,250,0.07));border:1px solid rgba(240,98,146,0.25);border-radius:14px;padding:14px 16px}
-.sci-title{font-size:12px;font-weight:700;color:var(--pink);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.sci-item{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;gap:7px;line-height:1.5}
+
+
+
 
 .rir-guide{margin:0 16px 10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
 .rir-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
@@ -170,9 +170,9 @@ textarea{resize:none}
 
 .warmup-strip{background:linear-gradient(135deg,rgba(255,193,7,0.08),rgba(255,107,53,0.04));border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:10px 14px;margin:0 16px 10px;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start}
 .warmup-strip .wi{color:var(--accent);font-size:15px;flex-shrink:0;margin-top:1px}
-.sci-warn{background:rgba(240,98,146,0.06);border:1px solid rgba(240,98,146,0.2);border-radius:10px;padding:10px 14px;margin:0 16px 10px;display:flex;gap:10px}
-.sci-warn p{font-size:11px;color:var(--muted);line-height:1.6}
-.sci-warn strong{color:var(--pink);font-size:12px;display:block;margin-bottom:2px}
+
+
+
 
 /* EXERCISE CARD */
 .ex-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;margin:0 16px 10px;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s}
@@ -191,7 +191,7 @@ textarea{resize:none}
 .ex-card.open .ex-body{display:block}
 @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .done-chip{background:rgba(0,230,118,0.15);border-color:rgba(0,230,118,0.4)!important;color:var(--green)!important;font-weight:700!important}
-.sci-note{background:rgba(240,98,146,0.07);border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:8px 12px;font-size:11px;color:var(--pink);margin-bottom:10px;line-height:1.5}
+
 .video-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;margin-bottom:12px;transition:all 0.2s}
 .video-btn:hover{background:rgba(41,182,246,0.2)}
 
@@ -420,6 +420,14 @@ body.font-lg .chip{font-size:13px}
 .wave-bar:nth-child(4){height:16px;animation-delay:0.45s}
 .wave-bar:nth-child(5){height:8px;animation-delay:0.6s}
 @keyframes wavePulse{0%,100%{transform:scaleY(0.4);opacity:0.5}50%{transform:scaleY(1);opacity:1}}
+/* ── COLLAPSIBLE HOME CARDS ── */
+.card-body{overflow:hidden;transition:max-height 0.35s ease}
+.card-collapsed .card-body{max-height:0!important}
+.collapse-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 4px;line-height:1;transition:transform 0.3s}
+.card-collapsed .collapse-btn{transform:rotate(-90deg)}
+/* ── STICKY SAVE BUTTON ── */
+.sticky-save{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);z-index:10;padding:0 14px 6px;pointer-events:none}
+.sticky-save button{pointer-events:all;width:100%;box-shadow:0 4px 24px rgba(0,230,118,0.35)}
 /* ── SESSION LENGTH PILLS ── */
 .session-pill{flex-shrink:0;padding:6px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
 .session-pill.active{background:rgba(255,193,7,0.12);border-color:var(--accent);color:var(--accent)}
@@ -469,7 +477,7 @@ body.font-lg .chip{font-size:13px}
       </div>
     </div>
     <div class="home-greeting" style="text-align:center;margin-bottom:4px">Good day 👋</div>
-    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:6px">Burn fat · Build muscle · Beat sciatica</div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:6px">Burn fat · Build muscle · Get stronger</div>
     <div class="phase-pill" id="homePhasePill" style="margin:0 auto">⚡ Week 1 · Foundation</div>
   </div>
   <div class="streak-card">
@@ -492,8 +500,16 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
 
-  <!-- RECOMP SCORE -->
-  <div id="recompScoreCard" style="margin:0 16px 10px;background:var(--card);border:1px solid rgba(255,193,7,0.2);border-radius:16px;padding:14px 16px"></div>
+  <!-- RECOMP SCORE — collapsible -->
+  <div id="recompScoreCardWrap" class="home-collapse-card" style="margin:0 16px 10px">
+    <div onclick="toggleHomeCard('recompScoreCardWrap')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:14px 16px;background:var(--card);border:1px solid rgba(255,193,7,0.2);border-radius:16px 16px 0 0" id="recompScoreCardHeader">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent)">⚡ Weekly Recomp Score</div>
+      <span class="collapse-btn" id="recompCollapseBtn">▼</span>
+    </div>
+    <div class="card-body" id="recompScoreCardBody" style="background:var(--card);border:1px solid rgba(255,193,7,0.2);border-top:none;border-radius:0 0 16px 16px;overflow:hidden;max-height:300px">
+      <div id="recompScoreCard" style="padding:0 16px 14px"></div>
+    </div>
+  </div>
   <div class="today-workout" id="todayWorkout" style="margin:10px 16px">
     <div class="tw-label">Today's Session</div>
     <div class="tw-title" id="twTitle"></div>
@@ -532,13 +548,55 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
 
-  <div class="sciatica-banner">
-    <div class="sci-title">🦵 Daily Sciatica Protocol</div>
-    <div class="sci-item"><span>🧘</span>Piriformis stretch: cross left ankle over right knee, lean forward 30s × 3</div>
-    <div class="sci-item"><span>🐈</span>Cat-cow: 10 slow reps every morning</div>
-    <div class="sci-item"><span>💪</span>Glute bridges in every warm-up — relieves nerve pressure</div>
-    <div class="sci-item"><span>❄️</span>Ice left glute 15 min after any flare-up</div>
-    <div class="sci-item"><span>🚫</span>Stop any exercise that increases left leg pain</div>
+  <!-- PUSHUP DAILY TRACKER — collapsible -->
+  <div class="home-collapse-card" style="margin:10px 16px" id="pushupCardWrap">
+    <div onclick="toggleHomeCard('pushupCardWrap')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:10px 16px;background:var(--card);border:1px solid rgba(41,182,246,0.3);border-radius:16px 16px 0 0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--blue)">💪 Daily Push-Ups</div>
+        <div id="pushupHeaderCount" style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--blue)">0</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
+        <button onclick="pushupNotifSetup()" id="pushupNotifBtn" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">🔔</button>
+        <span class="collapse-btn" id="pushupCollapseBtn">▼</span>
+      </div>
+    </div>
+    <div class="card-body" id="pushupCardBody" style="background:var(--card);border:1px solid rgba(41,182,246,0.3);border-top:none;border-radius:0 0 16px 16px;overflow:hidden;max-height:400px;padding:0 16px 14px">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+      <div style="text-align:center">
+        <div id="pushupTodayCount" style="font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--blue);line-height:1">0</div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Today</div>
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+          <span id="pushupDynamicGoal">Goal: 20</span>
+          <span id="pushupGoalLabel">0 / 20</span>
+        </div>
+        <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px">
+          <div id="pushupProgressBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width 0.5s;width:0%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted)" id="pushupStreak">🔥 0 day streak</div>
+      </div>
+    </div>
+    <!-- Quick add buttons -->
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button onclick="addPushups(5)" style="flex:1;padding:8px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:10px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+5</button>
+      <button onclick="addPushups(10)" style="flex:1;padding:8px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:10px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+10</button>
+      <button onclick="addPushups(15)" style="flex:1;padding:8px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:10px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+15</button>
+      <button onclick="addPushups(20)" style="flex:1;padding:8px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:10px;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">+20</button>
+    </div>
+    <!-- Custom input -->
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="number" id="pushupCustomInput" placeholder="Custom count..." min="1" max="500" style="flex:1;font-size:14px">
+      <button onclick="addPushupsCustom()" style="padding:10px 16px;background:var(--blue);border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Add</button>
+      <button onclick="resetTodayPushups()" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">Reset</button>
+    </div>
+    <!-- Weekly chart -->
+    <div style="display:flex;gap:3px;align-items:flex-end;height:40px;margin-bottom:4px" id="pushupWeekChart"></div>
+    <div style="display:flex;gap:3px" id="pushupWeekLabels"></div>
+  </div>
+  </div>
+
+  
   </div>
 </div>
 
@@ -681,15 +739,24 @@ body.font-lg .chip{font-size:13px}
     <div class="top-bar-title">WORKOUT <span id="sessionTimerDisplay" style="font-size:14px;color:var(--accent);font-family:'DM Sans',sans-serif;font-weight:600"></span></div>
     <div class="top-bar-actions">
       <div class="icon-btn" onclick="toggleSpotifyWidget()" title="Music" style="font-size:16px;color:#1db954;border-color:rgba(30,215,96,0.3)">🎵</div>
-      <div class="icon-btn" onclick="openPRBoard()" title="Personal Records">🏆</div>
-      <div class="icon-btn" onclick="openAICoach('workout')" title="AI Coach">🤖</div>
-      <div class="icon-btn" onclick="openSessionNote()" title="Session note">📝</div>
-      <div class="icon-btn" onclick="showPostWorkout()" title="End workout">✅</div>
+      <div class="icon-btn" onclick="showPostWorkout()" title="Complete workout" style="color:var(--green)">✅</div>
+      <div class="icon-btn" onclick="showWorkoutMenu()" title="More options">⋯</div>
     </div>
+  </div>
+  <!-- Workout overflow menu -->
+  <div id="workoutMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;z-index:200;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden">
+    <button onclick="openPRBoard();hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">🏆 Personal Records</button>
+    <button onclick="openAICoach('workout');hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">🤖 AI Coach</button>
+    <button onclick="openSessionNote();hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">📝 Session Note</button>
   </div>
   <div class="phase-bar" id="wPhasebar"></div>
   <!-- Session length selector -->
   <div id="sessionSetupBanner" style="background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px">
+    <!-- Equipment tier -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div id="equipmentBadge" style="font-size:11px;font-weight:700;background:rgba(41,182,246,0.15);color:var(--blue);border:1px solid rgba(41,182,246,0.3);border-radius:20px;padding:4px 12px;cursor:pointer" onclick="openEquipmentSheet()">🏋️ Home Gym</div>
+      <div style="font-size:10px;color:var(--muted)">tap to change</div>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">⏱ How long today?</div>
       <div id="sessionLengthLabel" style="font-size:11px;color:var(--accent);font-weight:700"></div>
@@ -808,6 +875,11 @@ body.font-lg .chip{font-size:13px}
       <div class="icon-btn" onclick="go('fitbit',this)" title="Fitbit Dashboard" style="color:var(--teal);border-color:rgba(29,233,182,0.3)">⌚</div>
     </div>
   </div>
+  <!-- Progress dashboard summary -->
+  <div id="progressDashboard" style="margin:10px 16px;background:linear-gradient(135deg,rgba(255,193,7,0.08),rgba(41,182,246,0.06));border:1px solid rgba(255,193,7,0.2);border-radius:16px;padding:14px 16px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:10px">📊 Your Stats</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="progressDashStats"></div>
+  </div>
   <div class="bw-hero">
     <div class="stat-row">
       <div class="stat-box"><div class="stat-val" id="bwStart">—</div><div class="stat-label">Start lbs</div></div>
@@ -921,26 +993,24 @@ body.font-lg .chip{font-size:13px}
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
         <b style="color:var(--push)">Mon</b> — Upper Push · Chest / Shoulders / Triceps<br>
         <b style="color:var(--lower)">Tue</b> — Lower Body + Core (back-safe)<br>
-        <b style="color:var(--recovery)">Wed</b> — Walk 20–30 min + piriformis stretch<br>
-        <b style="color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
+        <b style="color:var(--recovery)">Wed</b> — Walk 20–30 min + hip stretch"color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
         <b style="color:var(--lower)">Fri</b> — Lower Body + Glutes<br>
         <b style="color:var(--recovery)">Sat</b> — Walk + foam roll<br>
         <b style="color:var(--muted)">Sun</b> — Full Rest
       </div>
     </div>
-    <div class="label">Sciatica Protocol</div>
+    
     <div class="card" style="margin-bottom:14px;border-color:rgba(240,98,146,0.3)">
       <div style="font-size:12px;color:var(--muted);line-height:2">
-        🧘 <b style="color:var(--text)">Piriformis stretch</b> — daily, 30s × 3 each side<br>
-        🐈 <b style="color:var(--text)">Cat-cow</b> — every morning, 10 reps<br>
+        🧘 <b style="color:var(--text)">hip stretch"color:var(--text)">Cat-cow</b> — every morning, 10 reps<br>
         💪 <b style="color:var(--text)">Glute bridges</b> — every warm-up, relieves nerve pressure<br>
         ❄️ <b style="color:var(--text)">Ice after flare</b> — 15 min left glute/SI joint<br>
         🚫 <b style="color:var(--text)">Avoid</b> — deep lunges, heavy deadlifts, 60+ min sitting
       </div>
     </div>
     <div class="label">Progression Plan</div>
-    <div class="plan-phase active-phase" id="pp1"><h4>✅ Weeks 1–2 · Foundation (15–20 min)</h4><p>2 sets per exercise · Light weight · Perfect form · Build the habit without stressing sciatica.</p></div>
-    <div class="plan-phase" id="pp2"><h4>Weeks 3–4 · Build (20–30 min)</h4><p>3 sets · Add 2–3 reps · Reduce rest by 10s · Sciatica should be improving.</p></div>
+    <div class="plan-phase active-phase" id="pp1"><h4>✅ Weeks 1–2 · Foundation (15–20 min)</h4><p>2 sets per exercise · Light weight · Perfect form · Build the habit and perfect your form.</p></div>
+    <div class="plan-phase" id="pp2"><h4>Weeks 3–4 · Build (20–30 min)</h4><p>3 sets · Add 2–3 reps · Reduce rest by 10s · Keep pushing — you're building real strength.</p></div>
     <div class="plan-phase" id="pp3"><h4>Weeks 5–6 · Load (30–35 min)</h4><p>3–4 sets · Add 2.5–5 lbs on main lifts · Full program sessions.</p></div>
     <div class="plan-phase" id="pp4"><h4>Weeks 7–8 · Advance (35–45 min)</h4><p>Resistance bands · Consider 4th training day · Track 1RM progress.</p></div>
     <div class="plan-phase recover"><h4>Every 8 Weeks · Deload</h4><p>2 sets, 50% weight · Full recovery week · Come back stronger.</p></div>
@@ -948,7 +1018,7 @@ body.font-lg .chip{font-size:13px}
     <!-- 12-week program generator -->
     <div class="label">12-Week Program Generator</div>
     <div style="background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(41,182,246,0.06));border:1px solid rgba(167,139,250,0.3);border-radius:14px;padding:16px;margin-bottom:14px">
-      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">Based on your logged PRs, training history, and sciatica progress, Claude will generate a personalized 12-week program for your next phase.</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px">Based on your logged PRs and training history, Claude will generate a personalized 12-week program for your next phase.</div>
       <div id="programGenStatus" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
       <button class="btn btn-accent" style="width:100%" onclick="generate12WeekProgram()" id="genProgramBtn">🤖 Generate My Next Program</button>
     </div>
@@ -967,78 +1037,21 @@ body.font-lg .chip{font-size:13px}
   </div>
 </div>
 
-<!-- ══════════════════════ NUTRITION SCREEN ══════════════════════ -->
-<div id="s-nutrition" class="screen">
-  <div class="top-bar">
-    <div class="top-bar-title">NUTRITION</div>
-  </div>
-  <div style="padding:16px">
-    <!-- Daily targets banner -->
-    <div id="nutritionTargetBanner" style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(255,107,53,0.06));border:1px solid rgba(255,193,7,0.25);border-radius:14px;padding:14px 16px;margin-bottom:14px">
-      <div class="label" style="margin-bottom:8px">Today's Targets</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-        <div style="text-align:center;background:var(--card);border-radius:10px;padding:10px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);line-height:1" id="nutCalTarget">—</div>
-          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-top:2px">Cal Target</div>
-        </div>
-        <div style="text-align:center;background:var(--card);border-radius:10px;padding:10px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);line-height:1" id="nutProtTarget">170g</div>
-          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-top:2px">Protein</div>
-        </div>
-        <div style="text-align:center;background:var(--card);border-radius:10px;padding:10px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--blue);line-height:1" id="nutCalLogged">0</div>
-          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-top:2px">Cal Logged</div>
-        </div>
-      </div>
-      <!-- Progress bars -->
-      <div style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>Calories</span><span id="nutCalPct">0%</span></div>
-        <div style="background:var(--border);border-radius:3px;height:5px;overflow:hidden;margin-bottom:8px"><div id="nutCalBar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 0.4s;width:0%"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>Protein</span><span id="nutProtPct">0%</span></div>
-        <div style="background:var(--border);border-radius:3px;height:5px;overflow:hidden"><div id="nutProtBar" style="height:100%;background:linear-gradient(90deg,var(--green),var(--teal));border-radius:3px;transition:width 0.4s;width:0%"></div></div>
-      </div>
-    </div>
-    <!-- Log meal -->
-    <div class="label">Log a Meal</div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">
-      <input type="text" id="mealName" placeholder="Meal name (e.g. Chicken & rice)" style="margin-bottom:8px">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        <div><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">Calories</div><input type="number" id="mealCal" placeholder="e.g. 450" min="0"></div>
-        <div><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">Protein (g)</div><input type="number" id="mealProt" placeholder="e.g. 42" min="0"></div>
-        <div><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">Carbs (g)</div><input type="number" id="mealCarbs" placeholder="e.g. 55" min="0"></div>
-      </div>
+
+<!-- ══ EQUIPMENT TIER SHEET ══ -->
+<div id="equipmentOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeEquipmentSheet(event)">
+  <div id="equipmentSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
+    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:4px">Choose Equipment</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Workout rebuilds instantly to match your equipment</div>
+    <div id="tierOptionsList"></div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">⚡ This session only — reverts after</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-green" style="flex:1" onclick="logMeal()">+ Log Meal</button>
-        <button id="mealPhotoBtn" onclick="document.getElementById('mealPhotoInput').click()" class="btn btn-outline" style="padding:10px 14px">📸 Photo</button>
-        <button onclick="openAICoach('nutrition')" class="btn btn-outline" style="padding:10px 14px">🤖 AI</button>
+        <button onclick="setSessionEquipmentOverride('bodyweight');closeEquipmentSheet()" style="flex:1;padding:10px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);border-radius:10px;color:var(--green);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏠 BW</button>
+        <button onclick="setSessionEquipmentOverride('home');closeEquipmentSheet()" style="flex:1;padding:10px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:10px;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏋️ Home</button>
+        <button onclick="setSessionEquipmentOverride('gym');closeEquipmentSheet()" style="flex:1;padding:10px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);border-radius:10px;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏟️ Gym</button>
       </div>
-    </div>
-    <!-- Quick add buttons -->
-    <div class="row-between" style="margin-bottom:8px">
-      <div class="label" style="margin:0">Quick Add</div>
-      <button onclick="openCustomFoods()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">✏️ Customize</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="quickFoods"></div>
-    <!-- Today's log -->
-    <div class="row-between" style="margin-bottom:8px">
-      <div class="label" style="margin:0">Today's Log</div>
-      <button class="btn btn-outline" style="font-size:11px;padding:5px 10px" onclick="clearTodayMeals()">Clear</button>
-    </div>
-    <div id="mealLog"></div>
-    <!-- Weekly chart -->
-    <div class="label" style="margin-top:14px">Weekly Protein</div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
-      <div style="display:flex;gap:4px;align-items:flex-end;height:60px" id="proteinWeekChart"></div>
-      <div style="display:flex;gap:4px;margin-top:6px" id="proteinWeekLabels"></div>
-    </div>
-    <!-- Set targets -->
-    <div class="label">Set Daily Targets</div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">Calorie Target</div><input type="number" id="nutCalTargetInput" placeholder="e.g. 2100" min="0"></div>
-        <div><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">Protein Target (g)</div><input type="number" id="nutProtTargetInput" placeholder="e.g. 170" min="0"></div>
-      </div>
-      <button class="btn btn-accent" style="width:100%" onclick="saveNutTargets()">Save Targets</button>
     </div>
   </div>
 </div>
@@ -1175,10 +1188,9 @@ body.font-lg .chip{font-size:13px}
 <nav class="bottom-nav">
   <button class="nav-btn active" onclick="go('home',this)"><span class="ni">🏠</span>Home</button>
   <button class="nav-btn" onclick="go('workout',this)"><span class="ni">💪</span>Workout</button>
-  <button class="nav-btn" onclick="go('nutrition',this)"><span class="ni">🍽️</span>Nutrition</button>
   <button class="nav-btn" onclick="go('progress',this)"><span class="ni">⚖️</span>Progress</button>
   <button class="nav-btn" onclick="go('history',this)"><span class="ni">📋</span>History</button>
-  <button class="nav-btn" onclick="go('plan',this)"><span class="ni">📈</span>Plan</button>
+  <button class="nav-btn" onclick="go('plan',this)"><span class="ni">📅</span>Plan</button>
 </nav>
 
 <!-- POST-WORKOUT SUMMARY -->
@@ -1337,7 +1349,7 @@ body.font-lg .chip{font-size:13px}
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent3);margin-bottom:4px">Session Notes</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px">How did today feel overall?</div>
-    <textarea id="sessionNoteText" rows="4" placeholder="e.g. Felt strong today, sciatica was mild. Bench press felt easier than last week..."></textarea>
+    <textarea id="sessionNoteText" rows="4" placeholder="e.g. Felt strong today. Bench press felt easier than last week..."></textarea>
     <div style="display:flex;gap:8px;margin-top:12px">
       <button class="btn btn-accent" style="flex:1" onclick="saveSessionNote()">Save Note</button>
       <button class="btn btn-outline" style="flex:1" onclick="closeSessionNote()">Cancel</button>
@@ -1412,7 +1424,11 @@ body.font-lg .chip{font-size:13px}
   <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:16px">⚙️ Settings</div>
-    <div class="label">Display</div>
+    <div class="label">Equipment</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;font-weight:700" id="settingsEquipLabel">🏋️ Home Gym</div><div style="font-size:11px;color:var(--muted)">Default workout equipment</div></div>
+      <button onclick="openEquipmentSheet()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif">Change</button>
+    </div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button onclick="setFont('normal')" id="fontNormalBtn" class="btn btn-outline" style="flex:1;font-size:13px">Normal Text</button>
       <button onclick="setFont('lg')" id="fontLgBtn" class="btn btn-outline" style="flex:1;font-size:15px">Large Text</button>
@@ -1442,52 +1458,206 @@ body.font-lg .chip{font-size:13px}
 // ══════════════════════════════════════════════════════════════
 const WORKOUTS={
   day1:{label:'Push',title:'Push Day',sub:'Chest · Shoulders · Triceps',type:'push',
-    warmup:'5 min: arm circles, band pull-aparts, 5 slow push-up negatives',sciWarn:false,
+    warmup:'5 min: arm circles, band pull-aparts, 5 slow push-up negatives',
     exercises:[
-      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',sciNote:null,priority:1},
-      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',sciNote:null,priority:2},
-      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',sciNote:null,priority:3},
-      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',sciNote:null,priority:4},
-      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',sciNote:null,priority:5},
-      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',repTarget:15,rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',sciNote:null,noWeight:true,priority:6},
+      {id:'d1e1',icon:'🏋️',name:'Bench Press',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+bench+press+beginners+form',priority:1},
+      {id:'d1e2',icon:'💪',name:'Dumbbell Shoulder Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=dumbbell+shoulder+press+form+tutorial',priority:2},
+      {id:'d1e3',icon:'📐',name:'Incline Dumbbell Press',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',priority:3},
+      {id:'d1e4',icon:'🦅',name:'Lateral Raises',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=lateral+raise+form+tips',priority:4},
+      {id:'d1e5',icon:'💥',name:'EZ Bar Tricep Extension',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+overhead+tricep+extension+form',priority:5},
+      {id:'d1e6',icon:'🎯',name:'Band Tricep Pushdown',sets:2,reps:'15',repTarget:15,rest:30,url:'https://www.youtube.com/results?search_query=resistance+band+tricep+pushdown+tutorial',noWeight:true,priority:6},
     ]},
   day2:{label:'Lower',title:'Lower + Core',sub:'Quads · Hamstrings · Core',type:'lower',
-    warmup:'5 min: glute bridges x10, leg swings, hip circles, piriformis stretch',
-    sciWarn:'🦵 Sciatica note: Do glute bridges first every session. Skip reverse lunges if left leg tingles — substitute with right leg only.',
+    warmup:'5 min: glute bridges x10, leg swings, hip circles, hip stretch',
     exercises:[
-      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',sciNote:'Keep weight light. Widen stance slightly if left leg tingles.',priority:1},
-      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',sciNote:'Best exercise for sciatica relief. Squeeze glutes 2s at top.',noWeight:true,priority:2},
-      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',sciNote:'Wk 1–2: right leg only. Add left from wk 3 if pain-free.',noWeight:true,priority:3},
-      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',sciNote:'Gentle on sciatica. Keep hips level throughout.',noWeight:true,priority:4},
-      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',sciNote:'Core without spinal loading — ideal for sciatica.',noWeight:true,priority:5},
-      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',sciNote:null,noWeight:true,priority:6},
+      {id:'d2e1',icon:'🏋️',name:'Goblet Squat',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=goblet+squat+form+beginners',priority:1},
+      {id:'d2e2',icon:'🍑',name:'Glute Bridge (Bilateral)',sets:3,reps:'15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+proper+form',noWeight:true,priority:2},
+      {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form+beginners',noWeight:true,priority:3},
+      {id:'d2e4',icon:'⚽',name:'Stability Ball Hamstring Curl',sets:3,reps:'12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=stability+ball+hamstring+curl+tutorial',noWeight:true,priority:4},
+      {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core+lower+back+relief',noWeight:true,priority:5},
+      {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout (Knees)',sets:2,reps:'8',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners+on+knees',noWeight:true,priority:6},
     ]},
-  day3:{label:'Recovery',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,sciWarn:false,exercises:[]},
+  day3:{label:'Recovery',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,exercises:[]},
   day4:{label:'Pull',title:'Upper Pull',sub:'Back · Biceps · Rear Delts',type:'pull',
     warmup:'5 min: band pull-aparts, shoulder rolls, light row x10',
-    sciWarn:'Row at 45° — not parallel. Brace core on every rep. Never round lower back.',
     exercises:[
-      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',sciNote:null,priority:1},
-      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',sciNote:null,priority:2},
-      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',sciNote:null,priority:3},
-      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',sciNote:null,noWeight:true,priority:4},
-      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',sciNote:null,priority:5},
-      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',sciNote:null,priority:6},
+      {id:'d4e1',icon:'🏋️',name:'Bent-Over Row (45°)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bent+over+row+45+degree+form+tutorial',priority:1},
+      {id:'d4e2',icon:'💪',name:'Single-Arm Dumbbell Row',sets:3,reps:'10–12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+arm+dumbbell+row+form',priority:2},
+      {id:'d4e3',icon:'🦾',name:'EZ Bar Bicep Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=EZ+bar+bicep+curl+form+tutorial',priority:3},
+      {id:'d4e4',icon:'🎯',name:'Band Face Pull',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=resistance+band+face+pull+form',noWeight:true,priority:4},
+      {id:'d4e5',icon:'🦾',name:'Incline Dumbbell Curl',sets:2,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=incline+dumbbell+curl+form',priority:5},
+      {id:'d4e6',icon:'🦋',name:'Rear Delt Fly',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=rear+delt+fly+dumbbell+form+tutorial',priority:6},
     ]},
   day5:{label:'Core & Power',title:'Lower Power + Core',sub:'Hamstrings · Abs · Core · Calves',type:'lower',
-    warmup:'5 min: leg swings x10, hip circles, dead bug x5, piriformis stretch 30s each side',
-    sciWarn:'🦵 Romanian deadlifts — hinge at hips, soft knees, neutral spine throughout. Stop if left leg tingles.',
+    warmup:'5 min: leg swings x10, hip circles, dead bug x5, hip stretch',
     exercises:[
-      {id:'d5e1',icon:'🏋️',name:'Romanian Deadlift',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=romanian+deadlift+dumbbell+form+beginners',sciNote:'Hinge at hips, soft knees, neutral spine. Stop if left leg tingles.',priority:1},
-      {id:'d5e2',icon:'🦵',name:'Bulgarian Split Squat',sets:3,reps:'8–10 ea',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bulgarian+split+squat+dumbbell+form',sciNote:'Wk 1–2: bodyweight only. Right leg lead. Add left from wk 3 if pain-free.',noWeight:true,priority:2},
-      {id:'d5e3',icon:'🦵',name:'Standing Calf Raises',sets:3,reps:'15–20',repTarget:18,rest:45,url:'https://www.youtube.com/results?search_query=standing+calf+raise+dumbbell+form',sciNote:null,priority:5},
-      {id:'d5e4',icon:'🎡',name:'Ab Wheel Rollout',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form+beginners',sciNote:'Never let lower back sag. Go only as far as you can control.',noWeight:true,priority:3},
-      {id:'d5e5',icon:'🏋️',name:'Hanging Knee Raises',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=hanging+knee+raise+lower+abs+form',sciNote:'Use a door frame or bar. Control the descent.',noWeight:true,priority:4},
-      {id:'d5e6',icon:'💪',name:'Pallof Press (Band)',sets:3,reps:'12 ea',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=pallof+press+resistance+band+form',sciNote:'Anti-rotation core — extremely safe for sciatica. Anchor band at chest height.',noWeight:true,priority:6},
+      {id:'d5e1',icon:'🏋️',name:'Romanian Deadlift',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=romanian+deadlift+dumbbell+form+beginners',priority:1},
+      {id:'d5e2',icon:'🦵',name:'Bulgarian Split Squat',sets:3,reps:'8–10 ea',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bulgarian+split+squat+dumbbell+form',noWeight:true,priority:2},
+      {id:'d5e3',icon:'🦵',name:'Standing Calf Raises',sets:3,reps:'15–20',repTarget:18,rest:45,url:'https://www.youtube.com/results?search_query=standing+calf+raise+dumbbell+form',priority:5},
+      {id:'d5e4',icon:'🎡',name:'Ab Wheel Rollout',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form+beginners',noWeight:true,priority:3},
+      {id:'d5e5',icon:'🏋️',name:'Hanging Knee Raises',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=hanging+knee+raise+lower+abs+form',noWeight:true,priority:4},
+      {id:'d5e6',icon:'💪',name:'Pallof Press (Band)',sets:3,reps:'12 ea',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=pallof+press+resistance+band+form',noWeight:true,priority:6},
     ]},
 };
 
-// ── Session plan: how many exercises + sets per time slot ──────
+// ══════════════════════════════════════════════════════════════
+// EQUIPMENT TIER SYSTEM
+// Tiers: 'bodyweight' | 'home' (default) | 'gym'
+// ══════════════════════════════════════════════════════════════
+
+const EQUIPMENT_TIERS={
+  bodyweight:{
+    label:'🏠 Bodyweight',
+    desc:'No equipment needed — anywhere, anytime',
+    day1:{label:'Push',title:'Push Day',sub:'Chest · Shoulders · Triceps',type:'push',
+      warmup:'5 min: arm circles, 5 slow push-up negatives, shoulder rolls',
+      exercises:[
+        {id:'d1e1',icon:'💪',name:'Push-Ups',sets:4,reps:'10–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=push+up+form+beginners',noWeight:true,priority:1},
+        {id:'d1e2',icon:'🔺',name:'Pike Push-Ups',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=pike+push+up+form',noWeight:true,priority:2},
+        {id:'d1e3',icon:'💪',name:'Wide Push-Ups',sets:3,reps:'10–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=wide+grip+push+up+form',noWeight:true,priority:3},
+        {id:'d1e4',icon:'💥',name:'Diamond Push-Ups',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=diamond+push+up+triceps+form',noWeight:true,priority:4},
+        {id:'d1e5',icon:'🏔️',name:'Decline Push-Ups',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=decline+push+up+form',noWeight:true,priority:5},
+        {id:'d1e6',icon:'🎯',name:'Plank Shoulder Taps',sets:3,reps:'20 total',repTarget:20,rest:45,url:'https://www.youtube.com/results?search_query=plank+shoulder+tap+form',noWeight:true,priority:6},
+      ]},
+    day2:{label:'Lower',title:'Lower Body',sub:'Quads · Hamstrings · Glutes',type:'lower',
+      warmup:'5 min: glute bridges x10, leg swings, hip circles',
+      exercises:[
+        {id:'d2e1',icon:'🏋️',name:'Bodyweight Squat',sets:4,reps:'15–20',repTarget:18,rest:60,url:'https://www.youtube.com/results?search_query=bodyweight+squat+form',noWeight:true,priority:1},
+        {id:'d2e2',icon:'🍑',name:'Glute Bridge',sets:3,reps:'15–20',repTarget:18,rest:60,url:'https://www.youtube.com/results?search_query=glute+bridge+form',noWeight:true,priority:2},
+        {id:'d2e3',icon:'🚶',name:'Reverse Lunges',sets:3,reps:'10 ea',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=reverse+lunge+form',noWeight:true,priority:3},
+        {id:'d2e4',icon:'🦵',name:'Single-Leg Glute Bridge',sets:3,reps:'12 ea',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=single+leg+glute+bridge+form',noWeight:true,priority:4},
+        {id:'d2e5',icon:'🐛',name:'Dead Bug',sets:3,reps:'8 ea',repTarget:8,rest:45,url:'https://www.youtube.com/results?search_query=dead+bug+exercise+core',noWeight:true,priority:5},
+        {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout',sets:2,reps:'8–10',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+beginners',noWeight:true,priority:6},
+      ]},
+    day3:{label:'Recovery',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,exercises:[]},
+    day4:{label:'Pull',title:'Pull Day',sub:'Back · Biceps · Core',type:'pull',
+      warmup:'5 min: arm circles, doorframe rows x10, band pull-aparts',
+      exercises:[
+        {id:'d4e1',icon:'🚪',name:'Doorframe Rows',sets:4,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=doorframe+row+back+exercise',noWeight:true,priority:1},
+        {id:'d4e2',icon:'💪',name:'Chin-Up Hold (Isometric)',sets:3,reps:'20–30s',repTarget:25,rest:60,url:'https://www.youtube.com/results?search_query=isometric+chin+up+hold',noWeight:true,priority:2},
+        {id:'d4e3',icon:'🦾',name:'Inverted Row (Table)',sets:3,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=inverted+row+under+table+form',noWeight:true,priority:3},
+        {id:'d4e4',icon:'🎯',name:'Superman Hold',sets:3,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=superman+hold+back+exercise',noWeight:true,priority:4},
+        {id:'d4e5',icon:'🐛',name:'Reverse Snow Angels (Floor)',sets:3,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=prone+Y+T+W+exercise+back',noWeight:true,priority:5},
+        {id:'d4e6',icon:'🦋',name:'Rear Delt Band Pull-Apart',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=band+pull+apart+rear+delt',noWeight:true,priority:6},
+      ]},
+    day5:{label:'Core & Power',title:'Core & Power',sub:'Core · Cardio · Full Body',type:'lower',
+      warmup:'5 min: jumping jacks, hip circles, dead bug x5',
+      exercises:[
+        {id:'d5e1',icon:'🎡',name:'Ab Wheel Rollout',sets:4,reps:'8–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form',noWeight:true,priority:1},
+        {id:'d5e2',icon:'🏋️',name:'Jump Squats',sets:3,reps:'10–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=jump+squat+form',noWeight:true,priority:2},
+        {id:'d5e3',icon:'🏋️',name:'Hanging Knee Raises',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=hanging+knee+raise+abs',noWeight:true,priority:3},
+        {id:'d5e4',icon:'💪',name:'Burpees',sets:3,reps:'8–10',repTarget:8,rest:60,url:'https://www.youtube.com/results?search_query=burpee+form+beginners',noWeight:true,priority:4},
+        {id:'d5e5',icon:'🎯',name:'Hollow Body Hold',sets:3,reps:'20–30s',repTarget:25,rest:45,url:'https://www.youtube.com/results?search_query=hollow+body+hold+form',noWeight:true,priority:5},
+        {id:'d5e6',icon:'💪',name:'Mountain Climbers',sets:3,reps:'20 total',repTarget:20,rest:45,url:'https://www.youtube.com/results?search_query=mountain+climbers+form',noWeight:true,priority:6},
+      ]},
+  },
+  home:{}, // populated from WORKOUTS below
+  gym:{
+    label:'🏟️ Full Gym',
+    desc:'Full gym with rack, cables, and machines',
+    day1:{label:'Push',title:'Push Day',sub:'Chest · Shoulders · Triceps',type:'push',
+      warmup:'5 min: band pull-aparts, light cable fly x10, shoulder circles',
+      exercises:[
+        {id:'d1e1',icon:'🏋️',name:'Barbell Bench Press',sets:4,reps:'6–8',repTarget:8,rest:120,url:'https://www.youtube.com/results?search_query=barbell+bench+press+form',priority:1},
+        {id:'d1e2',icon:'💪',name:'Overhead Press (Barbell)',sets:4,reps:'8–10',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=barbell+overhead+press+form',priority:2},
+        {id:'d1e3',icon:'📐',name:'Incline DB Press',sets:3,reps:'10–12',repTarget:12,rest:75,url:'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',priority:3},
+        {id:'d1e4',icon:'🦅',name:'Cable Lateral Raise',sets:3,reps:'12–15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=cable+lateral+raise+form',priority:4},
+        {id:'d1e5',icon:'💥',name:'Cable Tricep Pushdown',sets:3,reps:'12–15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=cable+tricep+pushdown+form',priority:5},
+        {id:'d1e6',icon:'🎯',name:'Cable Fly',sets:3,reps:'12–15',repTarget:15,rest:60,url:'https://www.youtube.com/results?search_query=cable+chest+fly+form',priority:6},
+      ]},
+    day2:{label:'Lower',title:'Lower Body',sub:'Quads · Hamstrings · Glutes',type:'lower',
+      warmup:'5 min: leg press light x15, hip circles, glute bridges x10',
+      exercises:[
+        {id:'d2e1',icon:'🏋️',name:'Barbell Back Squat',sets:4,reps:'6–8',repTarget:8,rest:120,url:'https://www.youtube.com/results?search_query=barbell+back+squat+form',priority:1},
+        {id:'d2e2',icon:'🦵',name:'Leg Press',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=leg+press+form',priority:2},
+        {id:'d2e3',icon:'🦵',name:'Leg Curl (Machine)',sets:3,reps:'12',repTarget:12,rest:75,url:'https://www.youtube.com/results?search_query=leg+curl+machine+form',priority:3},
+        {id:'d2e4',icon:'🚶',name:'Walking Lunges (DB)',sets:3,reps:'10 ea',repTarget:10,rest:75,url:'https://www.youtube.com/results?search_query=walking+lunge+dumbbell+form',priority:4},
+        {id:'d2e5',icon:'🐛',name:'Cable Pull-Through',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=cable+pull+through+glutes+form',priority:5},
+        {id:'d2e6',icon:'🎡',name:'Ab Wheel Rollout',sets:3,reps:'10–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form',noWeight:true,priority:6},
+      ]},
+    day3:{label:'Recovery',title:'Active Recovery',sub:'Walk · Stretch · Restore',type:'recovery',warmup:null,exercises:[]},
+    day4:{label:'Pull',title:'Pull Day',sub:'Back · Biceps · Rear Delts',type:'pull',
+      warmup:'5 min: band pull-aparts, light cable row x10, shoulder rolls',
+      exercises:[
+        {id:'d4e1',icon:'🏋️',name:'Barbell Row',sets:4,reps:'6–8',repTarget:8,rest:120,url:'https://www.youtube.com/results?search_query=barbell+bent+over+row+form',priority:1},
+        {id:'d4e2',icon:'🎯',name:'Lat Pulldown',sets:4,reps:'10–12',repTarget:12,rest:90,url:'https://www.youtube.com/results?search_query=lat+pulldown+form',priority:2},
+        {id:'d4e3',icon:'💪',name:'Cable Row (Seated)',sets:3,reps:'10–12',repTarget:12,rest:75,url:'https://www.youtube.com/results?search_query=seated+cable+row+form',priority:3},
+        {id:'d4e4',icon:'🦾',name:'EZ Bar Preacher Curl',sets:3,reps:'10–12',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=preacher+curl+form',priority:4},
+        {id:'d4e5',icon:'🦋',name:'Face Pull (Cable)',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=cable+face+pull+form',priority:5},
+        {id:'d4e6',icon:'🦾',name:'Hammer Curl (DB)',sets:3,reps:'12',repTarget:12,rest:45,url:'https://www.youtube.com/results?search_query=hammer+curl+dumbbell+form',priority:6},
+      ]},
+    day5:{label:'Core & Power',title:'Core & Power',sub:'Hamstrings · Abs · Core',type:'lower',
+      warmup:'5 min: leg swings, hip circles, dead bug x5',
+      exercises:[
+        {id:'d5e1',icon:'🏋️',name:'Deadlift (Conventional)',sets:4,reps:'5–6',repTarget:6,rest:180,url:'https://www.youtube.com/results?search_query=conventional+deadlift+form',priority:1},
+        {id:'d5e2',icon:'🦵',name:'Bulgarian Split Squat',sets:3,reps:'8–10 ea',repTarget:10,rest:90,url:'https://www.youtube.com/results?search_query=bulgarian+split+squat+form',priority:2},
+        {id:'d5e3',icon:'🏋️',name:'Hanging Leg Raises',sets:3,reps:'12–15',repTarget:12,rest:60,url:'https://www.youtube.com/results?search_query=hanging+leg+raise+abs+form',noWeight:true,priority:3},
+        {id:'d5e4',icon:'🎡',name:'Ab Wheel Rollout',sets:3,reps:'10–12',repTarget:10,rest:60,url:'https://www.youtube.com/results?search_query=ab+wheel+rollout+form',noWeight:true,priority:4},
+        {id:'d5e5',icon:'🦵',name:'Standing Calf Raises',sets:4,reps:'15–20',repTarget:18,rest:45,url:'https://www.youtube.com/results?search_query=standing+calf+raise+form',priority:5},
+        {id:'d5e6',icon:'💪',name:'Cable Crunch',sets:3,reps:'15',repTarget:15,rest:45,url:'https://www.youtube.com/results?search_query=cable+crunch+abs+form',priority:6},
+      ]},
+  },
+};
+
+// Point home tier to existing WORKOUTS and add metadata
+EQUIPMENT_TIERS.home={
+  label:'🏋️ Home Gym',
+  desc:'Dumbbells, EZ bar, barbell, bench, bands, ab wheel',
+  ...WORKOUTS
+};
+
+// Get current tier
+function getEquipmentTier(){return ls('equipmentTier')||'home';}
+
+// Get active workouts based on tier
+function getWorkouts(){
+  const tier=getEquipmentTier();
+  const sessionOverride=ls('sessionEquipmentOverride');
+  const active=sessionOverride||tier;
+  return EQUIPMENT_TIERS[active]||EQUIPMENT_TIERS.home;
+}
+
+// Switch equipment tier globally
+function setEquipmentTier(tier){
+  const tierInfo=EQUIPMENT_TIERS[tier];
+  if(!tierInfo)return;
+  ls('equipmentTier',tier);
+  ls('sessionEquipmentOverride',null);
+  buildWorkout();
+  renderWorkoutEquipmentBadge();
+  // Update settings label if open
+  const el=document.getElementById('settingsEquipLabel');
+  if(el)el.textContent=tierInfo.label||'🏋️ Home Gym';
+  toast(`${tierInfo.label} active — workout rebuilt!`);
+  haptic('success');
+}
+
+// Session-only override (one workout, then reverts)
+function setSessionEquipmentOverride(tier){
+  ls('sessionEquipmentOverride',tier);
+  buildWorkout();
+  toast(`${EQUIPMENT_TIERS[tier]?.label} for this session only`);
+  haptic('medium');
+}
+
+// Clear session override after workout completes
+function clearSessionOverride(){ls('sessionEquipmentOverride',null);}
+
+// Show current equipment badge in workout screen
+function renderWorkoutEquipmentBadge(){
+  const tier=getEquipmentTier();
+  const override=ls('sessionEquipmentOverride');
+  const active=override||tier;
+  const info=EQUIPMENT_TIERS[active];
+  const badge=document.getElementById('equipmentBadge');
+  if(badge){
+    badge.textContent=info?.label||'🏋️ Home Gym';
+    badge.style.background=active==='bodyweight'?'rgba(0,230,118,0.15)':active==='gym'?'rgba(255,193,7,0.15)':'rgba(41,182,246,0.15)';
+    badge.style.color=active==='bodyweight'?'var(--green)':active==='gym'?'var(--accent)':'var(--blue)';
+    badge.style.borderColor=active==='bodyweight'?'rgba(0,230,118,0.3)':active==='gym'?'rgba(255,193,7,0.3)':'rgba(41,182,246,0.3)';
+    if(override)badge.title='Session override — tap to change';
+  }
+}
 const SESSION_PLAN={
   15:{exercises:2, sets:2},
   30:{exercises:3, sets:2},
@@ -1532,7 +1702,7 @@ function reloadTodaySets(){
   // Find which day has today's sessions and select that tab
   let todayDayId=null;
   DAY_ORDER.forEach(dayId=>{
-    (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
+    (getWorkouts()[dayId]?.exercises||[]).forEach(ex=>{
       const sessions=ls('w:'+ex.id)||[];
       const found=sessions.find(s=>{
         if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;
@@ -1666,9 +1836,9 @@ function hideHistoryMore() {
 }
 
 function getPhaseLabel(){const w=getProgramWeek();if(w<=2)return`Week ${w} · Foundation (15–20 min)`;if(w<=4)return`Week ${w} · Build (20–30 min)`;if(w<=6)return`Week ${w} · Load (30–35 min)`;return`Week ${w} · Advance (35–45 min)`;}
-function getPhaseDesc(){const w=getProgramWeek();if(w<=2)return'<b style="color:var(--accent)">Week 1–2:</b> 2 sets · Light weight · Perfect form. Sciatica first — stop if left leg pain increases.';if(w<=4)return'<b style="color:var(--accent)">Week 3–4:</b> 3 sets · Adding reps · You\'ve built the habit!';if(w<=6)return'<b style="color:var(--accent)">Week 5–6:</b> Full 3–4 sets · Adding weight · Feeling stronger!';return'<b style="color:var(--accent)">Week 7+:</b> Advanced loading · Resistance bands · Strong & consistent!';}
-function getAllSessions(){const all=[];DAY_ORDER.forEach(id=>(WORKOUTS[id]?.exercises||[]).forEach(ex=>(ls('w:'+ex.id)||[]).forEach(s=>all.push(s))));return all;}
-function findEx(id){for(const d of DAY_ORDER){const ex=(WORKOUTS[d]?.exercises||[]).find(e=>e.id===id);if(ex)return ex;}return null;}
+function getPhaseDesc(){const w=getProgramWeek();if(w<=2)return'<b style="color:var(--accent)">Week 1–2:</b> 2 sets · Light weight · Perfect form. Build the habit.';if(w<=4)return'<b style="color:var(--accent)">Week 3–4:</b> 3 sets · Adding reps · You\'ve built the habit!';if(w<=6)return'<b style="color:var(--accent)">Week 5–6:</b> Full 3–4 sets · Adding weight · Feeling stronger!';return'<b style="color:var(--accent)">Week 7+:</b> Advanced loading · Resistance bands · Strong & consistent!';}
+function getAllSessions(){const W=getWorkouts();const all=[];DAY_ORDER.forEach(id=>(W[id]?.exercises||[]).forEach(ex=>(ls('w:'+ex.id)||[]).forEach(s=>all.push({...s,exId:s.exId||ex.id}))));return all;}
+function findEx(id){const W=getWorkouts();for(const d of DAY_ORDER){const ex=(W[d]?.exercises||[]).find(e=>e.id===id);if(ex)return ex;}return null;}
 
 // ══════════════════════════════════════════════════════════════
 // NAVIGATION
@@ -1679,14 +1849,65 @@ function go(name,btn){
   const screen=document.getElementById('s-'+name);
   if(screen){screen.classList.add('active');screen.scrollTo(0,0);}
   if(btn)btn.classList.add('active');
+  // Push state for Android back button (may fail in sandboxed environments)
+  try{history.pushState({screen:name},'',window.location.pathname);}catch(e){}
   if(name==='home')refreshHome();
   if(name==='fitbit')renderFitbit();
   if(name==='history')renderHistory();
   if(name==='progress')renderProgress();
-  if(name==='nutrition'){setTimeout(()=>{renderNutrition();patchQuickFoods();},50);}
   if(name==='plan'){const prog=ls('generatedProgram');if(prog)renderGeneratedProgram(prog);}
-  if(name==='workout'){/* timer only starts on explicit startWorkoutSession() click */}
+  if(name==='workout'){
+    // Auto-select today's day
+    const today=getTodayDay();
+    if(today)setTimeout(()=>selectDay(today),50);
+  }
   if(name!=='workout')stopSessionTimer();
+}
+
+// Android back button handler
+window.addEventListener('popstate',e=>{
+  // If any overlay is open, close it first
+  const overlays=['aiCoachOverlay','prOverlay','swapOverlay','plateOverlay','photoOverlay',
+    'sessionNoteOverlay','exInfoOverlay','beforeAfterOverlay','customFoodsOverlay',
+    'stretchOverlay','ignitionOverlay','warmupOverlay','dayPreviewOverlay','equipmentOverlay'];
+  for(const id of overlays){
+    const el=document.getElementById(id);
+    if(el&&(el.style.display==='flex'||el.style.display==='block')){
+      el.style.display='none';
+      // Re-push state so back still works
+      try{history.pushState({screen:'current'},'',window.location.pathname);}catch(e){}
+      return;
+    }
+  }
+  // Otherwise go home
+  const homeBtn=document.querySelector('.nav-btn');
+  if(homeBtn)go('home',homeBtn);
+});
+function openEquipmentSheet(){
+  const current=getEquipmentTier();
+  const override=ls('sessionEquipmentOverride');
+  const list=document.getElementById('tierOptionsList');
+  if(list){
+    list.innerHTML=['bodyweight','home','gym'].map(key=>{
+      const tier=EQUIPMENT_TIERS[key];if(!tier?.label)return'';
+      const isActive=(override||current)===key;
+      const colors={bodyweight:'var(--green)',home:'var(--blue)',gym:'var(--accent)'};
+      const col=colors[key];
+      return`<div onclick="setEquipmentTier('${key}');closeEquipmentSheet()" style="display:flex;align-items:center;gap:12px;background:${isActive?'rgba(255,255,255,0.05)':'var(--surface)'};border:2px solid ${isActive?col:'var(--border)'};border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer">
+        <div style="font-size:28px">${tier.label.split(' ')[0]}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:${isActive?col:'var(--text)'}">${tier.label}</div><div style="font-size:11px;color:var(--muted)">${tier.desc||''}</div></div>
+        ${isActive?`<div style="color:${col};font-size:20px">✓</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  const o=document.getElementById('equipmentOverlay'),s=document.getElementById('equipmentSheet');
+  o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+}
+function closeEquipmentSheet(e){
+  if(e&&e.target!==document.getElementById('equipmentOverlay'))return;
+  const s=document.getElementById('equipmentSheet');
+  if(s)s.style.transform='translateY(100%)';
+  setTimeout(()=>{const o=document.getElementById('equipmentOverlay');if(o)o.style.display='none';},300);
 }
 function toggleMode(){const b=document.body.classList.toggle('light-mode');document.getElementById('modeBtn').textContent=b?'🌙':'☀️';ls('lm',b);}
 const TODAY_MAP={0:'day3',1:'day1',2:'day2',3:'day3',4:'day4',5:'day5',6:null};
@@ -1711,12 +1932,13 @@ function refreshHome(){
   if(bw.length){document.getElementById('hWeight').textContent=bw[0].weight;const diff=(bw[bw.length-1].weight-bw[0].weight).toFixed(1);document.getElementById('hLost').textContent=diff<0?'+'+Math.abs(diff):diff>0?'-'+diff:'0';}
   const d=getTodayDay(),dow=new Date().getDay();
   if(d&&WORKOUTS[d]){document.getElementById('twTitle').textContent=WORKOUTS[d].title;document.getElementById('twSub').textContent=WORKOUTS[d].sub;document.getElementById('twMeta').innerHTML=`<span class="chip ${WORKOUTS[d].type==='push'?'accent':WORKOUTS[d].type==='pull'?'blue':'green'}">${WORKOUTS[d].type.toUpperCase()}</span><span class="chip">${getSets(4)*5}–${getSets(4)*6} min est.</span><span class="chip purple">Week ${getProgramWeek()}</span>`;}
-  else{document.getElementById('twTitle').textContent=dow===0?'Rest Day 😴':'Active Recovery 🚶';document.getElementById('twSub').textContent=dow===0?'Full rest — you earned it':'Walk 20–30 min + piriformis stretch';document.getElementById('twMeta').innerHTML='';}
+  else{document.getElementById('twTitle').textContent=dow===0?'Rest Day 😴':'Active Recovery 🚶';document.getElementById('twSub').textContent=dow===0?'Full rest — you earned it':'Walk 20–30 min + hip stretch';document.getElementById('twMeta').innerHTML='';}
   updateTargetWeightDisplay();
   calcWeightTrendPrediction();
   calcConsistencyScore();
   setupPWABadge();
   renderRecompScore();
+  renderPushupTracker();
   scheduleNotifications();
 }
 function calcStreak(logs){if(!logs.length)return 0;let s=0,d=new Date();for(let i=0;i<90;i++){if(logs.includes(d.toDateString()))s++;else if(i>0)break;d.setDate(d.getDate()-1);}return s;}
@@ -1725,23 +1947,33 @@ function calcStreak(logs){if(!logs.length)return 0;let s=0,d=new Date();for(let 
 // BUILD WORKOUT SCREEN
 // ══════════════════════════════════════════════════════════════
 function buildWorkout(){
+  const W=getWorkouts();
   document.getElementById('wPhasebar').innerHTML=getPhaseDesc();
   const tabs=document.getElementById('dayTabs'),conts=document.getElementById('dayContents');
   tabs.innerHTML='';conts.innerHTML='';
+  const todayDay=getTodayDay();
   DAY_ORDER.forEach((dayId,i)=>{
-    const w=WORKOUTS[dayId];
+    const w=W[dayId];if(!w)return;
+    const isToday=dayId===todayDay;
     const tab=document.createElement('button');
-    tab.className=`day-tab ${DAY_TYPE_CLASS[w.type]||''}${i===0?' active':''}`;
-    tab.dataset.day=dayId;tab.textContent=w.label;
+    tab.className=`day-tab ${DAY_TYPE_CLASS[w.type]||''}${isToday?' active':''}`;
+    tab.dataset.day=dayId;
+    tab.innerHTML=w.label+(isToday?'<span style="display:block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:2px auto 0"></span>':'');
     tab.onclick=()=>selectDay(dayId);
     tabs.appendChild(tab);
     const div=document.createElement('div');
-    div.className='day-content'+(i===0?' active':'');
+    div.className='day-content'+(isToday?' active':'');
     div.id='dc-'+dayId;
     div.innerHTML=buildDayHTML(dayId,w);
     conts.appendChild(div);
-    w.exercises.forEach(ex=>loadPrevSessions(ex.id));
+    (w.exercises||[]).forEach(ex=>loadPrevSessions(ex.id));
   });
+  if(todayDay){
+    const plan=getSessionPlan();
+    const sorted=[...(W[todayDay]?.exercises||[])].sort((a,b)=>(a.priority||99)-(b.priority||99));
+    sorted.slice(0,plan.exercises).forEach(ex=>initRows(ex.id,getSets(ex.sets)));
+  }
+  renderWorkoutEquipmentBadge();
 }
 function selectDay(dayId){
   document.querySelectorAll('.day-tab').forEach(t=>t.classList.toggle('active',t.dataset.day===dayId));
@@ -1752,19 +1984,25 @@ function buildDayHTML(dayId,w){
   if(dayId==='day3')return`<div class="rec-day-panel">
     <div style="height:10px"></div>
     <div class="rec-item-card"><div class="rec-item-icon">🚶</div><div><div class="rec-item-title">Walk 20–30 min</div><div class="rec-item-desc">Comfortable conversational pace. Outside preferred — sunlight boosts recovery.</div></div></div>
-    <div class="rec-item-card"><div class="rec-item-icon">🦵</div><div><div class="rec-item-title">Piriformis Stretch</div><div class="rec-item-desc">Sit, cross left ankle over right knee, lean forward gently. Hold 30s × 3 each side. This is your #1 sciatica tool.</div></div></div>
-    <div class="rec-item-card"><div class="rec-item-icon">🐈</div><div><div class="rec-item-title">Cat-Cow</div><div class="rec-item-desc">On hands and knees, arch and round slowly. 10 reps. Mobilises spine and reduces nerve tension.</div></div></div>
-    <div class="rec-item-card"><div class="rec-item-icon">🧻</div><div><div class="rec-item-title">Foam Roll</div><div class="rec-item-desc">Focus on left glute, IT band, quads. 60s per area. Reduces inflammation around sciatic nerve.</div></div></div>
+    <div class="rec-item-card"><div class="rec-item-icon">🦵</div><div><div class="rec-item-title">hip stretch"rec-item-desc">Hip flexor stretch — kneel, push hips forward gently. Hold 30s each side.</div></div></div>
+    <div class="rec-item-card"><div class="rec-item-icon">🐈</div><div><div class="rec-item-title">Cat-Cow</div><div class="rec-item-desc">On hands and knees, arch and round slowly. 10 reps. Mobilises spine and improves posture.</div></div></div>
+    <div class="rec-item-card"><div class="rec-item-icon">🧻</div><div><div class="rec-item-title">Foam Roll</div><div class="rec-item-desc">Focus on left glute, IT band, quads. 60s per area. Improves blood flow and flexibility.</div></div></div>
     <div class="rec-item-card"><div class="rec-item-icon">💧</div><div><div class="rec-item-title">Hydration & Nutrition</div><div class="rec-item-desc">100+ oz water. Hit your 160–180g protein target. Recovery happens in the kitchen.</div></div></div>
     <button onclick="openStretchRoutine()" style="width:calc(100% - 32px);margin:8px 16px;padding:14px;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(41,182,246,0.15));border:1px solid rgba(167,139,250,0.35);border-radius:14px;color:var(--accent3);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">🧘 Start Guided Stretch Routine · 10 steps · ~8 min</button>
   </div>`;
   let h='';
   if(w.warmup)h+=`<div class="warmup-strip"><span class="wi">🔥</span>${w.warmup}</div>`;
-  if(w.sciWarn)h+=`<div class="sci-warn"><span style="font-size:18px;flex-shrink:0">⚠️</span><div><strong>Form & Sciatica</strong><p>${w.sciWarn}</p></div></div>`;
-
   // Sort by priority and split into active/skipped based on session plan
   const plan=getSessionPlan();
-  const sorted=[...w.exercises].sort((a,b)=>(a.priority||99)-(b.priority||99));
+  const swaps=ls('exerciseSwaps')||{};
+  const sorted=[...w.exercises].sort((a,b)=>(a.priority||99)-(b.priority||99)).map(ex=>{
+    // Apply any saved swap for this exercise
+    if(swaps[ex.id]){
+      const s=swaps[ex.id];
+      return{...ex,name:s.name,icon:s.icon||ex.icon,reps:s.reps||ex.reps,rest:s.rest||ex.rest,url:s.url||ex.url,noWeight:s.noWeight||ex.noWeight,_swapped:true,_origName:ex.name};
+    }
+    return ex;
+  });
   const active=sorted.slice(0,plan.exercises);
   const skipped=sorted.slice(plan.exercises);
 
@@ -1776,19 +2014,17 @@ function buildDayHTML(dayId,w){
       <div class="ex-header" onclick="toggleEx('${ex.id}')">
         <div class="ex-icon ${bgClass}">${ex.icon}</div>
         <div class="ex-info">
-          <div class="ex-name">${ex.name}</div>
+          <div class="ex-name">${ex.name}${ex._swapped?`<span style="font-size:9px;background:rgba(167,139,250,0.2);color:var(--accent3);border-radius:4px;padding:2px 6px;margin-left:6px;font-weight:700;font-family:'DM Sans',sans-serif">SWAPPED</span>`:''}</div>
           <div class="ex-chips">
             <span class="chip accent">${sets} sets</span>
             <span class="chip">${ex.reps} reps</span>
             <span class="chip blue">${ex.rest}s rest</span>
-            ${ex.sciNote?'<span class="chip pink">🦵 Sci</span>':''}
           </div>
         </div>
         <button onclick="event.stopPropagation();openExInfo('${ex.id}')" style="background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--blue);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;white-space:nowrap">ℹ️ Info</button>
         <div class="ex-arrow">⌄</div>
       </div>
       <div class="ex-body">
-        ${ex.sciNote?`<div class="sci-note">🦵 ${ex.sciNote}</div>`:''}
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <button onclick="openSwap('${ex.id}','${ex.name}')" style="flex:1;padding:7px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.25);border-radius:8px;color:var(--accent3);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🔄 Swap</button>
           ${!ex.noWeight?`<button onclick="openPlateCalc('${ex.id}','${ex.name}')" style="flex:1;padding:7px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:8px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏋️ Plates</button>`:''}
@@ -1814,8 +2050,10 @@ function buildDayHTML(dayId,w){
           <div class="rt-count" id="rtc-${ex.id}">1:30</div>
           <button class="rt-skip" onclick="skipRest('${ex.id}')">Skip Rest</button>
         </div>
-        <textarea id="note-${ex.id}" rows="2" placeholder="How did it feel? Sciatica flare? Energy level?"></textarea>
-        <button class="save-session-btn" onclick="saveSession('${ex.id}','${ex.name}','${dayId}')">💾 Save This Set</button>
+        <textarea id="note-${ex.id}" rows="2" placeholder="How did it feel? Energy level? Notes..."></textarea>
+        <div class="sticky-save">
+          <button class="save-session-btn" onclick="saveSession('${ex.id}','${ex.name}','${dayId}')">💾 Save This Exercise</button>
+        </div>
         <div class="prev-wrap" id="prev-${ex.id}">
           <div class="label" style="margin-bottom:8px">Previous Sessions</div>
           <div id="prevList-${ex.id}"><div style="font-size:11px;color:var(--muted);font-style:italic">No sessions yet</div></div>
@@ -2243,10 +2481,10 @@ function renderFbWeek(){
 function renderFbInsights(data){
   const el=document.getElementById('fbInsights');if(!el)return;
   const insights=[];
-  if(data.steps){if(data.steps>=7500)insights.push({icon:'✅',title:'Step Goal Hit!',text:`${data.steps.toLocaleString()} steps — great active day for sciatica recovery.`});else insights.push({icon:'👟',title:'Keep Moving',text:`${data.steps.toLocaleString()} steps so far. Goal: 7,500. A short walk will help!`});}
+  if(data.steps){if(data.steps>=7500)insights.push({icon:'✅',title:'Step Goal Hit!',text:`${data.steps.toLocaleString()} steps — great active day!`});else insights.push({icon:'👟',title:'Keep Moving',text:`${data.steps.toLocaleString()} steps so far. Goal: 7,500. A short walk will help!`});}
   if(data.sleep){if(data.sleep>=7.5)insights.push({icon:'😴',title:'Great Sleep!',text:`${data.sleep}h — optimal for muscle repair and fat loss.`});else if(data.sleep<6)insights.push({icon:'⚠️',title:'Sleep Deficit',text:`Only ${data.sleep}h. Poor sleep spikes hunger hormones and slows recovery. Aim for 7.5h+.`});}
   if(data.hr){if(data.hr<60)insights.push({icon:'❤️',title:'Athlete Heart Rate',text:`${data.hr} bpm resting HR — excellent cardiovascular fitness!`});else if(data.hr>80)insights.push({icon:'💗',title:'HR Note',text:`${data.hr} bpm. As fitness improves this will drop. Stay consistent!`});}
-  if(data.water){if(data.water<80)insights.push({icon:'💧',title:'Drink More Water',text:`${data.water} oz logged. Goal: 100 oz. Dehydration worsens sciatica pain.`});else insights.push({icon:'💧',title:'Well Hydrated!',text:`${data.water} oz — keeping muscles and joints lubricated.`});}
+  if(data.water){if(data.water<80)insights.push({icon:'💧',title:'Drink More Water',text:`${data.water} oz logged. Goal: 100 oz. Hydration supports muscle recovery.`});else insights.push({icon:'💧',title:'Well Hydrated!',text:`${data.water} oz — keeping muscles and joints lubricated.`});}
   if(!insights.length)insights.push({icon:'⌚',title:'Log Your Fitbit Data',text:'Open your Fitbit app and enter today\'s stats above. Takes 30 seconds!'});
   el.innerHTML=insights.map(ins=>`<div class="fb-insight-card"><div class="fb-insight-icon">${ins.icon}</div><div class="fb-insight-text"><b>${ins.title}</b>${ins.text}</div></div>`).join('');
 }
@@ -2273,6 +2511,7 @@ function renderProgress(){
   renderMeasDisplay();
   renderMeasCharts();
   renderScaleDisplay();
+  renderProgressDashboard();
   // restore BMR cache if exists
   const bc=ls('bmrCache');
   if(bc){const m={bmrAge:'age',bmrHeight:'heightIn',bmrWeight:'weight'};Object.keys(m).forEach(id=>{const el=document.getElementById(id);if(el)el.value=bc[m[id]]||'';});const sel=document.getElementById('bmrActivity');if(sel)sel.value=bc.activity||'1.55';}
@@ -2346,7 +2585,7 @@ function renderHistory(){
 
   const uniqueDays=new Set(all.map(s=>s.calDateKey||s.date||''));
   document.getElementById('histStats').textContent=all.length?`${all.length} exercise logs · ${uniqueDays.size} training days${query?' (filtered)':''}`:'' ;
-  if(!all.length){c.innerHTML=`<div class="empty-state"><div class="ei">💪</div><p>No sessions yet.<br>Start your first workout!</p></div>`;return;}
+  if(!all.length){c.innerHTML=`<div class="empty-state"><svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom:12px"><rect x="10" y="36" width="60" height="8" rx="4" fill="#252952"/><rect x="4" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="60" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="4" y="30" width="6" height="20" rx="3" fill="#ffc107" opacity="0.7"/><rect x="70" y="30" width="6" height="20" rx="3" fill="#ff6b35" opacity="0.7"/></svg><p>No sessions yet.<br>Start your first workout!</p></div>`;return;}
 
   // Group by calendar date key (YYYY-MM-DD preferred, fall back to date string)
   const byDate={};
@@ -2784,6 +3023,10 @@ function openSettings(){
   document.getElementById('hapticOnBtn').className='btn '+(h?'btn-green':'btn-outline');
   document.getElementById('hapticOffBtn').className='btn '+(h?'btn-outline':'btn-danger');
   document.getElementById('startDateInput').value=ls('startDate')||'';
+  // Update equipment label
+  const tier=getEquipmentTier();
+  const el=document.getElementById('settingsEquipLabel');
+  if(el)el.textContent=EQUIPMENT_TIERS[tier]?.label||'🏋️ Home Gym';
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
 }
 function closeSettings(e){
@@ -2829,10 +3072,10 @@ function scheduleNotifications(){
 // ══════════════════════════════════════════════════════════════
 const WARMUP_STEPS={
   day1:[{name:'Arm Circles',secs:40},{name:'Band Pull-Aparts',secs:40},{name:'Push-Up Negatives × 5',secs:50},{name:'Shoulder Rolls',secs:30}],
-  day2:[{name:'Glute Bridges × 10',secs:50},{name:'Leg Swings',secs:40},{name:'Hip Circles',secs:40},{name:'Piriformis Stretch',secs:60}],
+  day2:[{name:'Glute Bridges × 10',secs:50},{name:'Leg Swings',secs:40},{name:'Hip Circles',secs:40},],
   day3:[],
   day4:[{name:'Band Pull-Aparts',secs:40},{name:'Shoulder Rolls',secs:30},{name:'Light Band Row × 10',secs:50},{name:'Arm Swings',secs:30}],
-  day5:[{name:'Leg Swings × 10',secs:40},{name:'Hip Circles × 10',secs:40},{name:'Dead Bug × 5',secs:50},{name:'Piriformis Stretch',secs:60}],
+  day5:[{name:'Leg Swings × 10',secs:40},{name:'Hip Circles × 10',secs:40},{name:'Dead Bug × 5',secs:50},],
 };
 let wtTimer=null,wtCurrentStep=0,wtSteps=[],wtDayId='';
 const CIRC=2*Math.PI*82;
@@ -3540,11 +3783,15 @@ function closePRBoard(e){if(e&&e.target!==document.getElementById('prOverlay'))r
 // EXERCISE SWAP
 // ══════════════════════════════════════════════════════════════
 const SWAP_OPTIONS={
-  d1e1:[{icon:'🤜',name:'Dumbbell Floor Press',sets:4,reps:'10–12',rest:90,url:'https://www.youtube.com/results?search_query=dumbbell+floor+press+form'},{icon:'💪',name:'Push-Ups (weighted)',sets:4,reps:'12–15',rest:90,url:'https://www.youtube.com/results?search_query=weighted+push+up+form'}],
+  d1e1:[
+    {icon:'🏋️',name:'Dumbbell Bench Press',sets:4,reps:'8–10',rest:90,url:'https://www.youtube.com/results?search_query=dumbbell+bench+press+form+tutorial'},
+    {icon:'🤜',name:'Dumbbell Floor Press',sets:4,reps:'10–12',rest:90,url:'https://www.youtube.com/results?search_query=dumbbell+floor+press+form'},
+    {icon:'💪',name:'Push-Ups (weighted)',sets:4,reps:'12–15',rest:90,url:'https://www.youtube.com/results?search_query=weighted+push+up+form'}
+  ],
   d1e2:[{icon:'🏋️',name:'Barbell Overhead Press',sets:3,reps:'10–12',rest:60,url:'https://www.youtube.com/results?search_query=barbell+overhead+press+form'},{icon:'💪',name:'Arnold Press',sets:3,reps:'10–12',rest:60,url:'https://www.youtube.com/results?search_query=arnold+press+form'}],
-  d2e1:[{icon:'🦵',name:'Dumbbell Sumo Squat',sets:4,reps:'12',rest:90,url:'https://www.youtube.com/results?search_query=sumo+squat+dumbbell+form'},{icon:'🏋️',name:'Box Squat (low)',sets:3,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=box+squat+form+beginners',sciNote:'Sit to bench, easier on sciatica.'}],
-  d4e1:[{icon:'💪',name:'Single-Arm Row (heavier)',sets:4,reps:'8–10 ea',rest:90,url:'https://www.youtube.com/results?search_query=heavy+single+arm+dumbbell+row'},{icon:'🏋️',name:'Chest-Supported Row',sets:3,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=chest+supported+row+dumbbell',sciNote:'Great back-safe option — no spinal loading.'}],
-  d5e1:[{icon:'🍑',name:'Dumbbell Hip Thrust',sets:4,reps:'12',rest:90,url:'https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form'},{icon:'🦵',name:'Romanian Deadlift (light)',sets:4,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=romanian+deadlift+form+beginners',sciNote:'Light weight only. Hinge at hips, neutral spine.'}],
+  d2e1:[{icon:'🦵',name:'Dumbbell Sumo Squat',sets:4,reps:'12',rest:90,url:'https://www.youtube.com/results?search_query=sumo+squat+dumbbell+form'},{icon:'🏋️',name:'Box Squat (low)',sets:3,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=box+squat+form+beginners'}],
+  d4e1:[{icon:'💪',name:'Single-Arm Row (heavier)',sets:4,reps:'8–10 ea',rest:90,url:'https://www.youtube.com/results?search_query=heavy+single+arm+dumbbell+row'},{icon:'🏋️',name:'Chest-Supported Row',sets:3,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=chest+supported+row+dumbbell'}],
+  d5e1:[{icon:'🍑',name:'Dumbbell Hip Thrust',sets:4,reps:'12',rest:90,url:'https://www.youtube.com/results?search_query=dumbbell+hip+thrust+form'},{icon:'🦵',name:'Romanian Deadlift (light)',sets:4,reps:'10',rest:90,url:'https://www.youtube.com/results?search_query=romanian+deadlift+form+beginners'}],
 };
 let swapTargetId=null;
 function openSwap(exId,exName){
@@ -3552,11 +3799,45 @@ function openSwap(exId,exName){
   document.getElementById('swapCurrentEx').textContent='Replacing: '+exName;
   const opts=SWAP_OPTIONS[exId]||[];
   const container=document.getElementById('swapOptions');
-  container.innerHTML=opts.length?opts.map((o,i)=>`<div onclick="doSwap(${i})" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px"><div style="font-size:24px">${o.icon}</div><div style="flex:1"><div style="font-size:14px;font-weight:700">${o.name}</div><div style="font-size:11px;color:var(--muted)">${o.sets} sets · ${o.reps} reps · ${o.rest}s rest</div>${o.sciNote?`<div style="font-size:11px;color:var(--pink);margin-top:2px">🦵 ${o.sciNote}</div>`:''}</div><div style="color:var(--accent);font-size:18px">→</div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No swap options for this exercise</div>';
+  container.innerHTML=opts.length?opts.map((o,i)=>`<div onclick="doSwap(${i})" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px"><div style="font-size:24px">${o.icon}</div><div style="flex:1"><div style="font-size:14px;font-weight:700">${o.name}</div><div style="font-size:11px;color:var(--muted)">${o.sets} sets · ${o.reps} reps · ${o.rest}s rest</div></div><div style="color:var(--accent);font-size:18px">→</div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No swap options for this exercise</div>';
+  // Add reset option if currently swapped
+  const swaps=ls('exerciseSwaps')||{};
+  if(swaps[swapTargetId]){
+    container.innerHTML+=`<div onclick="resetSwap()" style="background:rgba(255,82,82,0.08);border:1px solid rgba(255,82,82,0.2);border-radius:12px;padding:12px 14px;margin-top:4px;cursor:pointer;text-align:center;font-size:13px;color:var(--red);font-weight:700">↩ Reset to original (${findEx(swapTargetId)?.name||''})</div>`;
+  }
   const o=document.getElementById('swapOverlay'),s=document.getElementById('swapSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
 }
-function doSwap(idx){toast('Swap noted! Restart workout tab to apply.','warn');closeSwap();}
+function doSwap(idx){
+  const opts=SWAP_OPTIONS[swapTargetId]||[];
+  if(!opts[idx])return;
+  const newEx=opts[idx];
+  // Save the swap preference
+  const swaps=ls('exerciseSwaps')||{};
+  swaps[swapTargetId]=newEx;
+  ls('exerciseSwaps',swaps);
+  closeSwap();
+  // Rebuild workout to show swapped exercise
+  buildWorkout();
+  setTimeout(()=>{
+    // Find which day this exercise is in and select it
+    DAY_ORDER.forEach(dayId=>{
+      const w=WORKOUTS[dayId];
+      if(w.exercises.find(e=>e.id===swapTargetId))selectDay(dayId);
+    });
+  },100);
+  toast(`✅ Swapped to ${newEx.name}!`);
+  haptic('success');
+}
+function resetSwap(){
+  const swaps=ls('exerciseSwaps')||{};
+  delete swaps[swapTargetId];
+  ls('exerciseSwaps',swaps);
+  closeSwap();
+  buildWorkout();
+  toast('↩ Restored to original exercise');
+  haptic('light');
+}
 function closeSwap(e){if(e&&e.target!==document.getElementById('swapOverlay'))return;document.getElementById('swapSheet').style.transform='translateY(100%)';setTimeout(()=>document.getElementById('swapOverlay').style.display='none',300);}
 
 // ══════════════════════════════════════════════════════════════
@@ -3588,7 +3869,7 @@ function closePlateCalc(e){if(e&&e.target!==document.getElementById('plateOverla
 // ══════════════════════════════════════════════════════════════
 // AI COACH
 // ══════════════════════════════════════════════════════════════
-const AI_QUICK={workout:['My sciatica is flaring — what to skip?','What weight should I use today?','How do I progress faster?','Form tips for hip thrust'],nutrition:['What to eat before training?','High protein meal ideas','How many calories for fat loss?','I missed my protein target']};
+const AI_QUICK={workout:['What muscle groups to focus on today?','What weight should I use today?','How do I progress faster?','Form tips for hip thrust'],nutrition:['What to eat before training?','High protein meal ideas','How many calories for fat loss?','I missed my protein target']};
 let aiHistory=[];
 function openAICoach(context){
   aiHistory=[];
@@ -3610,7 +3891,7 @@ async function sendAIMessage(){
   const bw=ls('bodyweight')||[];
   const tgt=ls('targetWeight');
   const prs=Object.values(getAllPRs()).slice(0,4).map(p=>`${p.name}:${p.best}lbs`).join(', ');
-  const sys=`You are a personal trainer for someone using the Myra fitness app. Facts: Day ${getProgramDay()}, Week ${getProgramWeek()} (${getPhaseLabel()}). Weight: ${bw[0]?.weight||'unknown'} lbs, Goal: ${tgt?.weight||'unknown'} lbs. Has LEFT LEG SCIATICA — always give sciatica-safe modifications. Equipment: adjustable dumbbells ≤15lbs each, EZ bar, barbell, flat/incline bench, resistance bands, ab wheel, stability ball, foam roller. PRs: ${prs||'none yet'}. Be concise — 2-3 sentences max. Always consider sciatica.`;
+  const sys=`You are a personal trainer for someone using the Myra fitness app. Facts: Day ${getProgramDay()}, Week ${getProgramWeek()} (${getPhaseLabel()}). Weight: ${bw[0]?.weight||'unknown'} lbs, Goal: ${tgt?.weight||'unknown'} lbs. Focused on body recomposition. Equipment: adjustable dumbbells ≤15lbs each, EZ bar, barbell, flat/incline bench, resistance bands, ab wheel, stability ball, foam roller. PRs: ${prs||'none yet'}. Be concise — 2-3 sentences max. `;
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:sys,messages:aiHistory})});
     const d=await r.json();
@@ -4002,8 +4283,7 @@ async function generate12WeekProgram(){
   const prompt=`You are an expert personal trainer. Design a 12-week progressive overload program for someone who:
 - Just completed ${week} weeks of foundation training
 - Current weight: ${bw[0]?.weight||'unknown'} lbs, Goal: ${target?.weight||'unknown'} lbs
-- Has LEFT LEG SCIATICA — all exercises must be sciatica-safe
-- Equipment: adjustable dumbbells ≤15lbs each, EZ bar, barbell, flat/incline bench, resistance bands, ab wheel, stability ball, foam roller
+- Equipment:, EZ bar, barbell, flat/incline bench, resistance bands, ab wheel, stability ball, foam roller
 - Total sessions completed: ${totalSessions}
 - Current PRs: ${prText||'just starting out'}
 
@@ -4011,7 +4291,6 @@ Design 4 phases of 3 weeks each. For each phase provide:
 1. Phase name and focus
 2. Session duration target
 3. Key exercises with sets/reps/progression
-4. Sciatica modifications for that phase
 5. What success looks like
 
 Format as JSON:
@@ -4054,7 +4333,7 @@ function exportGeneratedProgram(){
   (prog.phases||[]).forEach(p=>{
     txt+=`WEEKS ${p.week} — ${p.name}\n${'─'.repeat(30)}\nFocus: ${p.focus}\nDuration: ${p.duration}\n\nExercises:\n`;
     (p.keyExercises||[]).forEach(ex=>txt+=`  • ${ex.name}: ${ex.sets} sets × ${ex.reps} | Progression: ${ex.progression}\n`);
-    if(p.sciModifications)txt+=`\nSciatica note: ${p.sciModifications}\n`;
+    
     if(p.successMetrics)txt+=`Success: ${p.successMetrics}\n`;
     txt+='\n';
   });
@@ -4218,8 +4497,168 @@ function toggleSpotifyExpand(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// RECOMP SCORE
+// PUSHUP DAILY TRACKER
 // ══════════════════════════════════════════════════════════════
+const PUSHUP_BASE_GOAL=5; // minimum goal if no history
+const PUSHUP_NOTIF_TIMES=['09:00','18:00'];
+
+function pushupTodayKey(){return'pushups:'+new Date().toISOString().split('T')[0];}
+function pushupDateKey(daysAgo){const d=new Date();d.setDate(d.getDate()-daysAgo);return'pushups:'+d.toISOString().split('T')[0];}
+
+function getPushupGoal(){
+  // Goal = yesterday's total + 1 (minimum PUSHUP_BASE_GOAL)
+  const yesterday=ls(pushupDateKey(1))||0;
+  if(yesterday===0){
+    // No yesterday data — look back up to 7 days for last logged value
+    for(let i=2;i<=7;i++){
+      const v=ls(pushupDateKey(i))||0;
+      if(v>0)return Math.max(PUSHUP_BASE_GOAL,v+1);
+    }
+    return PUSHUP_BASE_GOAL;
+  }
+  return Math.max(PUSHUP_BASE_GOAL,yesterday+1);
+}
+
+function addPushups(n){
+  const key=pushupTodayKey();
+  const current=ls(key)||0;
+  const goal=getPushupGoal();
+  const newTotal=current+n;
+  ls(key,newTotal);
+  renderPushupTracker();
+  haptic('medium');
+  if(newTotal>=goal&&current<goal){
+    toast(`💪 Goal crushed! ${newTotal} push-ups — ${n>yesterday?'new personal best!':'beat yesterday!'}`);
+    celebrate();haptic('success');
+  } else {
+    toast(`+${n} push-ups! ${newTotal}/${goal} today`);
+  }
+}
+
+function addPushupsCustom(){
+  const inp=document.getElementById('pushupCustomInput');
+  const n=parseInt(inp?.value)||0;
+  if(n<1||n>500){toast('Enter a number between 1 and 500','err');return;}
+  inp.value='';
+  addPushups(n);
+}
+
+function resetTodayPushups(){
+  if(!confirm('Reset today\'s push-up count to 0?'))return;
+  ls(pushupTodayKey(),0);
+  renderPushupTracker();
+  toast('Reset to 0');
+}
+
+function renderPushupTracker(){
+  const today=ls(pushupTodayKey())||0;
+  const yesterday=ls(pushupDateKey(1))||0;
+  const goal=getPushupGoal();
+  const pct=Math.min(100,Math.round(today/goal*100));
+
+  const countEl=document.getElementById('pushupTodayCount');
+  if(countEl)countEl.textContent=today;
+  // Also update collapsed header count
+  const headerCount=document.getElementById('pushupHeaderCount');
+  if(headerCount)headerCount.textContent=today+(today>=goal?'✓':'');
+
+  const goalEl=document.getElementById('pushupGoalLabel');
+  if(goalEl)goalEl.textContent=`${today} / ${goal}${yesterday>0?' (yesterday: '+yesterday+')':''}`;
+
+  const bar=document.getElementById('pushupProgressBar');
+  if(bar){
+    bar.style.width=pct+'%';
+    bar.style.background=today>=goal
+      ?'linear-gradient(90deg,var(--green),var(--teal))'
+      :'linear-gradient(90deg,var(--blue),var(--teal))';
+  }
+
+  // Goal label with yesterday context
+  const goalLabelEl=document.getElementById('pushupDynamicGoal');
+  if(goalLabelEl){
+    goalLabelEl.textContent=yesterday>0
+      ?`Goal: ${goal} (yesterday ${yesterday} +1)`
+      :`Goal: ${goal} (minimum base)`;
+  }
+
+  // Streak
+  let streak=0;
+  for(let i=1;i<=90;i++){
+    const v=ls(pushupDateKey(i))||0;
+    const g=getPushupGoalForDay(i);
+    if(v>=g)streak++;
+    else break;
+  }
+  if(today>=goal)streak++;
+  const streakEl=document.getElementById('pushupStreak');
+  if(streakEl){
+    streakEl.textContent=streak>0
+      ?`🔥 ${streak} day streak`
+      :(today>0?`${today} done — ${goal-today} more to beat yesterday!`:'Beat yesterday\'s '+yesterday+'!');
+  }
+
+  // Weekly chart
+  const chart=document.getElementById('pushupWeekChart');
+  const labels=document.getElementById('pushupWeekLabels');
+  if(!chart||!labels)return;
+  const days=[];
+  for(let i=6;i>=0;i--){const dd=new Date();dd.setDate(dd.getDate()-i);days.push(dd);}
+  const vals=days.map(dd=>ls('pushups:'+dd.toISOString().split('T')[0])||0);
+  const goals=days.map((_,i)=>getPushupGoalForDay(6-i));
+  const maxV=Math.max(...vals,...goals,1);
+  chart.innerHTML=vals.map((v,i)=>{
+    const pct=Math.round(v/maxV*100);
+    const isToday=i===6;
+    const hit=v>=goals[i];
+    return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">
+      <div style="font-size:8px;color:${hit?'var(--green)':'var(--muted)'};font-weight:700">${v||''}</div>
+      <div style="width:100%;background:${hit?'var(--green)':isToday?'var(--blue)':'var(--border)'};border-radius:3px 3px 0 0;height:${Math.max(pct,2)}%;min-height:3px"></div>
+    </div>`;
+  }).join('');
+  labels.innerHTML=days.map(dd=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--muted);font-weight:700">${dd.toLocaleDateString('en-US',{weekday:'narrow'})}</div>`).join('');
+}
+
+function getPushupGoalForDay(daysAgo){
+  // Get the goal that applied on a specific day
+  if(daysAgo===0)return getPushupGoal();
+  const prevDay=ls(pushupDateKey(daysAgo+1))||0;
+  return Math.max(PUSHUP_BASE_GOAL,prevDay>0?prevDay+1:PUSHUP_BASE_GOAL);
+}
+
+async function pushupNotifSetup(){
+  const btn=document.getElementById('pushupNotifBtn');
+  if(!('Notification' in window)){toast('Notifications not supported','warn');return;}
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    ls('pushupNotifsEnabled',true);
+    if(btn){btn.textContent='✅ Reminders On';btn.style.color='var(--green)';}
+    toast('🔔 Push-up reminders set for 9AM & 6PM!');
+    schedulePushupNotifs();
+  } else {
+    toast('Notification permission denied','warn');
+  }
+}
+
+function schedulePushupNotifs(){
+  if(!ls('pushupNotifsEnabled')||Notification.permission!=='granted')return;
+  // Check if it's time for a reminder (within the current minute)
+  const now=new Date();
+  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  if(PUSHUP_NOTIF_TIMES.includes(hhmm)){
+    const today=ls(pushupTodayKey())||0;
+    const goal=getPushupGoal();
+    const yesterday=ls(pushupDateKey(1))||0;
+    if(today<goal){
+      new Notification('💪 Push-up challenge — Myra App',{
+        body:`${today}/${goal} today. Beat yesterday's ${yesterday}! You've got this.`,
+        icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>'
+      });
+    }
+  }
+}
+
+// Check every minute for notification time
+setInterval(schedulePushupNotifs, 60000);
 function calcRecompScore(){
   const today=new Date();
   const weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
@@ -4307,8 +4746,6 @@ function renderRecompScore(){
 // REST DAY GUIDED STRETCHING
 // ══════════════════════════════════════════════════════════════
 const STRETCH_ROUTINE=[
-  {name:'Piriformis Stretch (Left)',secs:45,desc:'Cross left ankle over right knee, lean forward gently',icon:'🦵'},
-  {name:'Piriformis Stretch (Right)',secs:45,desc:'Cross right ankle over left knee, lean forward gently',icon:'🦵'},
   {name:'Cat-Cow',secs:50,desc:'On hands and knees — arch up then dip down slowly, 10 reps',icon:'🐈'},
   {name:'Hip Flexor Stretch (Left)',secs:40,desc:'Kneel on left knee, right foot forward, push hips forward gently',icon:'🏃'},
   {name:'Hip Flexor Stretch (Right)',secs:40,desc:'Kneel on right knee, left foot forward, push hips forward gently',icon:'🏃'},
@@ -4356,7 +4793,7 @@ function nextStretch(){
   if(stretchStep>=STRETCH_ROUTINE.length){
     clearInterval(stretchTimer);
     document.getElementById('stretchOverlay').style.display='none';
-    celebrate();toast('🧘 Recovery routine complete! Your sciatica thanks you 🦵');
+    celebrate();toast('🧘 Recovery routine complete! Great work 💪');
     return;
   }
   renderStretchStep();haptic('light');
@@ -4436,9 +4873,13 @@ function showPostWorkout(){
 
   const totalSets=all.reduce((a,s)=>a+s.sets.length,0);
   const totalVol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{
-    const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;
+    if(st.bodyweight||st.weight==='BW'||!st.weight)return b;
+    const w=parseFloat(st.weight)||0;
+    const r=parseFloat(st.reps)||0;
+    return b+w*r;
   },0),0);
   const mins=sessionStart?Math.max(0,Math.round((now-start)/60000)):0;
+  const volDisplay=totalVol>=1000?(Math.round(totalVol/100)/10)+'k':Math.round(totalVol).toLocaleString();
 
   // Find new PRs — check if any 1RM is a new all-time best
   const newPRs=[];
@@ -4460,7 +4901,7 @@ function showPostWorkout(){
   document.getElementById('pwsStats').innerHTML=`
     <div class="pws-stat"><div class="pws-stat-val">${totalSets}</div><div class="pws-stat-label">Sets Done</div></div>
     <div class="pws-stat"><div class="pws-stat-val">${mins>0?mins:'—'}</div><div class="pws-stat-label">Minutes</div></div>
-    <div class="pws-stat"><div class="pws-stat-val">${totalVol>0?totalVol>=1000?(Math.round(totalVol/100)/10)+'k':Math.round(totalVol).toLocaleString():'0'}</div><div class="pws-stat-label">lbs Moved</div></div>
+    <div class="pws-stat"><div class="pws-stat-val" data-raw="${Math.round(totalVol)}">${volDisplay}</div><div class="pws-stat-label">lbs Moved</div></div>
     <div class="pws-stat" style="background:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.1);border-color:rgba(${recomp.total>=75?'0,230,118':recomp.total>=55?'255,193,7':'255,107,53'},0.3)">
       <div class="pws-stat-val" style="color:${recomp.total>=75?'var(--green)':recomp.total>=55?'var(--accent)':'var(--accent2)'}">${recomp.total}</div>
       <div class="pws-stat-label">Recomp Score</div>
@@ -4485,32 +4926,166 @@ function showPostWorkout(){
 
 function animateStats(){
   document.querySelectorAll('.pws-stat-val').forEach(el=>{
-    const target=parseFloat(el.textContent);
-    if(isNaN(target)||target===0)return;
-    let current=0;const inc=target/30;
+    const raw=el.dataset.raw;
+    const target=parseFloat(raw||el.textContent);
+    if(isNaN(target)||target===0||el.textContent==='—')return;
+    const final=el.textContent; // preserve display format (e.g. "1.4k")
+    let current=0;const steps=30;const inc=target/steps;
+    let step=0;
     const timer=setInterval(()=>{
-      current=Math.min(current+inc,target);
-      el.textContent=target%1===0?Math.round(current):current.toFixed(1);
-      if(current>=target)clearInterval(timer);
+      step++;current=Math.min(current+inc,target);
+      if(raw){
+        // lbs — use same k formatting
+        const v=Math.round(current);
+        el.textContent=v>=1000?(Math.round(v/100)/10)+'k':v.toLocaleString();
+      } else {
+        el.textContent=Math.round(current);
+      }
+      if(step>=steps){el.textContent=final;clearInterval(timer);}
     },30);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// UX IMPROVEMENTS
+// ══════════════════════════════════════════════════════════════
+
+// 2. Collapsible home cards
+function toggleHomeCard(wrapId){
+  const wrap=document.getElementById(wrapId);
+  if(!wrap)return;
+  const body=wrap.querySelector('.card-body');
+  const btn=wrap.querySelector('.collapse-btn');
+  const collapsed=body.style.maxHeight==='0px';
+  body.style.maxHeight=collapsed?(body.scrollHeight+'px'):'0px';
+  body.style.transition='max-height 0.35s ease';
+  if(btn)btn.style.transform=collapsed?'rotate(0deg)':'rotate(-90deg)';
+  ls('card_'+wrapId,collapsed?'open':'closed');
+}
+function restoreCardStates(){
+  ['recompScoreCardWrap','pushupCardWrap','sciCardWrap'].forEach(id=>{
+    const state=ls('card_'+id);
+    if(state==='closed'){
+      const wrap=document.getElementById(id);
+      const body=wrap?.querySelector('.card-body');
+      const btn=wrap?.querySelector('.collapse-btn');
+      if(body){body.style.maxHeight='0px';}
+      if(btn)btn.style.transform='rotate(-90deg)';
+    }
+  });
+}
+
+// 3. Workout overflow menu
+function showWorkoutMenu(){
+  const m=document.getElementById('workoutMenu');
+  if(!m)return;
+  m.style.display=m.style.display==='none'||!m.style.display?'block':'none';
+  if(m.style.display==='block')setTimeout(()=>document.addEventListener('click',hideWorkoutMenu,{once:true}),10);
+}
+function hideWorkoutMenu(){const m=document.getElementById('workoutMenu');if(m)m.style.display='none';}
+
+// 5. Progress dashboard render
+function renderProgressDashboard(){
+  const el=document.getElementById('progressDashStats');
+  if(!el)return;
+  const bw=ls('bodyweight')||[];
+  const target=ls('targetWeight');
+  const scale=ls('scaleData')||[];
+  const current=bw[0]?.weight||'—';
+  const start=bw.length>=2?bw[bw.length-1].weight:null;
+  const change=start&&bw[0]?((bw[0].weight-start)).toFixed(1):null;
+  const bf=scale[0]?.bodyFat||null;
+  const sessions=getAllSessions();
+  const thisMonth=sessions.filter(s=>{
+    if(!s.timestamp)return false;
+    const d=new Date(s.timestamp);
+    const n=new Date();
+    return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();
+  }).length;
+  el.innerHTML=[
+    {val:current,label:'Current lbs',color:'var(--accent)'},
+    {val:change!=null?(change>0?'+'+change:change)+' lbs':'—',label:'Total change',color:change<0?'var(--green)':change>0?'var(--accent2)':'var(--muted)'},
+    {val:bf?bf+'%':'—',label:'Body fat',color:'var(--blue)'},
+    {val:target?.weight||'—',label:'Goal weight',color:'var(--green)'},
+    {val:thisMonth,label:'Sessions / mo',color:'var(--accent3)'},
+    {val:bw.length,label:'Weigh-ins',color:'var(--muted)'},
+  ].map(s=>`<div style="background:var(--card);border-radius:10px;padding:10px;text-align:center">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${s.color};line-height:1">${s.val}</div>
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px">${s.label}</div>
+  </div>`).join('');
+}
+
+// 9. Auto dark/light mode based on system
+function applySystemTheme(){
+  if(ls('lm')!==null)return; // user has manually set it — respect that
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(!prefersDark){
+    document.body.classList.add('light-mode');
+    const btn=document.getElementById('modeBtn');
+    if(btn)btn.textContent='🌙';
+  }
+}
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+  if(ls('lm')!==null)return;
+  document.body.classList.toggle('light-mode',!e.matches);
+});
+
+// 10. Offline indicator
+function setupOfflineIndicator(){
+  const show=()=>{
+    let bar=document.getElementById('offlineBar');
+    if(!bar){
+      bar=document.createElement('div');
+      bar.id='offlineBar';
+      bar.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(255,82,82,0.9);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:6px;z-index:1000;font-family:"DM Sans",sans-serif';
+      bar.textContent='📵 Offline — AI features unavailable';
+      document.body.prepend(bar);
+    }
+  };
+  const hide=()=>{const bar=document.getElementById('offlineBar');if(bar)bar.remove();};
+  window.addEventListener('offline',show);
+  window.addEventListener('online',hide);
+  if(!navigator.onLine)show();
+}
+
+// 12. Micro-animations — number count-up on home stats
+function animateHomeStats(){
+  ['hSessions','hWeight','hLost','streakNum'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const val=parseFloat(el.textContent);
+    if(isNaN(val)||val===0)return;
+    let cur=0;const steps=20;const inc=val/steps;let s=0;
+    const t=setInterval(()=>{
+      s++;cur=Math.min(cur+inc,val);
+      el.textContent=val%1===0?Math.round(cur):cur.toFixed(1);
+      if(s>=steps){el.textContent=val%1===0?val:val.toFixed(1);clearInterval(t);}
+    },25);
   });
 }
 
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
-if(ls('lm'))document.body.classList.add('light-mode');
-if(document.getElementById('modeBtn')&&ls('lm'))document.getElementById('modeBtn').textContent='🌙';
+if(ls('lm')!==null){
+  if(ls('lm'))document.body.classList.add('light-mode');
+  if(document.getElementById('modeBtn')&&ls('lm'))document.getElementById('modeBtn').textContent='🌙';
+} else {
+  applySystemTheme();
+}
 if(ls('fontSize')==='lg')document.body.classList.add('font-lg');
 if(ls('notifEnabled')&&document.getElementById('notifBtn'))document.getElementById('notifBtn').textContent='✅ Reminders Enabled';
+setupOfflineIndicator();
 buildWorkout();
 refreshHome();
 checkOnboarding();
 checkDeload();
 setSessionLength(currentSessionLength);
-// Restore today's set state if app was refreshed mid-workout
+restoreCardStates();
 setTimeout(reloadTodaySets,300);
-// Silently repair any date issues from previous restores
+setTimeout(animateHomeStats,400);
+if(ls('pushupNotifsEnabled')){const b=document.getElementById('pushupNotifBtn');if(b){b.textContent='✅';b.style.color='var(--green)';}}// Silently repair any date issues from previous restores
 setTimeout(()=>{
   DAY_ORDER.forEach(dayId=>{
     (WORKOUTS[dayId]?.exercises||[]).forEach(ex=>{
