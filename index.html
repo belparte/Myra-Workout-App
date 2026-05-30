@@ -1421,7 +1421,7 @@ body.font-lg .chip{font-size:13px}
 
 <!-- ══ SETTINGS PANEL ══ -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSettings(event)">
-  <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
+  <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:16px">⚙️ Settings</div>
     <div class="label">Equipment</div>
@@ -2930,25 +2930,43 @@ function importJSON(){
           try{
             const existing=localStorage.getItem(k);
             if(!existing){
-              // Normalise before saving
-              if(Array.isArray(v))v=v.map(normaliseSession);
+              // Key doesn't exist locally — write it directly
+              if(Array.isArray(v))v=v.map(s=>typeof s==='object'&&s.sets?normaliseSession(s):s);
               localStorage.setItem(k,JSON.stringify(v));restored++;
             } else {
               const ex=JSON.parse(existing);
               if(Array.isArray(ex)&&Array.isArray(v)){
-                const merged=[...ex];
-                v.forEach(item=>{
-                  const norm=normaliseSession(item);
-                  // Match by timestamp if present, otherwise by date+exName
-                  const dup=merged.find(m=>
-                    (norm.timestamp&&m.timestamp&&m.timestamp===norm.timestamp)||
-                    (!norm.timestamp&&m.date===norm.date&&m.exName===norm.exName)
-                  );
-                  if(!dup){merged.push(norm);restored++;}
-                });
-                merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+                // Workout sessions — dedup by timestamp or date+exName
+                if(k.startsWith('w:')){
+                  const merged=[...ex];
+                  v.forEach(item=>{
+                    const norm=normaliseSession(item);
+                    const dup=merged.find(m=>
+                      (norm.timestamp&&m.timestamp&&m.timestamp===norm.timestamp)||
+                      (!norm.timestamp&&m.date===norm.date&&m.exName===norm.exName)
+                    );
+                    if(!dup){merged.push(norm);restored++;}
+                  });
+                  merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+                  localStorage.setItem(k,JSON.stringify(merged));
+                } else {
+                  // Med logs, streak logs etc — merge by loggedAt or time field
+                  const merged=[...ex];
+                  v.forEach(item=>{
+                    const dup=merged.find(m=>
+                      (item.loggedAt&&m.loggedAt&&m.loggedAt===item.loggedAt)||
+                      (item.time&&m.time&&m.time===item.time)
+                    );
+                    if(!dup){merged.push(item);restored++;}
+                  });
+                  localStorage.setItem(k,JSON.stringify(merged));
+                }
+              } else if(!Array.isArray(ex)&&!Array.isArray(v)&&typeof v==='object'&&v!==null){
+                // Dicts (medSettings, bmrCache etc) — backup wins for missing keys only
+                const merged={...v,...ex}; // local takes priority
                 localStorage.setItem(k,JSON.stringify(merged));
               }
+              // Primitives (strings, numbers) — keep local version
             }
           }catch(err){}
         });
