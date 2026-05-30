@@ -1465,7 +1465,11 @@ body.font-lg .chip{font-size:13px}
       <input type="text" id="medName" placeholder="Medication name (optional)" style="margin-bottom:10px;font-size:13px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Reminder Times (up to 4)</div>
       <div id="medTimesList" style="margin-bottom:8px"></div>
-      <button onclick="addMedTime()" style="width:100%;padding:9px;background:rgba(167,139,250,0.1);border:1px dashed rgba(167,139,250,0.4);border-radius:10px;color:var(--accent3);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">+ Add Reminder Time</button>
+      <button onclick="addMedTime()" style="width:100%;padding:9px;background:rgba(167,139,250,0.1);border:1px dashed rgba(167,139,250,0.4);border-radius:10px;color:var(--accent3);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">+ Add Reminder Time</button>
+      <button onclick="saveMedSettings()" class="btn btn-accent" style="width:100%;margin-bottom:14px">Save Reminders</button>
+      <!-- 30-day adherence calendar -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">📅 Last 30 Days</div>
+      <div id="medCalendar"></div>
     </div>
     <div class="label">Program Start Date</div>
     <input type="text" id="startDateInput" placeholder="YYYY-MM-DD" style="margin-bottom:8px">
@@ -4626,6 +4630,7 @@ function renderMedToggle(){
     if(nameEl)nameEl.value=s.name||'';
     renderMedTimes();
     renderMedTodayLog();
+    renderMedCalendar();
   }
 }
 
@@ -4672,12 +4677,82 @@ function updateMedTime(idx,val){
   ls('medSettings',s);
 }
 
+function renderMedCalendar(){
+  const el=document.getElementById('medCalendar');
+  if(!el)return;
+  const s=getMedSettings();
+  if(!s.times.length){el.innerHTML='<div style="font-size:12px;color:var(--muted)">Add reminder times to track adherence</div>';return;}
+
+  // Build 30 days
+  const days=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    days.push(d);
+  }
+
+  // Day labels row
+  const dayLabels=['S','M','T','W','T','F','S'];
+
+  // Calculate stats
+  let taken=0,missed=0,pending=0;
+  const today=localDateKey();
+
+  const dots=days.map(d=>{
+    const key='med:'+localDateKey(d);
+    const log=ls(key)||[];
+    const isToday=localDateKey(d)===today;
+    const isFuture=localDateKey(d)>today;
+    if(isFuture)return{color:'var(--border)',label:d.getDate(),opacity:'0.3'};
+    if(!s.times.length)return{color:'var(--border)',label:d.getDate()};
+    // Check if all doses taken
+    const allTaken=s.times.every(t=>log.find(l=>l.time===t&&l.taken));
+    const anyTaken=s.times.some(t=>log.find(l=>l.time===t&&l.taken));
+    if(allTaken){taken++;return{color:'var(--green)',label:d.getDate(),title:'All doses taken'};}
+    if(anyTaken){taken++;return{color:'var(--accent)',label:d.getDate(),title:'Some doses taken'};}
+    if(isToday&&!log.length)return{color:'var(--blue)',label:d.getDate(),title:'Today — pending'};
+    if(log.length===0&&!isToday){missed++;return{color:'rgba(255,82,82,0.7)',label:d.getDate(),title:'Missed'};}
+    return{color:'var(--border)',label:d.getDate()};
+  });
+
+  const pct=days.filter((_,i)=>!dots[i]?.opacity).length>0
+    ?Math.round(taken/(taken+missed)*100)||0:0;
+
+  el.innerHTML=`
+    <!-- Stats row -->
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1;text-align:center;background:rgba(0,230,118,0.08);border-radius:8px;padding:8px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green)">${taken}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Taken</div>
+      </div>
+      <div style="flex:1;text-align:center;background:rgba(255,82,82,0.08);border-radius:8px;padding:8px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red)">${missed}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Missed</div>
+      </div>
+      <div style="flex:1;text-align:center;background:rgba(255,193,7,0.08);border-radius:8px;padding:8px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)">${pct}%</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Rate</div>
+      </div>
+    </div>
+    <!-- Calendar grid - 7 cols -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      ${dayLabels.map(l=>`<div style="text-align:center;font-size:9px;color:var(--muted);font-weight:700;padding-bottom:2px">${l}</div>`).join('')}
+      ${Array(days[0].getDay()).fill(0).map(()=>'<div></div>').join('')}
+      ${dots.map((d,i)=>`<div title="${d.title||''}" style="aspect-ratio:1;border-radius:5px;background:${d.color};opacity:${d.opacity||1};display:flex;align-items:center;justify-content:center;font-size:9px;color:${d.color==='var(--green)'?'#000':'var(--muted)'};font-weight:700;cursor:default">${d.label}</div>`).join('')}
+    </div>
+    <!-- Legend -->
+    <div style="display:flex;gap:10px;margin-top:8px;font-size:10px;color:var(--muted)">
+      <span>🟢 Taken</span><span>🔴 Missed</span><span>🔵 Today</span>
+    </div>`;
+}
+
+// saveMedSettings
 function saveMedSettings(){
   const s=getMedSettings();
   const nameEl=document.getElementById('medName');
   if(nameEl)s.name=nameEl.value.trim();
   ls('medSettings',s);
   renderMedToggle();
+  renderMedCalendar();
   toast(`💊 ${s.name||'Medication'} reminders saved!`);
   haptic('success');
 }
