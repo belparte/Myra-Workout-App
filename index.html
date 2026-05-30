@@ -1434,7 +1434,21 @@ body.font-lg .chip{font-size:13px}
       <button onclick="setFont('lg')" id="fontLgBtn" class="btn btn-outline" style="flex:1;font-size:15px">Large Text</button>
     </div>
     <div class="label">Notifications</div>
-    <button onclick="requestNotifications()" class="btn btn-ghost" style="width:100%;margin-bottom:14px" id="notifBtn">🔔 Enable Workout Reminders</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button onclick="requestNotifications()" class="btn btn-ghost" style="flex:1" id="notifBtn">🔔 Enable Workout Reminders</button>
+    </div>
+    <div id="notifTimesSection" style="display:none;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Reminder times</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px">Morning</span>
+        <input type="time" id="notifTime1" value="09:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)">
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px">Evening</span>
+        <input type="time" id="notifTime2" value="18:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)">
+      </div>
+      <button onclick="saveNotifTimes()" class="btn btn-outline" style="width:100%">Save Times</button>
+    </div>
     <div id="notifStatus" style="font-size:11px;color:var(--muted);margin-bottom:14px"></div>
     <div class="label">Haptic Feedback</div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
@@ -1897,6 +1911,23 @@ window.addEventListener('popstate',e=>{
   const homeBtn=document.querySelector('.nav-btn');
   if(homeBtn)go('home',homeBtn);
 });
+// ── Service Worker + unified notification helper ───────────────
+let swRegistration=null;
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg=>{swRegistration=reg;})
+    .catch(()=>{}); // expected to fail in Claude preview
+}
+function fireNotification(title,body,tag){
+  if(Notification.permission!=='granted')return;
+  if(swRegistration){
+    swRegistration.showNotification(title,{body,tag:tag||'myra',vibrate:[100,50,100],requireInteraction:false,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>'});
+  } else {
+    const n=new Notification(title,{body,tag:tag||'myra'});
+    n.onclick=()=>window.focus();
+  }
+}
+
 function openEquipmentSheet(){
   const current=getEquipmentTier();
   const override=ls('sessionEquipmentOverride');
@@ -3078,24 +3109,50 @@ async function requestNotifications(){
   const perm=await Notification.requestPermission();
   if(perm==='granted'){
     ls('notifEnabled',true);
-    document.getElementById('notifBtn').textContent='✅ Reminders Enabled';
-    document.getElementById('notifStatus').textContent='You\'ll get a reminder each workout day at 7:00 AM';
-    scheduleNotifications();
-    toast('🔔 Workout reminders on!');
+    const btn=document.getElementById('notifBtn');
+    if(btn){btn.textContent='✅ Reminders Enabled';btn.className='btn btn-green';}
+    const section=document.getElementById('notifTimesSection');
+    if(section)section.style.display='block';
+    // Test notification
+    setTimeout(()=>new Notification('Myra App 💪',{body:'Workout reminders are on! You\'ll be notified at your set times.',tag:'test-notif'}),500);
+    toast('✅ Notifications enabled!');
   } else {
-    document.getElementById('notifStatus').textContent='Permission denied. Enable in your browser settings.';
-    toast('Notifications blocked','warn');
+    toast('Notifications blocked — enable in phone Settings → Apps → Myra → Notifications','warn');
   }
+}
+function saveNotifTimes(){
+  const t1=document.getElementById('notifTime1')?.value||'09:00';
+  const t2=document.getElementById('notifTime2')?.value||'18:00';
+  ls('notifTimes',[t1,t2].sort());
+  toast(`⏰ Reminders set for ${t1} & ${t2}`);
+  haptic('success');
 }
 function scheduleNotifications(){
-  if(!ls('notifEnabled')||Notification.permission!=='granted')return;
-  // Show a notification for today if it's a workout day
-  const d=getTodayDay();
-  if(d&&WORKOUTS[d]){
-    const n=new Notification('Myra App 💪',{body:`Today is ${WORKOUTS[d].title} day. Let's go!`,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>'});
-    n.onclick=()=>window.focus();
+  // Just ensure permission is requested — actual firing happens in checkNotifTimes()
+  if(ls('notifEnabled')&&Notification.permission==='default'){
+    Notification.requestPermission();
   }
 }
+
+function checkNotifTimes(){
+  if(!ls('notifEnabled')||Notification.permission!=='granted')return;
+  const now=new Date();
+  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const notifTimes=ls('notifTimes')||['09:00','18:00'];
+  if(!notifTimes.includes(hhmm))return;
+  // Don't double-fire — check if already sent today at this time
+  const firedKey='notifFired:'+localDateKey()+':'+hhmm;
+  if(ls(firedKey))return;
+  ls(firedKey,true);
+  const d=getTodayDay();
+  const W=getWorkouts();
+  if(d&&W[d]&&W[d].exercises?.length){
+    fireNotification('Myra App 💪',`Time for your ${W[d].title||'workout'}! Stay consistent.`,'workout-reminder');
+  }
+}
+
+// Run every minute for both workout and medication notifications
+setInterval(()=>{checkNotifTimes();checkMedReminders();schedulePushupNotifs();},60000);
 
 // ══════════════════════════════════════════════════════════════
 // WARMUP TIMER
@@ -4656,29 +4713,16 @@ function logMedDose(time,taken){
 
 // Notification for medication
 function fireMedNotification(medName,time){
-  if(Notification.permission!=='granted')return;
-  const n=new Notification(`💊 ${medName||'Medication'} reminder`,{
-    body:`Time to take your ${medName||'medication'} (${time}). Stay consistent!`,
-    icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💊</text></svg>',
-    tag:'med-'+time,
-    requireInteraction:true
-  });
-  // Clicking notification opens app and marks as prompted
-  n.onclick=()=>{
-    window.focus();
-    openSettings();
-    renderMedTodayLog();
-  };
-  // Auto-snooze after 5 min if not dismissed
+  fireNotification(
+    `💊 ${medName||'Medication'} reminder`,
+    `Time to take your ${medName||'medication'} (${time}). Stay consistent!`,
+    'med-'+time
+  );
+  // Follow-up if not logged in 5 min
   setTimeout(()=>{
     const log=ls(medTodayKey())||[];
-    const taken=log.find(l=>l.time===time&&l.taken);
-    if(!taken){
-      // Show snooze notification
-      new Notification(`💊 Reminder: ${medName||'Medication'} not logged`,{
-        body:'Did you take it? Tap to log in the app.',
-        tag:'med-snooze-'+time
-      });
+    if(!log.find(l=>l.time===time&&l.taken)){
+      fireNotification(`💊 Reminder: ${medName||'Medication'} not logged`,'Did you take it? Tap to log.','med-snooze-'+time);
     }
   },5*60*1000);
 }
@@ -4703,7 +4747,7 @@ function checkMedReminders(){
 }
 
 // Add to the per-minute check interval
-setInterval(checkMedReminders,60000);
+// Per-minute checks consolidated in checkNotifTimes interval above
 
 function requestNotifPermission(){
   if('Notification' in window&&Notification.permission==='default'){
@@ -4869,7 +4913,7 @@ function schedulePushupNotifs(){
 }
 
 // Check every minute for notification time
-setInterval(schedulePushupNotifs, 60000);
+// Per-minute pushup check consolidated above
 function renderMedDueIndicator(){
   const s=getMedSettings();
   const el=document.getElementById('medDueIndicator');
@@ -5315,7 +5359,10 @@ if(ls('lm')!==null){
   applySystemTheme();
 }
 if(ls('fontSize')==='lg')document.body.classList.add('font-lg');
-if(ls('notifEnabled')&&document.getElementById('notifBtn'))document.getElementById('notifBtn').textContent='✅ Reminders Enabled';
+if(ls('notifEnabled')&&Notification.permission==='granted'){
+  const btn=document.getElementById('notifBtn');
+  if(btn){btn.textContent='✅ Reminders Enabled';btn.className='btn btn-green';}
+}
 setupOfflineIndicator();
 buildWorkout();
 refreshHome();
