@@ -935,7 +935,8 @@ body.font-lg .chip{font-size:13px}
     <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:14px;margin-bottom:12px">
       <div class="meas-input-grid">
         <div class="meas-field"><label>Age</label><input type="number" id="bmrAge" placeholder="e.g. 32" min="10" max="100"></div>
-        <div class="meas-field"><label>Height (in)</label><input type="number" id="bmrHeight" placeholder="e.g. 72" step="0.5"></div>
+        <div class="meas-field"><label>Height (ft)</label><input type="number" id="bmrHeightFt" placeholder="e.g. 6" min="4" max="7"></div>
+        <div class="meas-field"><label>Height (in)</label><input type="number" id="bmrHeightIn" placeholder="e.g. 0" min="0" max="11" step="1"></div>
         <div class="meas-field"><label>Weight (lbs)</label><input type="number" id="bmrWeight" placeholder="e.g. 205" step="0.5"></div>
         <div class="meas-field">
           <label>Activity Level</label>
@@ -1270,32 +1271,24 @@ body.font-lg .chip{font-size:13px}
       <input type="number" id="obWeight" placeholder="e.g. 205" style="margin-bottom:12px">
       <div class="label">Your target weight (lbs)</div>
       <input type="number" id="obGoalWeight" placeholder="e.g. 180" style="margin-bottom:12px">
-      <div class="label">Your height (inches)</div>
-      <input type="number" id="obHeight" placeholder="e.g. 72" style="margin-bottom:12px">
+      <div class="label">Your height</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1"><input type="number" id="obHeightFt" placeholder="Feet" min="4" max="7" style="width:100%"></div>
+        <div style="flex:1"><input type="number" id="obHeightIn" placeholder="Inches" min="0" max="11" style="width:100%"></div>
+      </div>
       <div class="label">Your age</div>
       <input type="number" id="obAge" placeholder="e.g. 32" style="margin-bottom:20px">
       <button class="btn btn-accent" style="width:100%" onclick="onboardStep2()">Next →</button>
     </div>
-    <!-- Step 2 -->
+    <!-- Step 2 (was step 3) -->
     <div id="onboardStep2" style="display:none">
-      <div class="label">Daily calorie target</div>
-      <input type="number" id="obCals" placeholder="e.g. 2100" style="margin-bottom:12px">
-      <div class="label">Daily protein target (g)</div>
-      <input type="number" id="obProt" placeholder="e.g. 170" style="margin-bottom:12px">
-      <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:20px">
-        💡 For fat loss + muscle building: set calories 300–500 below your TDEE, protein at 0.8–1g per lb bodyweight
-      </div>
-      <button class="btn btn-accent" style="width:100%" onclick="onboardStep3()">Next →</button>
-      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="showStep(1)">← Back</button>
-    </div>
-    <!-- Step 3 -->
-    <div id="onboardStep3" style="display:none">
       <div style="text-align:center;padding:20px 0">
         <div style="font-size:48px;margin-bottom:12px">💪</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);margin-bottom:8px">YOU'RE ALL SET!</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px">Your program starts today. Remember — Week 1 is about building the habit, not going heavy. Let's go!</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px">Your program starts today. Week 1 is about building the habit, not going heavy. Let's go!</div>
       </div>
       <button class="btn btn-accent" style="width:100%" onclick="finishOnboarding()">Start My Program 🚀</button>
+      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="showStep(1)">← Back</button>
     </div>
     <!-- Step indicator -->
     <div style="display:flex;gap:6px;justify-content:center;margin-top:16px" id="onboardDots">
@@ -1373,10 +1366,14 @@ body.font-lg .chip{font-size:13px}
     <!-- Context inputs for AI calibration -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px">
       <div class="label" style="margin-bottom:8px">Your measurements (for AI calibration)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
         <div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Height (in)</div>
-          <input type="number" id="aiHeight" placeholder="72" min="48" max="96" step="0.5" style="padding:8px;font-size:13px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Ft</div>
+          <input type="number" id="aiHeightFt" placeholder="6" min="4" max="7" style="padding:8px;font-size:13px">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">In</div>
+          <input type="number" id="aiHeightIn" placeholder="0" min="0" max="11" style="padding:8px;font-size:13px">
         </div>
         <div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Weight (lbs)</div>
@@ -1688,6 +1685,8 @@ const DAY_NAMES={day1:'Push',day2:'Lower',day3:'Recovery',day4:'Pull',day5:'Core
 // ══════════════════════════════════════════════════════════════
 // STORAGE
 // ══════════════════════════════════════════════════════════════
+// Local date key — avoids UTC timezone offset bug
+function localDateKey(d){const date=d||new Date();return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
 function ls(k,v){if(v===undefined){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null;}catch(e){return null;}}try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
 // ══════════════════════════════════════════════════════════════
@@ -2285,7 +2284,7 @@ function saveSession(exId,exName,dayId){
   // ── Calendar-date based storage ──────────────────────────────
   const now=new Date();
   const calDate=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  const calDateKey=now.toISOString().split('T')[0]; // YYYY-MM-DD for reliable dedup
+  const calDateKey=localDateKey(now); // YYYY-MM-DD local date for dedup
   const timestamp=now.getTime();
 
   const key='w:'+exId;
@@ -2295,7 +2294,7 @@ function saveSession(exId,exName,dayId){
   hist=hist.filter(s=>{
     if(s.calDateKey&&s.calDateKey===calDateKey)return false; // same calendar day → replace
     if(!s.calDateKey&&s.timestamp){
-      const d=new Date(s.timestamp).toISOString().split('T')[0];
+      const d=localDateKey(new Date(s.timestamp));
       if(d===calDateKey)return false; // legacy entry same day → replace
     }
     return true;
@@ -2530,7 +2529,18 @@ function renderProgress(){
   renderProgressDashboard();
   // restore BMR cache if exists
   const bc=ls('bmrCache');
-  if(bc){const m={bmrAge:'age',bmrHeight:'heightIn',bmrWeight:'weight'};Object.keys(m).forEach(id=>{const el=document.getElementById(id);if(el)el.value=bc[m[id]]||'';});const sel=document.getElementById('bmrActivity');if(sel)sel.value=bc.activity||'1.55';}
+  if(bc){
+    const ageEl=document.getElementById('bmrAge');if(ageEl)ageEl.value=bc.age||'';
+    const wtEl=document.getElementById('bmrWeight');if(wtEl)wtEl.value=bc.weight||'';
+    // Restore height as ft/in
+    if(bc.heightIn){
+      const ft=Math.floor(bc.heightIn/12);
+      const ins=Math.round(bc.heightIn%12);
+      const ftEl=document.getElementById('bmrHeightFt');if(ftEl)ftEl.value=ft;
+      const inEl=document.getElementById('bmrHeightIn');if(inEl)inEl.value=ins;
+    }
+    const sel=document.getElementById('bmrActivity');if(sel)sel.value=bc.activity||'1.55';
+  }
 }
 function logWeight(){
   const v=parseFloat(document.getElementById('bwInput').value);
@@ -2826,7 +2836,9 @@ function renderScaleDisplay(){
 // ══════════════════════════════════════════════════════════════
 function calcBMR(){
   const age=parseFloat(document.getElementById('bmrAge').value);
-  const heightIn=parseFloat(document.getElementById('bmrHeight').value);
+  const ft=parseFloat(document.getElementById('bmrHeightFt').value)||0;
+  const ins=parseFloat(document.getElementById('bmrHeightIn').value)||0;
+  const heightIn=(ft*12)+ins;
   const weight=parseFloat(document.getElementById('bmrWeight').value);
   const activity=parseFloat(document.getElementById('bmrActivity').value);
   if(!age||!heightIn||!weight){toast('Fill in all BMR fields','err');return;}
@@ -2934,9 +2946,9 @@ function normaliseSession(s){
     const canonical=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
     if(canonical&&canonical!=='Invalid Date')out.date=canonical;
   }
-  // Always ensure calDateKey exists
-  if(!out.calDateKey&&out.timestamp){try{out.calDateKey=new Date(out.timestamp).toISOString().split('T')[0];}catch(e){}}
-  if(!out.calDateKey&&out.date){try{const d=new Date(out.date);if(!isNaN(d))out.calDateKey=d.toISOString().split('T')[0];}catch(e){}}
+  // Always recalculate calDateKey from timestamp using LOCAL date (fixes UTC offset bug in old backups)
+  if(out.timestamp){try{out.calDateKey=localDateKey(new Date(out.timestamp));}catch(e){}}
+  else if(out.date){try{const d=new Date(out.date);if(!isNaN(d))out.calDateKey=localDateKey(d);}catch(e){}}
   return out;
 }
 
@@ -3211,8 +3223,14 @@ function openPhotoOverlay(){
     document.getElementById('aiWeight').value=bw[0].weight;
   const bc=ls('bmrCache');
   if(bc){
-    if(!document.getElementById('aiHeight').value)document.getElementById('aiHeight').value=bc.heightIn||'';
-    if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
+    if(bc){
+      const ft=Math.floor((bc.heightIn||72)/12);
+      const ins=Math.round((bc.heightIn||72)%12);
+      if(!document.getElementById('aiHeightFt').value)document.getElementById('aiHeightFt').value=ft;
+      if(!document.getElementById('aiHeightIn').value)document.getElementById('aiHeightIn').value=ins;
+      if(!document.getElementById('aiWeight').value)document.getElementById('aiWeight').value=bc.weight||'';
+      if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
+    }    if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
   }
   const o=document.getElementById('photoOverlay'),s=document.getElementById('photoSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
@@ -3287,7 +3305,9 @@ async function selectPhotoForAnalysis(idx){
   }
 
   // Get calibration values
-  const height=parseFloat(document.getElementById('aiHeight').value)||72;
+  const ft=parseFloat(document.getElementById('aiHeightFt').value)||6;
+  const ins=parseFloat(document.getElementById('aiHeightIn').value)||0;
+  const height=(ft*12)+ins;
   const weight=parseFloat(document.getElementById('aiWeight').value)||205;
   const age=parseFloat(document.getElementById('aiAge').value)||35;
 
@@ -3704,7 +3724,7 @@ const QUICK_FOODS=[
   {name:'Rice 1 cup',cal:200,prot:4,carbs:44},
   {name:'Banana',cal:105,prot:1,carbs:27},
 ];
-function todayKey(){return new Date().toISOString().split('T')[0];}
+function todayKey(){return localDateKey();}
 function logMeal(){
   const name=document.getElementById('mealName').value||'Meal';
   const cal=parseFloat(document.getElementById('mealCal').value)||0;
@@ -3946,22 +3966,23 @@ function copyShareText(){const pre=document.querySelector('#shareContent pre');i
 // ONBOARDING
 // ══════════════════════════════════════════════════════════════
 function checkOnboarding(){if(!ls('onboardingDone'))document.getElementById('onboardOverlay').style.display='flex';}
-function showStep(n){[1,2,3].forEach(i=>{const el=document.getElementById('onboardStep'+i);if(el)el.style.display=i===n?'block':'none';});const dots=document.getElementById('onboardDots');if(dots)[...dots.children].forEach((d,i)=>d.style.background=i===n-1?'var(--accent)':'var(--border)');}
+function showStep(n){[1,2].forEach(i=>{const el=document.getElementById('onboardStep'+i);if(el)el.style.display=i===n?'block':'none';});const dots=document.getElementById('onboardDots');if(dots)[...dots.children].forEach((d,i)=>d.style.background=i===n-1?'var(--accent)':'var(--border)');}
 function onboardStep2(){
   const w=parseFloat(document.getElementById('obWeight').value);
-  const h=parseFloat(document.getElementById('obHeight').value);
+  const ft=parseFloat(document.getElementById('obHeightFt').value)||0;
+  const inches=parseFloat(document.getElementById('obHeightIn').value)||0;
+  const h=(ft*12)+inches; // convert to total inches for BMR calc
   const a=parseFloat(document.getElementById('obAge').value);
   const g=parseFloat(document.getElementById('obGoalWeight').value);
-  if(!w||!h||!a){toast('Please fill in all fields','err');return;}
-  const bw=ls('bodyweight')||[];bw.unshift({weight:w,date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),timestamp:Date.now()});ls('bodyweight',bw);
+  if(!w||!h||!a){toast('Please fill in weight, height and age','err');return;}
+  const bw=ls('bodyweight')||[];
+  bw.unshift({weight:w,date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),timestamp:Date.now()});
+  ls('bodyweight',bw);
   if(g)ls('targetWeight',{weight:g,date:''});
   ls('bmrCache',{age:a,heightIn:h,weight:w,activity:1.55});
-  ls('startDate',new Date().toISOString().split('T')[0]);
-  const bmr=Math.round(10*(w*0.453592)+6.25*(h*2.54)-5*a+5);const tdee=Math.round(bmr*1.55);
-  document.getElementById('obCals').value=tdee-400;document.getElementById('obProt').value=Math.round(w*0.85);
+  ls('startDate',localDateKey());
   showStep(2);
 }
-function onboardStep3(){const cal=parseFloat(document.getElementById('obCals').value);const prot=parseFloat(document.getElementById('obProt').value);if(!cal&&!prot){toast('Enter at least one target','err');return;}ls('nutTargets',{cal:cal||2000,prot:prot||170});showStep(3);}
 function finishOnboarding(){ls('onboardingDone',true);document.getElementById('onboardOverlay').style.display='none';refreshHome();toast('Welcome to Myra! 🎉');celebrate();}
 
 // ══════════════════════════════════════════════════════════════
@@ -4518,7 +4539,7 @@ function toggleSpotifyExpand(){
 // MEDICATION REMINDERS
 // ══════════════════════════════════════════════════════════════
 function getMedSettings(){return ls('medSettings')||{enabled:false,name:'',times:[]};}
-function medTodayKey(){return'med:'+new Date().toISOString().split('T')[0];}
+function medTodayKey(){return'med:'+localDateKey();}
 
 function toggleMedReminders(){
   const s=getMedSettings();
@@ -4692,8 +4713,8 @@ function requestNotifPermission(){
 const PUSHUP_BASE_GOAL=5; // minimum goal if no history
 const PUSHUP_NOTIF_TIMES=['09:00','18:00'];
 
-function pushupTodayKey(){return'pushups:'+new Date().toISOString().split('T')[0];}
-function pushupDateKey(daysAgo){const d=new Date();d.setDate(d.getDate()-daysAgo);return'pushups:'+d.toISOString().split('T')[0];}
+function pushupTodayKey(){return'pushups:'+localDateKey();}
+function pushupDateKey(daysAgo){const d=new Date();d.setDate(d.getDate()-daysAgo);return'pushups:'+localDateKey(d);}
 
 function getPushupGoal(){
   // Goal = yesterday's total + 1 (minimum PUSHUP_BASE_GOAL)
