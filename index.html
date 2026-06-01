@@ -53,12 +53,12 @@
 }
 .light-mode{--bg:#f4f6ff;--surface:#e8eaf6;--card:#fff;--card2:#f0f2ff;--text:#1a1d35;--muted:#5c6bc0;--border:#c5cae9;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:#050709;color:var(--text);font-family:'DM Sans',sans-serif;}
-#app{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative;background:var(--bg);box-shadow:0 0 80px rgba(0,0,0,0.8)}
+html,body{height:100%;background:#050709;color:var(--text);font-family:'DM Sans',sans-serif;}
+#app{display:flex;flex-direction:column;min-height:100vh;max-width:480px;margin:0 auto;background:var(--bg);box-shadow:0 0 80px rgba(0,0,0,0.8)}
 
 /* ── SCREENS ── */
-.screen{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px);min-height:0}
-.screen.active{display:block;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.screen{display:none}
+.screen.active{display:block;flex:1;padding-bottom:16px}
 
 /* ── TOP BAR ── */
 .top-bar{height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--bg);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border)}
@@ -69,7 +69,7 @@ html,body{height:100%;overflow:hidden;background:#050709;color:var(--text);font-
 .top-bar-actions{display:flex;gap:8px}
 
 /* ── BOTTOM NAV ── */
-.bottom-nav{position:sticky;bottom:0;left:0;right:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:flex-start;padding-top:6px;z-index:100;flex-shrink:0}
+.bottom-nav{position:sticky;bottom:0;width:100%;height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:flex-start;padding-top:6px;z-index:100;flex-shrink:0}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:8px;font-weight:700;cursor:pointer;padding:0;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;position:relative}
 .nav-btn .ni{font-size:19px;line-height:1.2}
 .nav-btn.active{color:var(--accent)}
@@ -444,7 +444,7 @@ body.font-lg .chip{font-size:13px}
 @keyframes cfall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
 
 /* ══════════ TOAST ══════════ */
-.toast{position:absolute;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(16px);padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;opacity:0;transition:all 0.28s;pointer-events:none;z-index:500;white-space:nowrap}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(16px);padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;opacity:0;transition:all 0.28s;pointer-events:none;z-index:500;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{background:var(--green);color:#000;box-shadow:0 4px 20px rgba(0,230,118,0.35)}
 .toast.warn{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(255,193,7,0.35)}
@@ -600,7 +600,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- DAY PREVIEW OVERLAY -->
-<div id="dayPreviewOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.85);z-index:300;display:none;align-items:flex-end" onclick="closeDayPreview(event)">
+<div id="dayPreviewOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.85);z-index:300;display:none;align-items:flex-end" onclick="closeDayPreview(event)">
   <div id="dayPreviewSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:75vh;overflow-y:auto;padding:20px 16px 32px;transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div id="dayPreviewTitle" style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:4px"></div>
@@ -611,7 +611,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- TARGET WEIGHT EDITOR -->
-<div id="twEditOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px">
+<div id="twEditOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--card);border:1px solid rgba(0,230,118,0.3);border-radius:20px;padding:24px;width:100%;max-width:340px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green);margin-bottom:4px;letter-spacing:1px">Set Target Weight</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Your goal gives you something to aim for every session</div>
@@ -627,7 +627,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- EXERCISE PROGRESSION GRAPH OVERLAY -->
-<div id="exGraphOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closeExGraph(event)">
+<div id="exGraphOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closeExGraph(event)">
   <div id="exGraphSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:2px" id="exGraphTitle">Exercise Progression</div>
@@ -646,7 +646,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- BEFORE/AFTER COMPARISON OVERLAY -->
-<div id="beforeAfterOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.96);z-index:500;display:none;flex-direction:column">
+<div id="beforeAfterOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.96);z-index:500;display:none;flex-direction:column">
   <div style="display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border)">
     <button onclick="document.getElementById('beforeAfterOverlay').style.display='none'" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent)">BEFORE / AFTER</div>
@@ -686,7 +686,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- CUSTOM FOODS OVERLAY -->
-<div id="customFoodsOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeCustomFoods(event)">
+<div id="customFoodsOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeCustomFoods(event)">
   <div id="customFoodsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px">✏️ Customize Quick Foods</div>
@@ -696,7 +696,7 @@ body.font-lg .chip{font-size:13px}
     <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="resetCustomFoods()">Reset to Defaults</button>
   </div>
 </div>
-<div id="exInfoOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeExInfo(event)">
+<div id="exInfoOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeExInfo(event)">
   <div id="exInfoSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:82vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px">
@@ -743,7 +743,7 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
   <!-- Workout overflow menu -->
-  <div id="workoutMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;z-index:200;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden">
+  <div id="workoutMenu" style="display:none;position:fixed;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;z-index:200;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden">
     <button onclick="openPRBoard();hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">🏆 Personal Records</button>
     <button onclick="openAICoach('workout');hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">🤖 AI Coach</button>
     <button onclick="openSessionNote();hideWorkoutMenu()" style="width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:10px">📝 Session Note</button>
@@ -997,7 +997,7 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
   <!-- Backup sheet -->
-  <div id="backupSheetOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeBackupSheet(event)">
+  <div id="backupSheetOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeBackupSheet(event)">
     <div id="backupSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
       <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;margin-bottom:4px">💾 Backup & Restore</div>
@@ -1008,7 +1008,7 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
   <!-- History overflow menu -->
-  <div id="histMoreMenu" style="display:none;position:absolute;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:200;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden">
+  <div id="histMoreMenu" style="display:none;position:fixed;top:56px;right:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;z-index:200;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden">
     <button onclick="exportData();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">📄 Text Summary</button>
     <button onclick="repairHistoryDates();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--blue);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">🔧 Repair Date Issues</button>
     <button onclick="clearAllHistory();hideHistoryMore()" style="width:100%;padding:12px 16px;background:none;border:none;color:var(--red);font-size:13px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Clear All History</button>
@@ -1108,7 +1108,7 @@ body.font-lg .chip{font-size:13px}
 
 
 <!-- ══ EQUIPMENT TIER SHEET ══ -->
-<div id="equipmentOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeEquipmentSheet(event)">
+<div id="equipmentOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeEquipmentSheet(event)">
   <div id="equipmentSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:4px">Choose Equipment</div>
@@ -1126,7 +1126,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ══ STRETCH ROUTINE OVERLAY ══ -->
-<div id="stretchOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.97);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+<div id="stretchOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
   <div style="width:100%;max-width:360px;text-align:center">
     <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent3);margin-bottom:8px">RECOVERY ROUTINE</div>
     <div id="stretchIcon" style="font-size:48px;margin-bottom:8px">🦵</div>
@@ -1138,7 +1138,7 @@ body.font-lg .chip{font-size:13px}
         <circle r="82" cx="90" cy="90" fill="none" stroke="var(--border)" stroke-width="8"/>
         <circle id="stretchRingFill" r="82" cx="90" cy="90" fill="none" stroke="var(--accent3)" stroke-width="8" stroke-linecap="round" stroke-dasharray="515" stroke-dashoffset="0" style="transition:stroke-dashoffset 0.9s linear"/>
       </svg>
-      <div id="stretchTime" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:52px;color:#fff"></div>
+      <div id="stretchTime" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:52px;color:#fff"></div>
     </div>
     <!-- Dots -->
     <div id="stretchDots" style="display:flex;gap:5px;justify-content:center;margin-bottom:8px"></div>
@@ -1152,9 +1152,9 @@ body.font-lg .chip{font-size:13px}
 
 <!-- ══ MEAL PHOTO INPUT ══ -->
 <input type="file" id="mealPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="analyzeMealPhoto(this.files[0])">
-<div id="ignitionOverlay" style="position:absolute;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+<div id="ignitionOverlay" style="position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px">
   <!-- Particle background -->
-  <canvas id="ignitionCanvas" style="position:absolute;inset:0;opacity:0.4"></canvas>
+  <canvas id="ignitionCanvas" style="position:fixed;inset:0;opacity:0.4"></canvas>
   <!-- Content -->
   <div style="position:relative;z-index:1;text-align:center;max-width:360px">
     <!-- Speaker -->
@@ -1171,7 +1171,7 @@ body.font-lg .chip{font-size:13px}
     </button>
   </div>
 </div>
-<div id="spotifyWidget" style="position:absolute;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));left:0;right:0;z-index:99;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1)">
+<div id="spotifyWidget" style="position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));left:0;right:0;z-index:99;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1)">
 
   <!-- Collapsed mini bar -->
   <div id="spotifyMini" style="background:linear-gradient(135deg,#1a1d35,#121528);border-top:1px solid rgba(30,215,96,0.25);padding:8px 16px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="toggleSpotifyExpand()">
@@ -1277,7 +1277,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- SHARE CARD OVERLAY -->
-<div id="shareOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.95);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column">
+<div id="shareOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.95);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column">
   <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:2px">Share Your Workout</div>
   <canvas id="shareCanvas" style="border-radius:20px;max-width:100%;box-shadow:0 8px 48px rgba(0,0,0,0.6)"></canvas>
   <div style="display:flex;gap:10px;margin-top:16px;width:100%;max-width:360px">
@@ -1290,7 +1290,7 @@ body.font-lg .chip{font-size:13px}
 
 
 <!-- AI COACH OVERLAY -->
-<div id="aiCoachOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;flex-direction:column">
+<div id="aiCoachOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;flex-direction:column">
   <div style="background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0">
     <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent3),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px">🤖</div>
     <div style="flex:1"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px">AI COACH</div><div style="font-size:11px;color:var(--muted)">Powered by Claude · knows your program</div></div>
@@ -1307,7 +1307,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- EXERCISE SWAP OVERLAY -->
-<div id="swapOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeSwap(event)">
+<div id="swapOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeSwap(event)">
   <div id="swapSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:70vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px">🔄 Swap Exercise</div>
@@ -1317,7 +1317,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- PR BOARD OVERLAY -->
-<div id="prOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closePRBoard(event)">
+<div id="prOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closePRBoard(event)">
   <div id="prSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);margin-bottom:4px">🏆 PERSONAL RECORDS</div>
@@ -1327,7 +1327,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ONBOARDING OVERLAY -->
-<div id="onboardOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+<div id="onboardOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
   <div style="width:100%;max-width:360px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;color:#fff;text-align:center;line-height:1">MY<span style="color:var(--accent)">RA</span></div>
     <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px">Let's set up your program</div>
@@ -1374,7 +1374,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- PLATE CALCULATOR OVERLAY -->
-<div id="plateOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closePlateCalc(event)">
+<div id="plateOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closePlateCalc(event)">
   <div id="plateSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px">🏋️ Plate Calculator</div>
@@ -1414,7 +1414,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ══ SESSION NOTES OVERLAY ══ -->
-<div id="sessionNoteOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSessionNote(event)">
+<div id="sessionNoteOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSessionNote(event)">
   <div id="sessionNoteSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 32px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent3);margin-bottom:4px">Session Notes</div>
@@ -1428,7 +1428,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ══ PHOTO LOG + AI ANALYSIS OVERLAY ══ -->
-<div id="photoOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.92);z-index:300;display:none;align-items:flex-end" onclick="closePhotoOverlay(event)">
+<div id="photoOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:300;display:none;align-items:flex-end" onclick="closePhotoOverlay(event)">
   <div id="photoSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
@@ -1490,7 +1490,7 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ══ SETTINGS PANEL ══ -->
-<div id="settingsOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSettings(event)">
+<div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSettings(event)">
   <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:16px">⚙️ Settings</div>
@@ -1941,9 +1941,8 @@ function go(name,btn){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const screen=document.getElementById('s-'+name);
-  if(screen){screen.classList.add('active');screen.scrollTo(0,0);}
+  if(screen){screen.classList.add('active');window.scrollTo(0,0);}
   if(btn)btn.classList.add('active');
-  // Push state for Android back button (may fail in sandboxed environments)
   try{history.pushState({screen:name},'',window.location.pathname);}catch(e){}
   if(name==='home')refreshHome();
   if(name==='fitbit')renderFitbit();
@@ -1951,7 +1950,6 @@ function go(name,btn){
   if(name==='progress')renderProgress();
   if(name==='plan'){const prog=ls('generatedProgram');if(prog)renderGeneratedProgram(prog);if(typeof renderRunSection==='function')setTimeout(renderRunSection,50);}
   if(name==='workout'){
-    // Auto-select today's day
     const today=getTodayDay();
     if(today)setTimeout(()=>selectDay(today),50);
   }
@@ -5295,7 +5293,7 @@ if(!spotifyToken){
 </script>
 
 <!-- ══ ONBOARDING WITH BRAND SLIDES ══ -->
-<div id="onboardOverlay" style="position:absolute;inset:0;background:#0a0c12;z-index:600;display:none;flex-direction:column">
+<div id="onboardOverlay" style="position:fixed;inset:0;background:#0a0c12;z-index:600;display:none;flex-direction:column">
   <div id="onboardBrand" style="flex:1;display:flex;flex-direction:column">
     <div id="obSlide0" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:4px;color:#fff;line-height:1;margin-bottom:12px">MY<span style="color:#ffc107">RA</span></div>
@@ -5347,8 +5345,8 @@ if(!spotifyToken){
 </div>
 
 <!-- ══ RUN COMPLETION OVERLAY ══ -->
-<div id="runCompleteOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
-  <canvas id="runConfettiCanvas" style="position:absolute;inset:0;pointer-events:none"></canvas>
+<div id="runCompleteOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+  <canvas id="runConfettiCanvas" style="position:fixed;inset:0;pointer-events:none"></canvas>
   <div style="position:relative;z-index:1;width:100%;max-width:360px">
     <div style="font-size:64px;margin-bottom:8px">🏃</div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:4px">RUN <span style="color:var(--accent2)">DONE!</span></div>
@@ -5361,7 +5359,7 @@ if(!spotifyToken){
 </div>
 
 <!-- ══ RUN LOGGER OVERLAY ══ -->
-<div id="runLogOverlay" style="position:absolute;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closeRunLogger(event)">
+<div id="runLogOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closeRunLogger(event)">
   <div id="runLogSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:4px">🏃 Log a Run</div>
@@ -5394,7 +5392,7 @@ if(!spotifyToken){
 </div>
 
 <!-- ══ GUIDED RUN OVERLAY ══ -->
-<div id="guidedRunOverlay" style="position:absolute;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+<div id="guidedRunOverlay" style="position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
   <div style="text-align:center;width:100%;max-width:360px">
     <div id="grPhase" style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;color:var(--accent2)">GET READY</div>
     <div id="grInstruction" style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:#fff;margin-bottom:8px">WALK</div>
@@ -5403,7 +5401,7 @@ if(!spotifyToken){
         <circle r="88" cx="100" cy="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
         <circle id="grRingFill" r="88" cx="100" cy="100" fill="none" stroke="var(--accent2)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="0" style="transition:stroke-dashoffset 0.9s linear,stroke 0.5s"/>
       </svg>
-      <div id="grTimer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:56px;color:#fff"></div>
+      <div id="grTimer" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:56px;color:#fff"></div>
     </div>
     <div id="grRoundInfo" style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:8px"></div>
     <div id="grNextUp" style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:24px"></div>
