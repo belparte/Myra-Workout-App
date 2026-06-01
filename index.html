@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.anthropic.com https://api.spotify.com https://accounts.spotify.com https://myraapp.dpoetichand.workers.dev; img-src 'self' data: blob: https://i.scdn.co https://mosaic.scdn.co; media-src 'self' blob: data:; worker-src 'self';">
 <meta name="theme-color" content="#0a0c12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -500,9 +501,6 @@ body.font-lg .chip{font-size:13px}
     </div>
   </div>
 
-  <!-- MEDICATION DUE INDICATOR -->
-  <div id="medDueIndicator" style="display:none"></div>
-
   <!-- RECOMP SCORE — collapsible -->
   <div id="recompScoreCardWrap" class="home-collapse-card" style="margin:0 16px 10px">
     <div onclick="toggleHomeCard('recompScoreCardWrap')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:14px 16px;background:var(--card);border:1px solid rgba(255,193,7,0.2);border-radius:16px 16px 0 0" id="recompScoreCardHeader">
@@ -878,6 +876,31 @@ body.font-lg .chip{font-size:13px}
       <div class="icon-btn" onclick="go('fitbit',this)" title="Fitbit Dashboard" style="color:var(--teal);border-color:rgba(29,233,182,0.3)">⌚</div>
     </div>
   </div>
+  <!-- Progress sub-tabs -->
+  <div style="display:flex;gap:0;margin:8px 16px 0;background:var(--surface);border-radius:12px;padding:3px;border:1px solid var(--border)">
+    <button id="ptab-body" onclick="switchProgressTab('body')" style="flex:1;padding:8px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">⚖️ Body</button>
+    <button id="ptab-meas" onclick="switchProgressTab('meas')" style="flex:1;padding:8px;border:none;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">📏 Measurements</button>
+    <button id="ptab-fitbit" onclick="switchProgressTab('fitbit')" style="flex:1;padding:8px;border:none;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">⌚ Fitbit</button>
+  </div>
+  <!-- Fitbit summary card in progress -->
+  <div id="fitbitSummaryCard" style="margin:8px 16px 0;background:var(--card);border:1px solid rgba(29,233,182,0.25);border-radius:16px;padding:14px 16px;cursor:pointer;display:none" onclick="go('fitbit',document.querySelectorAll('.nav-btn')[2])">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--teal)">⌚ Fitbit · Today</div>
+      <div style="font-size:11px;color:var(--muted)">Tap for full dashboard →</div>
+    </div>
+    <div id="fitbitSummaryStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--teal)" id="fbSumSteps">—</div><div style="font-size:9px;color:var(--muted)">Steps</div></div>
+      <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent2)" id="fbSumCal">—</div><div style="font-size:9px;color:var(--muted)">Cal</div></div>
+      <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--blue)" id="fbSumSleep">—</div><div style="font-size:9px;color:var(--muted)">Sleep</div></div>
+      <div style="text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--red)" id="fbSumHR">—</div><div style="font-size:9px;color:var(--muted)">HR</div></div>
+    </div>
+    <div id="fitbitSummaryEmpty" style="display:none;font-size:12px;color:var(--muted);text-align:center;padding:6px 0">No Fitbit data today — <span style="color:var(--teal);font-weight:700">tap to log →</span></div>
+  </div>
+  <div id="pcontent-fitbit" style="display:none;padding:16px">
+    <button onclick="go('fitbit',document.querySelectorAll('.nav-btn')[2])" style="width:100%;padding:13px;background:rgba(29,233,182,0.1);border:1px solid rgba(29,233,182,0.25);border-radius:12px;color:var(--teal);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">⌚ Open Full Fitbit Dashboard →</button>
+  </div>
+  <!-- Body tab content -->
+  <div id="pcontent-body">
   <!-- Progress dashboard summary -->
   <div id="progressDashboard" style="margin:10px 16px;background:linear-gradient(135deg,rgba(255,193,7,0.08),rgba(41,182,246,0.06));border:1px solid rgba(255,193,7,0.2);border-radius:16px;padding:14px 16px">
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:10px">📊 Your Stats</div>
@@ -935,8 +958,7 @@ body.font-lg .chip{font-size:13px}
     <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:14px;margin-bottom:12px">
       <div class="meas-input-grid">
         <div class="meas-field"><label>Age</label><input type="number" id="bmrAge" placeholder="e.g. 32" min="10" max="100"></div>
-        <div class="meas-field"><label>Height (ft)</label><input type="number" id="bmrHeightFt" placeholder="e.g. 6" min="4" max="7"></div>
-        <div class="meas-field"><label>Height (in)</label><input type="number" id="bmrHeightIn" placeholder="e.g. 0" min="0" max="11" step="1"></div>
+        <div class="meas-field"><label>Height (in)</label><input type="number" id="bmrHeight" placeholder="e.g. 72" step="0.5"></div>
         <div class="meas-field"><label>Weight (lbs)</label><input type="number" id="bmrWeight" placeholder="e.g. 205" step="0.5"></div>
         <div class="meas-field">
           <label>Activity Level</label>
@@ -972,9 +994,19 @@ body.font-lg .chip{font-size:13px}
     <div class="top-bar-title">HISTORY</div>
     <div class="top-bar-actions">
       <div class="icon-btn" onclick="openPRBoard()" title="Personal Records">🏆</div>
-      <div class="icon-btn" onclick="exportJSON()" title="Backup">💾</div>
-      <div class="icon-btn" onclick="importJSON()" title="Restore">📥</div>
+      <div class="icon-btn" onclick="openBackupSheet()" title="Backup & Restore">💾</div>
       <div class="icon-btn" onclick="showHistoryMore()" title="More options">⋯</div>
+    </div>
+  </div>
+  <!-- Backup sheet -->
+  <div id="backupSheetOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:400;display:none;align-items:flex-end" onclick="closeBackupSheet(event)">
+    <div id="backupSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;margin-bottom:4px">💾 Backup & Restore</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">All your data — workouts, weight, runs, photos metadata</div>
+      <button onclick="exportEncryptedJSON();closeBackupSheet()" style="width:100%;padding:13px;background:rgba(0,230,118,0.12);border:1px solid rgba(0,230,118,0.3);border-radius:12px;color:var(--green);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">🔒 Encrypted Backup <span style="font-size:11px;font-weight:400;opacity:0.7">— password protected</span></button>
+      <button onclick="exportJSON();closeBackupSheet()" style="width:100%;padding:13px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);border-radius:12px;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">💾 Plain Backup <span style="font-size:11px;font-weight:400;opacity:0.7">— standard JSON</span></button>
+      <button onclick="importJSON();closeBackupSheet()" style="width:100%;padding:13px;background:rgba(41,182,246,0.1);border:1px solid rgba(41,182,246,0.25);border-radius:12px;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📥 Restore from Backup</button>
     </div>
   </div>
   <!-- History overflow menu -->
@@ -991,15 +1023,23 @@ body.font-lg .chip{font-size:13px}
 <!-- ══════════════════════ PLAN ══════════════════════ -->
 <div id="s-plan" class="screen">
   <div class="top-bar"><div class="top-bar-title">PLAN</div></div>
+  <!-- Plan sub-tabs -->
+  <div style="display:flex;gap:0;margin:10px 16px 0;background:var(--surface);border-radius:12px;padding:3px;border:1px solid var(--border)">
+    <button id="plantab-lifting" onclick="switchPlanTab('lifting')" style="flex:1;padding:9px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">💪 Lifting</button>
+    <button id="plantab-running" onclick="switchPlanTab('running')" style="flex:1;padding:9px;border:none;border-radius:10px;background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">🏃 Running</button>
+  </div>
+  <!-- Lifting tab -->
+  <div id="plancontent-lifting">
   <div style="padding:16px">
     <div class="label">Weekly Schedule</div>
     <div class="card" style="margin-bottom:14px">
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
         <b style="color:var(--push)">Mon</b> — Upper Push · Chest / Shoulders / Triceps<br>
-        <b style="color:var(--lower)">Tue</b> — Lower Body + Core (back-safe)<br>
-        <b style="color:var(--recovery)">Wed</b> — Walk 20–30 min + hip stretch"color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
-        <b style="color:var(--lower)">Fri</b> — Lower Body + Glutes<br>
-        <b style="color:var(--recovery)">Sat</b> — Walk + foam roll<br>
+        <b style="color:var(--lower)">Tue</b> — Lower Body + Core<br>
+        <b style="color:var(--recovery)">Wed</b> — Active Recovery + Easy Run 🏃<br>
+        <b style="color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
+        <b style="color:var(--lower)">Fri</b> — Core & Power<br>
+        <b style="color:var(--recovery)">Sat</b> — Long Run 🏃 + foam roll<br>
         <b style="color:var(--muted)">Sun</b> — Full Rest
       </div>
     </div>
@@ -1039,6 +1079,33 @@ body.font-lg .chip{font-size:13px}
       </div>
     </div>
   </div>
+  </div><!-- end plancontent-lifting -->
+
+  <!-- Running tab -->
+  <div id="plancontent-running" style="display:none;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent2)">🏃 Half Marathon Prep</div>
+      <div id="runWeekBadge" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div id="runWeekCard" style="background:linear-gradient(135deg,rgba(255,107,53,0.1),rgba(255,193,7,0.06));border:1px solid rgba(255,107,53,0.3);border-radius:16px;padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700" id="runPhaseLabel">Phase 1 · Walk/Run Intervals</div>
+        <div style="font-size:11px;color:var(--muted)" id="runProgressLabel"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+        <span>This week's mileage</span><span id="runMileageLabel">0 / 0 mi</span>
+      </div>
+      <div style="background:var(--border);border-radius:3px;height:5px;margin-bottom:12px">
+        <div id="runMileageBar" style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.5s;width:0%"></div>
+      </div>
+      <div id="runWeekSessions" style="margin-bottom:10px"></div>
+      <button onclick="openRunLogger()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏃 Log a Run</button>
+    </div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">16-Week Plan</div>
+    <div id="runPlanOverview" style="margin-bottom:14px"></div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Recent Runs</div>
+    <div id="runHistory" style="margin-bottom:14px"></div>
+  </div><!-- end plancontent-running -->
 </div>
 
 
@@ -1212,16 +1279,17 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- SHARE CARD OVERLAY -->
-<div id="shareOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:500;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--card);border:1px solid rgba(255,193,7,0.3);border-radius:20px;padding:24px;width:100%;max-width:360px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);letter-spacing:2px;text-align:center;margin-bottom:4px">MYRA APP</div>
-    <div id="shareContent" style="text-align:center;margin-bottom:16px"></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-accent" style="flex:1" onclick="copyShareText()">📋 Copy</button>
-      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('shareOverlay').style.display='none'">Close</button>
-    </div>
+<div id="shareOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.95);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column">
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:2px">Share Your Workout</div>
+  <canvas id="shareCanvas" style="border-radius:20px;max-width:100%;box-shadow:0 8px 48px rgba(0,0,0,0.6)"></canvas>
+  <div style="display:flex;gap:10px;margin-top:16px;width:100%;max-width:360px">
+    <button class="btn btn-accent" style="flex:1" onclick="downloadShareCard()">💾 Save Image</button>
+    <button class="btn btn-outline" style="flex:1" onclick="copyShareText()">📋 Copy Text</button>
+    <button class="btn btn-ghost" style="flex:0 0 44px;padding:10px" onclick="document.getElementById('shareOverlay').style.display='none'">✕</button>
   </div>
+  <div id="shareTextFallback" style="display:none;margin-top:12px;background:var(--card);border-radius:12px;padding:14px;width:100%;max-width:360px;font-size:13px;color:var(--text);white-space:pre-wrap"></div>
 </div>
+
 
 <!-- AI COACH OVERLAY -->
 <div id="aiCoachOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;flex-direction:column">
@@ -1271,24 +1339,32 @@ body.font-lg .chip{font-size:13px}
       <input type="number" id="obWeight" placeholder="e.g. 205" style="margin-bottom:12px">
       <div class="label">Your target weight (lbs)</div>
       <input type="number" id="obGoalWeight" placeholder="e.g. 180" style="margin-bottom:12px">
-      <div class="label">Your height</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div style="flex:1"><input type="number" id="obHeightFt" placeholder="Feet" min="4" max="7" style="width:100%"></div>
-        <div style="flex:1"><input type="number" id="obHeightIn" placeholder="Inches" min="0" max="11" style="width:100%"></div>
-      </div>
+      <div class="label">Your height (inches)</div>
+      <input type="number" id="obHeight" placeholder="e.g. 72" style="margin-bottom:12px">
       <div class="label">Your age</div>
       <input type="number" id="obAge" placeholder="e.g. 32" style="margin-bottom:20px">
       <button class="btn btn-accent" style="width:100%" onclick="onboardStep2()">Next →</button>
     </div>
-    <!-- Step 2 (was step 3) -->
+    <!-- Step 2 -->
     <div id="onboardStep2" style="display:none">
+      <div class="label">Daily calorie target</div>
+      <input type="number" id="obCals" placeholder="e.g. 2100" style="margin-bottom:12px">
+      <div class="label">Daily protein target (g)</div>
+      <input type="number" id="obProt" placeholder="e.g. 170" style="margin-bottom:12px">
+      <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:20px">
+        💡 For fat loss + muscle building: set calories 300–500 below your TDEE, protein at 0.8–1g per lb bodyweight
+      </div>
+      <button class="btn btn-accent" style="width:100%" onclick="onboardStep3()">Next →</button>
+      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="showStep(1)">← Back</button>
+    </div>
+    <!-- Step 3 -->
+    <div id="onboardStep3" style="display:none">
       <div style="text-align:center;padding:20px 0">
         <div style="font-size:48px;margin-bottom:12px">💪</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);margin-bottom:8px">YOU'RE ALL SET!</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px">Your program starts today. Week 1 is about building the habit, not going heavy. Let's go!</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px">Your program starts today. Remember — Week 1 is about building the habit, not going heavy. Let's go!</div>
       </div>
       <button class="btn btn-accent" style="width:100%" onclick="finishOnboarding()">Start My Program 🚀</button>
-      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="showStep(1)">← Back</button>
     </div>
     <!-- Step indicator -->
     <div style="display:flex;gap:6px;justify-content:center;margin-top:16px" id="onboardDots">
@@ -1366,14 +1442,10 @@ body.font-lg .chip{font-size:13px}
     <!-- Context inputs for AI calibration -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px">
       <div class="label" style="margin-bottom:8px">Your measurements (for AI calibration)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Ft</div>
-          <input type="number" id="aiHeightFt" placeholder="6" min="4" max="7" style="padding:8px;font-size:13px">
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">In</div>
-          <input type="number" id="aiHeightIn" placeholder="0" min="0" max="11" style="padding:8px;font-size:13px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Height (in)</div>
+          <input type="number" id="aiHeight" placeholder="72" min="48" max="96" step="0.5" style="padding:8px;font-size:13px">
         </div>
         <div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700">Weight (lbs)</div>
@@ -1421,7 +1493,7 @@ body.font-lg .chip{font-size:13px}
 
 <!-- ══ SETTINGS PANEL ══ -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.88);z-index:300;display:none;align-items:flex-end" onclick="closeSettings(event)">
-  <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
+  <div id="settingsSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
     <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:16px">⚙️ Settings</div>
     <div class="label">Equipment</div>
@@ -1439,14 +1511,8 @@ body.font-lg .chip{font-size:13px}
     </div>
     <div id="notifTimesSection" style="display:none;margin-bottom:14px">
       <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Reminder times</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-        <span style="font-size:13px">Morning</span>
-        <input type="time" id="notifTime1" value="09:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)">
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px">Evening</span>
-        <input type="time" id="notifTime2" value="18:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)">
-      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="font-size:13px;min-width:60px">Morning</span><input type="time" id="notifTime1" value="09:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><span style="font-size:13px;min-width:60px">Evening</span><input type="time" id="notifTime2" value="18:00" style="flex:1;font-size:13px;font-weight:700;color:var(--accent3)"></div>
       <button onclick="saveNotifTimes()" class="btn btn-outline" style="width:100%">Save Times</button>
     </div>
     <div id="notifStatus" style="font-size:11px;color:var(--muted);margin-bottom:14px"></div>
@@ -1458,7 +1524,7 @@ body.font-lg .chip{font-size:13px}
     <div class="divider"></div>
     <div class="label">💊 Medication Reminders</div>
     <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px">
-      <div><div style="font-size:13px;font-weight:700">Daily Medication Reminders</div><div style="font-size:11px;color:var(--muted)" id="medToggleDesc">Set times below</div></div>
+      <div><div style="font-size:13px;font-weight:700">Daily Medication Reminders</div><div style="font-size:11px;color:var(--muted)" id="medToggleDesc">Tap to enable</div></div>
       <div onclick="toggleMedReminders()" id="medToggleBtn" style="width:44px;height:24px;border-radius:12px;background:var(--border);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0"><div id="medToggleThumb" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div></div>
     </div>
     <div id="medSettingsBody" style="display:none">
@@ -1466,11 +1532,11 @@ body.font-lg .chip{font-size:13px}
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Reminder Times (up to 4)</div>
       <div id="medTimesList" style="margin-bottom:8px"></div>
       <button onclick="addMedTime()" style="width:100%;padding:9px;background:rgba(167,139,250,0.1);border:1px dashed rgba(167,139,250,0.4);border-radius:10px;color:var(--accent3);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">+ Add Reminder Time</button>
-      <button onclick="saveMedSettings()" class="btn btn-accent" style="width:100%;margin-bottom:14px">Save Reminders</button>
-      <!-- 30-day adherence calendar -->
+      <button onclick="saveMedSettings()" class="btn btn-accent" style="width:100%;margin-bottom:12px">Save Reminders</button>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">📅 Last 30 Days</div>
       <div id="medCalendar"></div>
     </div>
+    <div class="divider"></div>
     <div class="label">Program Start Date</div>
     <input type="text" id="startDateInput" placeholder="YYYY-MM-DD" style="margin-bottom:8px">
     <button onclick="resetStartDate()" class="btn btn-outline" style="width:100%;margin-bottom:14px">Update Start Date</button>
@@ -1703,8 +1769,6 @@ const DAY_NAMES={day1:'Push',day2:'Lower',day3:'Recovery',day4:'Pull',day5:'Core
 // ══════════════════════════════════════════════════════════════
 // STORAGE
 // ══════════════════════════════════════════════════════════════
-// Local date key — avoids UTC timezone offset bug
-function localDateKey(d){const date=d||new Date();return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
 function ls(k,v){if(v===undefined){try{const r=localStorage.getItem(k);return r?JSON.parse(r):null;}catch(e){return null;}}try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
 // ══════════════════════════════════════════════════════════════
@@ -1887,7 +1951,7 @@ function go(name,btn){
   if(name==='fitbit')renderFitbit();
   if(name==='history')renderHistory();
   if(name==='progress')renderProgress();
-  if(name==='plan'){const prog=ls('generatedProgram');if(prog)renderGeneratedProgram(prog);}
+  if(name==='plan'){const prog=ls('generatedProgram');if(prog)renderGeneratedProgram(prog);if(typeof renderRunSection==='function')setTimeout(renderRunSection,50);}
   if(name==='workout'){
     // Auto-select today's day
     const today=getTodayDay();
@@ -1915,23 +1979,6 @@ window.addEventListener('popstate',e=>{
   const homeBtn=document.querySelector('.nav-btn');
   if(homeBtn)go('home',homeBtn);
 });
-// ── Service Worker + unified notification helper ───────────────
-let swRegistration=null;
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js')
-    .then(reg=>{swRegistration=reg;})
-    .catch(()=>{}); // expected to fail in Claude preview
-}
-function fireNotification(title,body,tag){
-  if(Notification.permission!=='granted')return;
-  if(swRegistration){
-    swRegistration.showNotification(title,{body,tag:tag||'myra',vibrate:[100,50,100],requireInteraction:false,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>'});
-  } else {
-    const n=new Notification(title,{body,tag:tag||'myra'});
-    n.onclick=()=>window.focus();
-  }
-}
-
 function openEquipmentSheet(){
   const current=getEquipmentTier();
   const override=ls('sessionEquipmentOverride');
@@ -1951,6 +1998,8 @@ function openEquipmentSheet(){
   }
   const o=document.getElementById('equipmentOverlay'),s=document.getElementById('equipmentSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function closeEquipmentSheet(e){
   if(e&&e.target!==document.getElementById('equipmentOverlay'))return;
@@ -1989,6 +2038,8 @@ function refreshHome(){
   renderRecompScore();
   renderPushupTracker();
   renderMedDueIndicator();
+  updateHomeGreeting();
+  updateTodayFocusCard();
   scheduleNotifications();
 }
 function calcStreak(logs){if(!logs.length)return 0;let s=0,d=new Date();for(let i=0;i<90;i++){if(logs.includes(d.toDateString()))s++;else if(i>0)break;d.setDate(d.getDate()-1);}return s;}
@@ -2319,7 +2370,7 @@ function saveSession(exId,exName,dayId){
   // ── Calendar-date based storage ──────────────────────────────
   const now=new Date();
   const calDate=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-  const calDateKey=localDateKey(now); // YYYY-MM-DD local date for dedup
+  const calDateKey=now.toISOString().split('T')[0]; // YYYY-MM-DD for reliable dedup
   const timestamp=now.getTime();
 
   const key='w:'+exId;
@@ -2329,7 +2380,7 @@ function saveSession(exId,exName,dayId){
   hist=hist.filter(s=>{
     if(s.calDateKey&&s.calDateKey===calDateKey)return false; // same calendar day → replace
     if(!s.calDateKey&&s.timestamp){
-      const d=localDateKey(new Date(s.timestamp));
+      const d=new Date(s.timestamp).toISOString().split('T')[0];
       if(d===calDateKey)return false; // legacy entry same day → replace
     }
     return true;
@@ -2561,21 +2612,11 @@ function renderProgress(){
   renderMeasDisplay();
   renderMeasCharts();
   renderScaleDisplay();
+  if(typeof renderFitbitSummary==='function')renderFitbitSummary();
   renderProgressDashboard();
   // restore BMR cache if exists
   const bc=ls('bmrCache');
-  if(bc){
-    const ageEl=document.getElementById('bmrAge');if(ageEl)ageEl.value=bc.age||'';
-    const wtEl=document.getElementById('bmrWeight');if(wtEl)wtEl.value=bc.weight||'';
-    // Restore height as ft/in
-    if(bc.heightIn){
-      const ft=Math.floor(bc.heightIn/12);
-      const ins=Math.round(bc.heightIn%12);
-      const ftEl=document.getElementById('bmrHeightFt');if(ftEl)ftEl.value=ft;
-      const inEl=document.getElementById('bmrHeightIn');if(inEl)inEl.value=ins;
-    }
-    const sel=document.getElementById('bmrActivity');if(sel)sel.value=bc.activity||'1.55';
-  }
+  if(bc){const m={bmrAge:'age',bmrHeight:'heightIn',bmrWeight:'weight'};Object.keys(m).forEach(id=>{const el=document.getElementById(id);if(el)el.value=bc[m[id]]||'';});const sel=document.getElementById('bmrActivity');if(sel)sel.value=bc.activity||'1.55';}
 }
 function logWeight(){
   const v=parseFloat(document.getElementById('bwInput').value);
@@ -2646,7 +2687,7 @@ function renderHistory(){
 
   const uniqueDays=new Set(all.map(s=>s.calDateKey||s.date||''));
   document.getElementById('histStats').textContent=all.length?`${all.length} exercise logs · ${uniqueDays.size} training days${query?' (filtered)':''}`:'' ;
-  if(!all.length){c.innerHTML=`<div class="empty-state"><svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom:12px"><rect x="10" y="36" width="60" height="8" rx="4" fill="#252952"/><rect x="4" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="60" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="4" y="30" width="6" height="20" rx="3" fill="#ffc107" opacity="0.7"/><rect x="70" y="30" width="6" height="20" rx="3" fill="#ff6b35" opacity="0.7"/></svg><p>No sessions yet.<br>Start your first workout!</p></div>`;return;}
+  if(!all.length){renderHistoryEmptyState(c);return;}
 
   // Group by calendar date key (YYYY-MM-DD preferred, fall back to date string)
   const byDate={};
@@ -2871,9 +2912,7 @@ function renderScaleDisplay(){
 // ══════════════════════════════════════════════════════════════
 function calcBMR(){
   const age=parseFloat(document.getElementById('bmrAge').value);
-  const ft=parseFloat(document.getElementById('bmrHeightFt').value)||0;
-  const ins=parseFloat(document.getElementById('bmrHeightIn').value)||0;
-  const heightIn=(ft*12)+ins;
+  const heightIn=parseFloat(document.getElementById('bmrHeight').value);
   const weight=parseFloat(document.getElementById('bmrWeight').value);
   const activity=parseFloat(document.getElementById('bmrActivity').value);
   if(!age||!heightIn||!weight){toast('Fill in all BMR fields','err');return;}
@@ -2930,43 +2969,25 @@ function importJSON(){
           try{
             const existing=localStorage.getItem(k);
             if(!existing){
-              // Key doesn't exist locally — write it directly
-              if(Array.isArray(v))v=v.map(s=>typeof s==='object'&&s.sets?normaliseSession(s):s);
+              // Normalise before saving
+              if(Array.isArray(v))v=v.map(normaliseSession);
               localStorage.setItem(k,JSON.stringify(v));restored++;
             } else {
               const ex=JSON.parse(existing);
               if(Array.isArray(ex)&&Array.isArray(v)){
-                // Workout sessions — dedup by timestamp or date+exName
-                if(k.startsWith('w:')){
-                  const merged=[...ex];
-                  v.forEach(item=>{
-                    const norm=normaliseSession(item);
-                    const dup=merged.find(m=>
-                      (norm.timestamp&&m.timestamp&&m.timestamp===norm.timestamp)||
-                      (!norm.timestamp&&m.date===norm.date&&m.exName===norm.exName)
-                    );
-                    if(!dup){merged.push(norm);restored++;}
-                  });
-                  merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-                  localStorage.setItem(k,JSON.stringify(merged));
-                } else {
-                  // Med logs, streak logs etc — merge by loggedAt or time field
-                  const merged=[...ex];
-                  v.forEach(item=>{
-                    const dup=merged.find(m=>
-                      (item.loggedAt&&m.loggedAt&&m.loggedAt===item.loggedAt)||
-                      (item.time&&m.time&&m.time===item.time)
-                    );
-                    if(!dup){merged.push(item);restored++;}
-                  });
-                  localStorage.setItem(k,JSON.stringify(merged));
-                }
-              } else if(!Array.isArray(ex)&&!Array.isArray(v)&&typeof v==='object'&&v!==null){
-                // Dicts (medSettings, bmrCache etc) — backup wins for missing keys only
-                const merged={...v,...ex}; // local takes priority
+                const merged=[...ex];
+                v.forEach(item=>{
+                  const norm=normaliseSession(item);
+                  // Match by timestamp if present, otherwise by date+exName
+                  const dup=merged.find(m=>
+                    (norm.timestamp&&m.timestamp&&m.timestamp===norm.timestamp)||
+                    (!norm.timestamp&&m.date===norm.date&&m.exName===norm.exName)
+                  );
+                  if(!dup){merged.push(norm);restored++;}
+                });
+                merged.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
                 localStorage.setItem(k,JSON.stringify(merged));
               }
-              // Primitives (strings, numbers) — keep local version
             }
           }catch(err){}
         });
@@ -2999,9 +3020,9 @@ function normaliseSession(s){
     const canonical=new Date(out.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
     if(canonical&&canonical!=='Invalid Date')out.date=canonical;
   }
-  // Always recalculate calDateKey from timestamp using LOCAL date (fixes UTC offset bug in old backups)
-  if(out.timestamp){try{out.calDateKey=localDateKey(new Date(out.timestamp));}catch(e){}}
-  else if(out.date){try{const d=new Date(out.date);if(!isNaN(d))out.calDateKey=localDateKey(d);}catch(e){}}
+  // Always ensure calDateKey exists
+  if(!out.calDateKey&&out.timestamp){try{out.calDateKey=new Date(out.timestamp).toISOString().split('T')[0];}catch(e){}}
+  if(!out.calDateKey&&out.date){try{const d=new Date(out.date);if(!isNaN(d))out.calDateKey=d.toISOString().split('T')[0];}catch(e){}}
   return out;
 }
 
@@ -3108,9 +3129,9 @@ function openSettings(){
   const tier=getEquipmentTier();
   const el=document.getElementById('settingsEquipLabel');
   if(el)el.textContent=EQUIPMENT_TIERS[tier]?.label||'🏋️ Home Gym';
-  // Load medication state
-  renderMedToggle();
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function closeSettings(e){
   if(e&&e.target!==document.getElementById('settingsOverlay'))return;
@@ -3126,55 +3147,7 @@ function resetStartDate(){
 // ══════════════════════════════════════════════════════════════
 // PUSH NOTIFICATIONS
 // ══════════════════════════════════════════════════════════════
-async function requestNotifications(){
-  if(!('Notification' in window)){toast('Notifications not supported on this browser','warn');return;}
-  const perm=await Notification.requestPermission();
-  if(perm==='granted'){
-    ls('notifEnabled',true);
-    const btn=document.getElementById('notifBtn');
-    if(btn){btn.textContent='✅ Reminders Enabled';btn.className='btn btn-green';}
-    const section=document.getElementById('notifTimesSection');
-    if(section)section.style.display='block';
-    // Test notification
-    setTimeout(()=>new Notification('Myra App 💪',{body:'Workout reminders are on! You\'ll be notified at your set times.',tag:'test-notif'}),500);
-    toast('✅ Notifications enabled!');
-  } else {
-    toast('Notifications blocked — enable in phone Settings → Apps → Myra → Notifications','warn');
-  }
-}
-function saveNotifTimes(){
-  const t1=document.getElementById('notifTime1')?.value||'09:00';
-  const t2=document.getElementById('notifTime2')?.value||'18:00';
-  ls('notifTimes',[t1,t2].sort());
-  toast(`⏰ Reminders set for ${t1} & ${t2}`);
-  haptic('success');
-}
-function scheduleNotifications(){
-  // Just ensure permission is requested — actual firing happens in checkNotifTimes()
-  if(ls('notifEnabled')&&Notification.permission==='default'){
-    Notification.requestPermission();
-  }
-}
-
-function checkNotifTimes(){
-  if(!ls('notifEnabled')||Notification.permission!=='granted')return;
-  const now=new Date();
-  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const notifTimes=ls('notifTimes')||['09:00','18:00'];
-  if(!notifTimes.includes(hhmm))return;
-  // Don't double-fire — check if already sent today at this time
-  const firedKey='notifFired:'+localDateKey()+':'+hhmm;
-  if(ls(firedKey))return;
-  ls(firedKey,true);
-  const d=getTodayDay();
-  const W=getWorkouts();
-  if(d&&W[d]&&W[d].exercises?.length){
-    fireNotification('Myra App 💪',`Time for your ${W[d].title||'workout'}! Stay consistent.`,'workout-reminder');
-  }
-}
-
-// Run every minute for both workout and medication notifications
-setInterval(()=>{checkNotifTimes();checkMedReminders();schedulePushupNotifs();},60000);
+// scheduleNotifications — handled by checkNotifTimes interval
 
 // ══════════════════════════════════════════════════════════════
 // WARMUP TIMER
@@ -3250,6 +3223,8 @@ function openSessionNote(){
   document.getElementById('sessionNoteText').value=notes[today]||'';
   const o=document.getElementById('sessionNoteOverlay'),s=document.getElementById('sessionNoteSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function saveSessionNote(){
   const today=new Date().toDateString();
@@ -3302,17 +3277,13 @@ function openPhotoOverlay(){
     document.getElementById('aiWeight').value=bw[0].weight;
   const bc=ls('bmrCache');
   if(bc){
-    if(bc){
-      const ft=Math.floor((bc.heightIn||72)/12);
-      const ins=Math.round((bc.heightIn||72)%12);
-      if(!document.getElementById('aiHeightFt').value)document.getElementById('aiHeightFt').value=ft;
-      if(!document.getElementById('aiHeightIn').value)document.getElementById('aiHeightIn').value=ins;
-      if(!document.getElementById('aiWeight').value)document.getElementById('aiWeight').value=bc.weight||'';
-      if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
-    }    if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
+    if(!document.getElementById('aiHeight').value)document.getElementById('aiHeight').value=bc.heightIn||'';
+    if(!document.getElementById('aiAge').value)document.getElementById('aiAge').value=bc.age||'';
   }
   const o=document.getElementById('photoOverlay'),s=document.getElementById('photoSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function closePhotoOverlay(e){
   if(e&&e.target!==document.getElementById('photoOverlay'))return;
@@ -3333,28 +3304,7 @@ function renderPhotoGrid(){
       </div>`).join('');
 }
 
-function handlePhotoUpload(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const photos=ls('progressPhotos')||[];
-    photos.unshift({
-      dataUrl:ev.target.result,
-      date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
-      timestamp:Date.now(),
-      analyzed:false,
-      analysis:null
-    });
-    ls('progressPhotos',photos.slice(0,24));
-    renderPhotoGrid();
-    toast('📸 Photo saved — tap it to run AI analysis!');
-    haptic('success');
-    // auto-select for analysis
-    selectPhotoForAnalysis(0);
-  };
-  reader.readAsDataURL(file);
-  e.target.value='';
-}
+
 
 function deletePhoto(i){
   const photos=ls('progressPhotos')||[];
@@ -3384,9 +3334,7 @@ async function selectPhotoForAnalysis(idx){
   }
 
   // Get calibration values
-  const ft=parseFloat(document.getElementById('aiHeightFt').value)||6;
-  const ins=parseFloat(document.getElementById('aiHeightIn').value)||0;
-  const height=(ft*12)+ins;
+  const height=parseFloat(document.getElementById('aiHeight').value)||72;
   const weight=parseFloat(document.getElementById('aiWeight').value)||205;
   const age=parseFloat(document.getElementById('aiAge').value)||35;
 
@@ -3566,8 +3514,8 @@ function getSuperset(exId){return SUPERSETS[exId]||null;}
 // ══════════════════════════════════════════════════════════════
 // DAILY IGNITION — Pre-workout motivational intro
 // ══════════════════════════════════════════════════════════════
-const ELEVENLABS_KEY='sk_de10a46590e47a3124017d3720a14e5d6b163a8e195aa61d';
-const ELEVENLABS_VOICE='onwK4e9ZLuTAKqWW03F9'; // Daniel — deep, authoritative
+const ELEVENLABS_VOICE='onwK4e9ZLuTAKqWW03F9'; // proxied via Cloudflare Worker
+const MYRA_WORKER='https://myraapp.dpoetichand.workers.dev';
 
 const IGNITION_QUOTES=[
   // Jim Rohn (every 3rd quote guaranteed)
@@ -3651,21 +3599,17 @@ async function showIgnition(){
     const cacheKey='audio_'+btoa(quote.text.substring(0,30)).replace(/[^a-z0-9]/gi,'');
     let audioData=ls(cacheKey);
     if(!audioData){
-      // Generate via ElevenLabs
-      const resp=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE}`,{
+      // Generate via Cloudflare Worker proxy — key never touches client
+      const resp=await fetch(`${MYRA_WORKER}/tts`,{
         method:'POST',
-        headers:{'Content-Type':'application/json','xi-api-key':ELEVENLABS_KEY},
-        body:JSON.stringify({
-          text:quote.text,
-          model_id:'eleven_monolingual_v1',
-          voice_settings:{stability:0.45,similarity_boost:0.82,style:0.35,use_speaker_boost:true}
-        })
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({text:quote.text,voice:ELEVENLABS_VOICE})
       });
       if(resp.ok){
         const blob=await resp.blob();
         const reader=new FileReader();
         audioData=await new Promise(res=>{reader.onload=e=>res(e.target.result);reader.readAsDataURL(blob);});
-        try{ls(cacheKey,audioData);}catch(e){} // cache may fail if storage full
+        try{ls(cacheKey,audioData);}catch(e){}
       }
     }
     if(audioData&&!ignitionSkipped){
@@ -3803,7 +3747,7 @@ const QUICK_FOODS=[
   {name:'Rice 1 cup',cal:200,prot:4,carbs:44},
   {name:'Banana',cal:105,prot:1,carbs:27},
 ];
-function todayKey(){return localDateKey();}
+function todayKey(){return new Date().toISOString().split('T')[0];}
 function logMeal(){
   const name=document.getElementById('mealName').value||'Meal';
   const cal=parseFloat(document.getElementById('mealCal').value)||0;
@@ -3893,6 +3837,8 @@ function openPRBoard(){
   content.innerHTML=entries.length?entries.map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${i===0?'rgba(255,193,7,0.08)':'var(--surface)'};border:1px solid ${i===0?'rgba(255,193,7,0.3)':'var(--border)'};border-radius:12px;margin-bottom:8px"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;color:${i===0?'var(--accent)':i===1?'#aaa':i===2?'#cd7f32':'var(--muted)'};min-width:28px;text-align:center">${i+1}</div><div style="font-size:22px">${p.icon}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.bestDate}</div></div><div style="text-align:right"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--accent)">${p.best}</div><div style="font-size:9px;color:var(--muted)">lbs</div></div></div>`).join(''):'<div style="text-align:center;padding:32px;color:var(--muted)">Complete workouts to set your first PRs!</div>';
   const o=document.getElementById('prOverlay'),s=document.getElementById('prSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function closePRBoard(e){if(e&&e.target!==document.getElementById('prOverlay'))return;document.getElementById('prSheet').style.transform='translateY(100%)';setTimeout(()=>document.getElementById('prOverlay').style.display='none',300);}
 
@@ -3924,6 +3870,8 @@ function openSwap(exId,exName){
   }
   const o=document.getElementById('swapOverlay'),s=document.getElementById('swapSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function doSwap(idx){
   const opts=SWAP_OPTIONS[swapTargetId]||[];
@@ -3968,6 +3916,8 @@ function openPlateCalc(exId,exName){
   if(sessions.length&&sessions[0].sets[0]?.weight){const w=parseFloat(sessions[0].sets[0].weight);if(w){document.getElementById('plateWeight').value=w;calcPlates();}}
   const o=document.getElementById('plateOverlay'),s=document.getElementById('plateSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function calcPlates(){
   const total=parseFloat(document.getElementById('plateWeight').value)||0;
@@ -4030,39 +3980,29 @@ function addAIMsg(role,text,isTyping=false){
 // ══════════════════════════════════════════════════════════════
 // SHARE WORKOUT
 // ══════════════════════════════════════════════════════════════
-function shareWorkout(){
-  const all=getAllSessions().filter(s=>s.timestamp>(sessionStart||Date.now()-3600000));
-  const vol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{const w=parseFloat(st.weight)||0,r=parseFloat(st.reps)||0;return b+w*r;},0),0);
-  const mins=Math.round((Date.now()-(sessionStart||Date.now()-1800000))/60000);
-  const text=`💪 MYRA APP — SESSION COMPLETE\n${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}\n\n⏱ ${mins} min · 🏋️ ${Math.round(vol).toLocaleString()} lbs moved\n\n${all.map(s=>`✅ ${s.exName}: ${s.sets.length} sets`).join('\n')}\n\n📅 Day ${getProgramDay()} · ${getPhaseLabel()}`;
-  document.getElementById('shareContent').innerHTML=`<pre style="font-size:12px;color:var(--text);text-align:left;white-space:pre-wrap;line-height:1.7">${text}</pre>`;
-  document.getElementById('shareOverlay').style.display='flex';
-  document.getElementById('pwsOverlay').classList.remove('show');
-}
-function copyShareText(){const pre=document.querySelector('#shareContent pre');if(pre)navigator.clipboard?.writeText(pre.textContent).then(()=>toast('📋 Copied!')).catch(()=>toast('Select and copy manually','warn'));}
+
+
 
 // ══════════════════════════════════════════════════════════════
 // ONBOARDING
 // ══════════════════════════════════════════════════════════════
-function checkOnboarding(){if(!ls('onboardingDone'))document.getElementById('onboardOverlay').style.display='flex';}
-function showStep(n){[1,2].forEach(i=>{const el=document.getElementById('onboardStep'+i);if(el)el.style.display=i===n?'block':'none';});const dots=document.getElementById('onboardDots');if(dots)[...dots.children].forEach((d,i)=>d.style.background=i===n-1?'var(--accent)':'var(--border)');}
+// checkOnboarding replaced by brand slides version below
+
 function onboardStep2(){
   const w=parseFloat(document.getElementById('obWeight').value);
-  const ft=parseFloat(document.getElementById('obHeightFt').value)||0;
-  const inches=parseFloat(document.getElementById('obHeightIn').value)||0;
-  const h=(ft*12)+inches; // convert to total inches for BMR calc
+  const h=parseFloat(document.getElementById('obHeight').value);
   const a=parseFloat(document.getElementById('obAge').value);
   const g=parseFloat(document.getElementById('obGoalWeight').value);
-  if(!w||!h||!a){toast('Please fill in weight, height and age','err');return;}
-  const bw=ls('bodyweight')||[];
-  bw.unshift({weight:w,date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),timestamp:Date.now()});
-  ls('bodyweight',bw);
+  if(!w||!h||!a){toast('Please fill in all fields','err');return;}
+  const bw=ls('bodyweight')||[];bw.unshift({weight:w,date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),timestamp:Date.now()});ls('bodyweight',bw);
   if(g)ls('targetWeight',{weight:g,date:''});
   ls('bmrCache',{age:a,heightIn:h,weight:w,activity:1.55});
-  ls('startDate',localDateKey());
+  ls('startDate',new Date().toISOString().split('T')[0]);
+  const bmr=Math.round(10*(w*0.453592)+6.25*(h*2.54)-5*a+5);const tdee=Math.round(bmr*1.55);
+  document.getElementById('obCals').value=tdee-400;document.getElementById('obProt').value=Math.round(w*0.85);
   showStep(2);
 }
-function finishOnboarding(){ls('onboardingDone',true);document.getElementById('onboardOverlay').style.display='none';refreshHome();toast('Welcome to Myra! 🎉');celebrate();}
+
 
 // ══════════════════════════════════════════════════════════════
 // DELOAD CHECK
@@ -4268,6 +4208,8 @@ function openCustomFoods(){
     </div>`).join('');
   const o=document.getElementById('customFoodsOverlay'),s=document.getElementById('customFoodsSheet');
   o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);
+  // Load medication state
+  if(typeof renderMedToggle==='function')renderMedToggle();
 }
 function saveCustomFoods(){
   const foods=getQuickFoods();
@@ -4615,243 +4557,13 @@ function toggleSpotifyExpand(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// MEDICATION REMINDERS
+// PUSHUP DAILY TRACKER
 // ══════════════════════════════════════════════════════════════
-function getMedSettings(){return ls('medSettings')||{enabled:false,name:'',times:[]};}
-function medTodayKey(){return'med:'+localDateKey();}
-
-function toggleMedReminders(){
-  const s=getMedSettings();
-  s.enabled=!s.enabled;
-  ls('medSettings',s);
-  renderMedToggle();
-  if(s.enabled){
-    requestNotifPermission();
-    toast('💊 Medication reminders on');
-  } else {
-    toast('Medication reminders off');
-  }
-}
-
-function renderMedToggle(){
-  const s=getMedSettings();
-  const btn=document.getElementById('medToggleBtn');
-  const thumb=document.getElementById('medToggleThumb');
-  const body=document.getElementById('medSettingsBody');
-  const desc=document.getElementById('medToggleDesc');
-  if(btn){btn.style.background=s.enabled?'var(--accent3)':'var(--border)';}
-  if(thumb){thumb.style.left=s.enabled?'22px':'2px';}
-  if(body){body.style.display=s.enabled?'block':'none';}
-  if(desc){desc.textContent=s.enabled?(s.times.length?s.times.length+' reminder'+( s.times.length>1?'s':'')+' set':'Tap to add times'):'Tap to enable';}
-  if(s.enabled){
-    const nameEl=document.getElementById('medName');
-    if(nameEl)nameEl.value=s.name||'';
-    renderMedTimes();
-    renderMedTodayLog();
-    renderMedCalendar();
-  }
-}
-
-function renderMedTimes(){
-  const s=getMedSettings();
-  const list=document.getElementById('medTimesList');
-  if(!list)return;
-  if(!s.times.length){
-    list.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">No times set yet — tap Add below</div>';
-    return;
-  }
-  list.innerHTML=s.times.map((t,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-      <span style="font-size:16px">⏰</span>
-      <input type="time" value="${t}" onchange="updateMedTime(${i},this.value)" style="flex:1;font-size:14px;font-weight:700;color:var(--accent3);background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif">
-      <button onclick="removeMedTime(${i})" style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.2);border-radius:6px;color:var(--red);font-size:12px;cursor:pointer;padding:4px 8px;font-family:'DM Sans',sans-serif">✕</button>
-    </div>`).join('');
-}
-
-function addMedTime(){
-  const s=getMedSettings();
-  if(s.times.length>=4){toast('Maximum 4 reminder times','warn');return;}
-  // Default to a sensible next time
-  const defaults=['08:00','13:00','18:00','21:00'];
-  const next=defaults.find(t=>!s.times.includes(t))||'09:00';
-  s.times.push(next);
-  s.times.sort();
-  ls('medSettings',s);
-  renderMedTimes();
-}
-
-function removeMedTime(idx){
-  const s=getMedSettings();
-  s.times.splice(idx,1);
-  ls('medSettings',s);
-  renderMedTimes();
-  renderMedToggle();
-}
-
-function updateMedTime(idx,val){
-  const s=getMedSettings();
-  s.times[idx]=val;
-  s.times.sort();
-  ls('medSettings',s);
-}
-
-function renderMedCalendar(){
-  const el=document.getElementById('medCalendar');
-  if(!el)return;
-  const s=getMedSettings();
-  if(!s.times.length){el.innerHTML='<div style="font-size:12px;color:var(--muted)">Add reminder times to track adherence</div>';return;}
-
-  // Build 30 days
-  const days=[];
-  for(let i=29;i>=0;i--){
-    const d=new Date();d.setDate(d.getDate()-i);
-    days.push(d);
-  }
-
-  // Day labels row
-  const dayLabels=['S','M','T','W','T','F','S'];
-
-  // Calculate stats
-  let taken=0,missed=0,pending=0;
-  const today=localDateKey();
-
-  const dots=days.map(d=>{
-    const key='med:'+localDateKey(d);
-    const log=ls(key)||[];
-    const isToday=localDateKey(d)===today;
-    const isFuture=localDateKey(d)>today;
-    if(isFuture)return{color:'var(--border)',label:d.getDate(),opacity:'0.3'};
-    if(!s.times.length)return{color:'var(--border)',label:d.getDate()};
-    // Check if all doses taken
-    const allTaken=s.times.every(t=>log.find(l=>l.time===t&&l.taken));
-    const anyTaken=s.times.some(t=>log.find(l=>l.time===t&&l.taken));
-    if(allTaken){taken++;return{color:'var(--green)',label:d.getDate(),title:'All doses taken'};}
-    if(anyTaken){taken++;return{color:'var(--accent)',label:d.getDate(),title:'Some doses taken'};}
-    if(isToday&&!log.length)return{color:'var(--blue)',label:d.getDate(),title:'Today — pending'};
-    if(log.length===0&&!isToday){missed++;return{color:'rgba(255,82,82,0.7)',label:d.getDate(),title:'Missed'};}
-    return{color:'var(--border)',label:d.getDate()};
-  });
-
-  const pct=days.filter((_,i)=>!dots[i]?.opacity).length>0
-    ?Math.round(taken/(taken+missed)*100)||0:0;
-
-  el.innerHTML=`
-    <!-- Stats row -->
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <div style="flex:1;text-align:center;background:rgba(0,230,118,0.08);border-radius:8px;padding:8px">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green)">${taken}</div>
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Taken</div>
-      </div>
-      <div style="flex:1;text-align:center;background:rgba(255,82,82,0.08);border-radius:8px;padding:8px">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red)">${missed}</div>
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Missed</div>
-      </div>
-      <div style="flex:1;text-align:center;background:rgba(255,193,7,0.08);border-radius:8px;padding:8px">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)">${pct}%</div>
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase">Rate</div>
-      </div>
-    </div>
-    <!-- Calendar grid - 7 cols -->
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-      ${dayLabels.map(l=>`<div style="text-align:center;font-size:9px;color:var(--muted);font-weight:700;padding-bottom:2px">${l}</div>`).join('')}
-      ${Array(days[0].getDay()).fill(0).map(()=>'<div></div>').join('')}
-      ${dots.map((d,i)=>`<div title="${d.title||''}" style="aspect-ratio:1;border-radius:5px;background:${d.color};opacity:${d.opacity||1};display:flex;align-items:center;justify-content:center;font-size:9px;color:${d.color==='var(--green)'?'#000':'var(--muted)'};font-weight:700;cursor:default">${d.label}</div>`).join('')}
-    </div>
-    <!-- Legend -->
-    <div style="display:flex;gap:10px;margin-top:8px;font-size:10px;color:var(--muted)">
-      <span>🟢 Taken</span><span>🔴 Missed</span><span>🔵 Today</span>
-    </div>`;
-}
-
-// saveMedSettings
-function saveMedSettings(){
-  const s=getMedSettings();
-  const nameEl=document.getElementById('medName');
-  if(nameEl)s.name=nameEl.value.trim();
-  ls('medSettings',s);
-  renderMedToggle();
-  renderMedCalendar();
-  toast(`💊 ${s.name||'Medication'} reminders saved!`);
-  haptic('success');
-}
-
-function renderMedTodayLog(){
-  const log=ls(medTodayKey())||[];
-  const el=document.getElementById('medTodayLog');
-  if(!el)return;
-  const s=getMedSettings();
-  if(!log.length&&!s.times.length){el.textContent='No doses logged yet today';return;}
-  if(!s.times.length){el.textContent='Add reminder times above';return;}
-  el.innerHTML=s.times.map(t=>{
-    const entry=log.find(l=>l.time===t);
-    const status=entry?.taken?'✅ Taken':'❌ Missed/Pending';
-    const color=entry?.taken?'var(--green)':new Date().toTimeString().slice(0,5)>t?'var(--red)':'var(--muted)';
-    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;font-weight:700">${t}</span>
-      <span style="font-size:12px;color:${color}">${status}</span>
-      ${!entry?.taken?`<button onclick="logMedDose('${t}',true)" style="background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.25);border-radius:6px;color:var(--green);font-size:11px;padding:4px 8px;cursor:pointer;font-family:'DM Sans',sans-serif">Mark Taken</button>`:''}
-    </div>`;
-  }).join('');
-}
-
-function logMedDose(time,taken){
-  const log=ls(medTodayKey())||[];
-  const existing=log.findIndex(l=>l.time===time);
-  const entry={time,taken,loggedAt:new Date().toISOString()};
-  if(existing>=0)log[existing]=entry;else log.push(entry);
-  ls(medTodayKey(),log);
-  renderMedTodayLog();
-  if(taken){toast('💊 Dose logged — well done!');haptic('success');}
-}
-
-// Notification for medication
-function fireMedNotification(medName,time){
-  fireNotification(
-    `💊 ${medName||'Medication'} reminder`,
-    `Time to take your ${medName||'medication'} (${time}). Stay consistent!`,
-    'med-'+time
-  );
-  // Follow-up if not logged in 5 min
-  setTimeout(()=>{
-    const log=ls(medTodayKey())||[];
-    if(!log.find(l=>l.time===time&&l.taken)){
-      fireNotification(`💊 Reminder: ${medName||'Medication'} not logged`,'Did you take it? Tap to log.','med-snooze-'+time);
-    }
-  },5*60*1000);
-}
-
-// Check medication times every minute
-function checkMedReminders(){
-  const s=getMedSettings();
-  if(!s.enabled||!s.times.length)return;
-  if(Notification.permission!=='granted')return;
-  const now=new Date();
-  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  if(s.times.includes(hhmm)){
-    const log=ls(medTodayKey())||[];
-    const alreadyFired=log.find(l=>l.time===hhmm);
-    if(!alreadyFired){
-      fireMedNotification(s.name,hhmm);
-      // Mark as prompted (not taken yet)
-      log.push({time:hhmm,taken:false,prompted:true,loggedAt:new Date().toISOString()});
-      ls(medTodayKey(),log);
-    }
-  }
-}
-
-// Add to the per-minute check interval
-// Per-minute checks consolidated in checkNotifTimes interval above
-
-function requestNotifPermission(){
-  if('Notification' in window&&Notification.permission==='default'){
-    Notification.requestPermission();
-  }
-}
 const PUSHUP_BASE_GOAL=5; // minimum goal if no history
 const PUSHUP_NOTIF_TIMES=['09:00','18:00'];
 
-function pushupTodayKey(){return'pushups:'+localDateKey();}
-function pushupDateKey(daysAgo){const d=new Date();d.setDate(d.getDate()-daysAgo);return'pushups:'+localDateKey(d);}
+function pushupTodayKey(){return'pushups:'+new Date().toISOString().split('T')[0];}
+function pushupDateKey(daysAgo){const d=new Date();d.setDate(d.getDate()-daysAgo);return'pushups:'+d.toISOString().split('T')[0];}
 
 function getPushupGoal(){
   // Goal = yesterday's total + 1 (minimum PUSHUP_BASE_GOAL)
@@ -5006,36 +4718,7 @@ function schedulePushupNotifs(){
 }
 
 // Check every minute for notification time
-// Per-minute pushup check consolidated above
-function renderMedDueIndicator(){
-  const s=getMedSettings();
-  const el=document.getElementById('medDueIndicator');
-  if(!el)return;
-  if(!s.enabled||!s.times.length){el.style.display='none';return;}
-  const now=new Date();
-  const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const log=ls(medTodayKey())||[];
-  const overdue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t<hhmm);
-  const nextDue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t>=hhmm);
-  const allDone=s.times.every(t=>log.find(l=>l.time===t&&l.taken));
-  if(overdue){
-    el.style.display='block';
-    el.innerHTML=`<div style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:20px">💊</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--red)">Missed dose — ${overdue}</div><div style="font-size:11px;color:var(--muted)">${s.name||'Medication'}</div></div>
-      <button onclick="logMedDose('${overdue}',true);renderMedDueIndicator()" style="background:var(--green);border:none;border-radius:8px;color:#000;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Taken</button>
-    </div>`;
-  } else if(allDone){
-    el.style.display='block';
-    el.innerHTML=`<div style="background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">✅</span><div style="font-size:13px;font-weight:700;color:var(--green)">All ${s.name||'medication'} doses taken today</div></div>`;
-  } else if(nextDue){
-    el.style.display='block';
-    el.innerHTML=`<div style="background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">💊</span><div style="font-size:13px;font-weight:700;color:var(--accent3)">Next ${s.name||'medication'} dose at ${nextDue}</div></div>`;
-  } else {
-    el.style.display='none';
-  }
-}
-
+setInterval(schedulePushupNotifs, 60000);
 function calcRecompScore(){
   const today=new Date();
   const weekAgo=new Date(today);weekAgo.setDate(today.getDate()-7);
@@ -5339,18 +5022,7 @@ function toggleHomeCard(wrapId){
   if(btn)btn.style.transform=collapsed?'rotate(0deg)':'rotate(-90deg)';
   ls('card_'+wrapId,collapsed?'open':'closed');
 }
-function restoreCardStates(){
-  ['recompScoreCardWrap','pushupCardWrap','sciCardWrap'].forEach(id=>{
-    const state=ls('card_'+id);
-    if(state==='closed'){
-      const wrap=document.getElementById(id);
-      const body=wrap?.querySelector('.card-body');
-      const btn=wrap?.querySelector('.collapse-btn');
-      if(body){body.style.maxHeight='0px';}
-      if(btn)btn.style.transform='rotate(-90deg)';
-    }
-  });
-}
+
 
 // 3. Workout overflow menu
 function showWorkoutMenu(){
@@ -5393,15 +5065,7 @@ function renderProgressDashboard(){
 }
 
 // 9. Auto dark/light mode based on system
-function applySystemTheme(){
-  if(ls('lm')!==null)return; // user has manually set it — respect that
-  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if(!prefersDark){
-    document.body.classList.add('light-mode');
-    const btn=document.getElementById('modeBtn');
-    if(btn)btn.textContent='🌙';
-  }
-}
+
 // Listen for system theme changes
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
   if(ls('lm')!==null)return;
@@ -5409,22 +5073,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
 });
 
 // 10. Offline indicator
-function setupOfflineIndicator(){
-  const show=()=>{
-    let bar=document.getElementById('offlineBar');
-    if(!bar){
-      bar=document.createElement('div');
-      bar.id='offlineBar';
-      bar.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(255,82,82,0.9);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:6px;z-index:1000;font-family:"DM Sans",sans-serif';
-      bar.textContent='📵 Offline — AI features unavailable';
-      document.body.prepend(bar);
-    }
-  };
-  const hide=()=>{const bar=document.getElementById('offlineBar');if(bar)bar.remove();};
-  window.addEventListener('offline',show);
-  window.addEventListener('online',hide);
-  if(!navigator.onLine)show();
-}
+
 
 // 12. Micro-animations — number count-up on home stats
 function animateHomeStats(){
@@ -5443,6 +5092,166 @@ function animateHomeStats(){
 }
 
 // ══════════════════════════════════════════════════════════════
+// LOCAL DATE KEY — fixes UTC timezone offset bug
+// ══════════════════════════════════════════════════════════════
+function localDateKey(d){const date=d||new Date();return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
+
+// ══════════════════════════════════════════════════════════════
+// PHOTO COMPRESSION — prevents localStorage overflow
+// ══════════════════════════════════════════════════════════════
+function compressPhoto(dataUrl,maxWidth,quality,callback){const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxWidth){h=Math.round(h*maxWidth/w);w=maxWidth;}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);callback(canvas.toDataURL('image/jpeg',quality));};img.src=dataUrl;}
+function handlePhotoUpload(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{compressPhoto(ev.target.result,800,0.75,compressed=>{const photos=ls('progressPhotos')||[];photos.unshift({dataUrl:compressed,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),timestamp:Date.now(),analyzed:false,analysis:null});try{ls('progressPhotos',photos.slice(0,24));renderPhotoGrid();toast('📸 Photo saved — tap it to run AI analysis!');haptic('success');selectPhotoForAnalysis(0);}catch(err){try{ls('progressPhotos',photos.slice(0,6));renderPhotoGrid();toast('📸 Photo saved (older photos removed)','warn');}catch(e2){toast('Storage full — clear some photos first','err');}}});};reader.readAsDataURL(file);e.target.value='';}
+
+// ══════════════════════════════════════════════════════════════
+// SERVICE WORKER + UNIFIED NOTIFICATION HELPER
+// ══════════════════════════════════════════════════════════════
+let swRegistration=null;
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(reg=>{swRegistration=reg;}).catch(()=>{});}
+function fireNotification(title,body,tag){if(Notification.permission!=='granted')return;if(swRegistration){swRegistration.showNotification(title,{body,tag:tag||'myra',vibrate:[100,50,100],requireInteraction:false,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>'});}else{const n=new Notification(title,{body,tag:tag||'myra'});n.onclick=()=>window.focus();}}
+
+// ══════════════════════════════════════════════════════════════
+// NOTIFICATION TIME CHECK
+// ══════════════════════════════════════════════════════════════
+function scheduleNotifications(){if(ls('notifEnabled')&&Notification.permission==='default'){Notification.requestPermission();}}
+function checkNotifTimes(){if(!ls('notifEnabled')||Notification.permission!=='granted')return;const now=new Date();const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');const notifTimes=ls('notifTimes')||['09:00','18:00'];if(!notifTimes.includes(hhmm))return;const firedKey='notifFired:'+localDateKey()+':'+hhmm;if(ls(firedKey))return;ls(firedKey,true);const d=getTodayDay();const W=getWorkouts();if(d&&W[d]&&W[d].exercises?.length){fireNotification('Myra App 💪',`Time for your ${W[d].title||'workout'}! Stay consistent.`,'workout-reminder');}}
+setInterval(()=>{checkNotifTimes();if(typeof checkMedReminders==='function')checkMedReminders();if(typeof schedulePushupNotifs==='function')schedulePushupNotifs();},60000);
+async function requestNotifications(){if(!('Notification' in window)){toast('Notifications not supported','warn');return;}const perm=await Notification.requestPermission();if(perm==='granted'){ls('notifEnabled',true);const btn=document.getElementById('notifBtn');if(btn){btn.textContent='✅ Reminders Enabled';btn.className='btn btn-green';}const section=document.getElementById('notifTimesSection');if(section)section.style.display='block';setTimeout(()=>new Notification('Myra App 💪',{body:'Workout reminders are on!',tag:'test-notif'}),500);toast('✅ Notifications enabled!');}else{toast('Notifications blocked — enable in phone Settings','warn');}}
+function saveNotifTimes(){const t1=document.getElementById('notifTime1')?.value||'09:00';const t2=document.getElementById('notifTime2')?.value||'18:00';ls('notifTimes',[t1,t2].sort());toast(`⏰ Reminders set for ${t1} & ${t2}`);haptic('success');}
+
+// ══════════════════════════════════════════════════════════════
+// MEDICATION REMINDERS
+// ══════════════════════════════════════════════════════════════
+function getMedSettings(){return ls('medSettings')||{enabled:false,name:'',times:[]};}
+function medTodayKey(){return'med:'+localDateKey();}
+function toggleMedReminders(){const s=getMedSettings();s.enabled=!s.enabled;ls('medSettings',s);renderMedToggle();if(s.enabled){requestNotifPermission();toast('💊 Medication reminders on');}else{toast('Medication reminders off');}}
+function renderMedToggle(){const s=getMedSettings();const btn=document.getElementById('medToggleBtn');const thumb=document.getElementById('medToggleThumb');const body=document.getElementById('medSettingsBody');const desc=document.getElementById('medToggleDesc');if(btn)btn.style.background=s.enabled?'var(--accent3)':'var(--border)';if(thumb)thumb.style.left=s.enabled?'22px':'2px';if(body)body.style.display=s.enabled?'block':'none';if(desc)desc.textContent=s.enabled?(s.times.length?s.times.length+' reminder'+(s.times.length>1?'s':'')+' set':'Tap to add times'):'Tap to enable';if(s.enabled){const nameEl=document.getElementById('medName');if(nameEl)nameEl.value=s.name||'';renderMedTimes();renderMedCalendar();}}
+function renderMedTimes(){const s=getMedSettings();const list=document.getElementById('medTimesList');if(!list)return;if(!s.times.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">No times set yet</div>';return;}list.innerHTML=s.times.map((t,i)=>`<div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:10px 12px;margin-bottom:6px"><span style="font-size:16px">⏰</span><input type="time" value="${t}" onchange="updateMedTime(${i},this.value)" style="flex:1;font-size:14px;font-weight:700;color:var(--accent3);background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif"><button onclick="removeMedTime(${i})" style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.2);border-radius:6px;color:var(--red);font-size:12px;cursor:pointer;padding:4px 8px;font-family:'DM Sans',sans-serif">✕</button></div>`).join('');}
+function addMedTime(){const s=getMedSettings();if(s.times.length>=4){toast('Maximum 4 reminder times','warn');return;}const defaults=['08:00','13:00','18:00','21:00'];const next=defaults.find(t=>!s.times.includes(t))||'09:00';s.times.push(next);s.times.sort();ls('medSettings',s);renderMedTimes();}
+function removeMedTime(idx){const s=getMedSettings();s.times.splice(idx,1);ls('medSettings',s);renderMedTimes();renderMedToggle();}
+function updateMedTime(idx,val){const s=getMedSettings();s.times[idx]=val;s.times.sort();ls('medSettings',s);}
+function saveMedSettings(){const s=getMedSettings();const nameEl=document.getElementById('medName');if(nameEl)s.name=nameEl.value.trim();ls('medSettings',s);renderMedToggle();renderMedCalendar();toast(`💊 ${s.name||'Medication'} reminders saved!`);haptic('success');}
+function logMedDose(time,taken){const log=ls(medTodayKey())||[];const existing=log.findIndex(l=>l.time===time);const entry={time,taken,loggedAt:new Date().toISOString()};if(existing>=0)log[existing]=entry;else log.push(entry);ls(medTodayKey(),log);renderMedDueIndicator();if(taken){toast('💊 Dose logged!');haptic('success');}}
+function fireMedNotification(medName,time){fireNotification(`💊 ${medName||'Medication'} reminder`,`Time to take your ${medName||'medication'} (${time}).`,'med-'+time);setTimeout(()=>{const log=ls(medTodayKey())||[];if(!log.find(l=>l.time===time&&l.taken)){fireNotification(`💊 Reminder: ${medName||'Medication'} not logged`,'Did you take it?','med-snooze-'+time);}},5*60*1000);}
+function checkMedReminders(){const s=getMedSettings();if(!s.enabled||!s.times.length||Notification.permission!=='granted')return;const now=new Date();const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');if(s.times.includes(hhmm)){const log=ls(medTodayKey())||[];const alreadyFired=log.find(l=>l.time===hhmm);if(!alreadyFired){fireMedNotification(s.name,hhmm);log.push({time:hhmm,taken:false,prompted:true,loggedAt:new Date().toISOString()});ls(medTodayKey(),log);}}}
+function requestNotifPermission(){if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();}
+function renderMedDueIndicator(){const s=getMedSettings();const el=document.getElementById('medDueIndicator');if(!el)return;if(!s.enabled||!s.times.length){el.style.display='none';return;}const now=new Date();const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');const log=ls(medTodayKey())||[];const overdue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t<hhmm);const allDone=s.times.every(t=>log.find(l=>l.time===t&&l.taken));const nextDue=s.times.find(t=>!log.find(l=>l.time===t&&l.taken)&&t>=hhmm);if(overdue){el.style.display='block';el.innerHTML=`<div style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">💊</span><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--red)">Missed dose — ${overdue}</div><div style="font-size:11px;color:var(--muted)">${s.name||'Medication'}</div></div><button onclick="logMedDose('${overdue}',true)" style="background:var(--green);border:none;border-radius:8px;color:#000;font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Taken</button></div>`;}else if(allDone){el.style.display='block';el.innerHTML=`<div style="background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">✅</span><div style="font-size:13px;font-weight:700;color:var(--green)">All ${s.name||'medication'} doses taken today</div></div>`;}else if(nextDue){el.style.display='block';el.innerHTML=`<div style="background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:10px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:8px"><span style="font-size:16px">💊</span><div style="font-size:13px;font-weight:700;color:var(--accent3)">Next ${s.name||'medication'} dose at ${nextDue}</div></div>`;}else{el.style.display='none';}}
+function renderMedCalendar(){const el=document.getElementById('medCalendar');if(!el)return;const s=getMedSettings();if(!s.times.length){el.innerHTML='<div style="font-size:12px;color:var(--muted)">Add reminder times to track adherence</div>';return;}const days=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d);}const today=localDateKey();let taken=0,missed=0;const dots=days.map(d=>{const key='med:'+localDateKey(d);const log=ls(key)||[];const isToday=localDateKey(d)===today;const isFuture=localDateKey(d)>today;if(isFuture)return{color:'var(--border)',label:d.getDate(),opacity:'0.3'};const allTaken=s.times.every(t=>log.find(l=>l.time===t&&l.taken));const anyTaken=s.times.some(t=>log.find(l=>l.time===t&&l.taken));if(allTaken){taken++;return{color:'var(--green)',label:d.getDate()};}if(anyTaken){taken++;return{color:'var(--accent)',label:d.getDate()};}if(isToday&&!log.length)return{color:'var(--blue)',label:d.getDate()};if(!isToday){missed++;return{color:'rgba(255,82,82,0.7)',label:d.getDate()};}return{color:'var(--border)',label:d.getDate()};});const pct=taken+missed>0?Math.round(taken/(taken+missed)*100):0;const dayLabels=['S','M','T','W','T','F','S'];el.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1;text-align:center;background:rgba(0,230,118,0.08);border-radius:8px;padding:8px"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green)">${taken}</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Taken</div></div><div style="flex:1;text-align:center;background:rgba(255,82,82,0.08);border-radius:8px;padding:8px"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red)">${missed}</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Missed</div></div><div style="flex:1;text-align:center;background:rgba(255,193,7,0.08);border-radius:8px;padding:8px"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)">${pct}%</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Rate</div></div></div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${dayLabels.map(l=>`<div style="text-align:center;font-size:9px;color:var(--muted);font-weight:700">${l}</div>`).join('')}${Array(days[0].getDay()).fill(0).map(()=>'<div></div>').join('')}${dots.map(d=>`<div style="aspect-ratio:1;border-radius:5px;background:${d.color};opacity:${d.opacity||1};display:flex;align-items:center;justify-content:center;font-size:9px;color:${d.color==='var(--green)'?'#000':'var(--muted)'};font-weight:700">${d.label}</div>`).join('')}</div><div style="display:flex;gap:10px;margin-top:8px;font-size:10px;color:var(--muted)"><span>🟢 Taken</span><span>🔴 Missed</span><span>🔵 Today</span></div>`;}
+
+// ══════════════════════════════════════════════════════════════
+// 16-WEEK RUNNING PROGRAM
+// ══════════════════════════════════════════════════════════════
+const RUN_PLAN=[
+  {week:1,phase:'Walk/Run Intervals',sessions:[{day:'Wed',type:'interval',label:'Walk 4 min → Run 1 min × 6',intervals:[{walk:240,run:60,rounds:6}],target:1.5},{day:'Sat',type:'long',label:'Walk 4 min → Run 1 min × 6',intervals:[{walk:240,run:60,rounds:6}],target:1.5}],weeklyTarget:3},
+  {week:2,phase:'Walk/Run Intervals',sessions:[{day:'Wed',type:'interval',label:'Walk 3 min → Run 2 min × 6',intervals:[{walk:180,run:120,rounds:6}],target:2},{day:'Sat',type:'long',label:'Walk 3 min → Run 2 min × 6',intervals:[{walk:180,run:120,rounds:6}],target:2}],weeklyTarget:4},
+  {week:3,phase:'Walk/Run Intervals',sessions:[{day:'Wed',type:'interval',label:'Walk 2 min → Run 3 min × 6',intervals:[{walk:120,run:180,rounds:6}],target:2.5},{day:'Sat',type:'long',label:'Walk 2 min → Run 3 min × 6',intervals:[{walk:120,run:180,rounds:6}],target:2.5}],weeklyTarget:5},
+  {week:4,phase:'Walk/Run Intervals',sessions:[{day:'Wed',type:'interval',label:'Walk 1 min → Run 4 min × 6',intervals:[{walk:60,run:240,rounds:6}],target:3},{day:'Sat',type:'long',label:'Walk 1 min → Run 4 min × 6',intervals:[{walk:60,run:240,rounds:6}],target:3}],weeklyTarget:6},
+  {week:5,phase:'Building Endurance',sessions:[{day:'Wed',type:'easy',label:'Run 8 min → Walk 2 min × 3',intervals:[{walk:120,run:480,rounds:3}],target:2.5},{day:'Sat',type:'long',label:'Run 8 min → Walk 2 min × 3',intervals:[{walk:120,run:480,rounds:3}],target:3}],weeklyTarget:5.5},
+  {week:6,phase:'Building Endurance',sessions:[{day:'Wed',type:'easy',label:'Run 10 min → Walk 2 min × 3',intervals:[{walk:120,run:600,rounds:3}],target:3},{day:'Sat',type:'long',label:'Run 10 min → Walk 2 min × 3',intervals:[{walk:120,run:600,rounds:3}],target:3.5}],weeklyTarget:6.5},
+  {week:7,phase:'Building Endurance',sessions:[{day:'Wed',type:'easy',label:'Run 15 min → Walk 1 min × 2',intervals:[{walk:60,run:900,rounds:2}],target:3},{day:'Sat',type:'long',label:'Run 15 min → Walk 1 min × 2',intervals:[{walk:60,run:900,rounds:2}],target:4}],weeklyTarget:7},
+  {week:8,phase:'Building Endurance',sessions:[{day:'Wed',type:'easy',label:'Run 20 min continuous',intervals:[{walk:0,run:1200,rounds:1}],target:2.5},{day:'Sat',type:'long',label:'Run 20 min continuous',intervals:[{walk:0,run:1200,rounds:1}],target:4.5}],weeklyTarget:7},
+  {week:9,phase:'Distance Building',sessions:[{day:'Wed',type:'easy',label:'Easy run 25 min',target:2.5},{day:'Sat',type:'long',label:'Long run 2.5 miles',target:2.5}],weeklyTarget:5},
+  {week:10,phase:'Distance Building',sessions:[{day:'Wed',type:'easy',label:'Easy run 25 min',target:2.5},{day:'Sat',type:'long',label:'Long run 3.1 miles (5K!)',target:3.1}],weeklyTarget:5.6},
+  {week:11,phase:'Distance Building',sessions:[{day:'Wed',type:'easy',label:'Easy run 30 min',target:3},{day:'Sat',type:'long',label:'Long run 3.5 miles',target:3.5}],weeklyTarget:6.5},
+  {week:12,phase:'Distance Building',sessions:[{day:'Wed',type:'easy',label:'Easy run 30 min',target:3},{day:'Sat',type:'long',label:'Long run 4 miles',target:4}],weeklyTarget:7},
+  {week:13,phase:'Distance Building',sessions:[{day:'Wed',type:'easy',label:'Easy run 30 min',target:3},{day:'Sat',type:'long',label:'Long run 5 miles',target:5}],weeklyTarget:8},
+  {week:14,phase:'Distance Building',sessions:[{day:'Wed',type:'tempo',label:'Tempo run 25 min',target:2.5},{day:'Sat',type:'long',label:'Long run 6 miles',target:6}],weeklyTarget:8.5},
+  {week:15,phase:'Race Prep',sessions:[{day:'Wed',type:'tempo',label:'Tempo run 30 min',target:3},{day:'Sat',type:'long',label:'Long run 8 miles',target:8}],weeklyTarget:11},
+  {week:16,phase:'Race Prep',sessions:[{day:'Wed',type:'easy',label:'Easy run 20 min — stay fresh',target:2},{day:'Sat',type:'long',label:'Race week — 10 miles 🏁',target:10}],weeklyTarget:12},
+];
+const RUN_TYPE_COLORS={easy:'var(--green)',interval:'var(--blue)',tempo:'var(--accent2)',long:'var(--accent)'};
+const RUN_CIRC=2*Math.PI*88;
+let runType='easy',runEffort=5,guidedIntervals=[],guidedStep=0,guidedTimer=null;
+function getRunStartDate(){return ls('runStartDate')||ls('startDate')||localDateKey();}
+function getCurrentRunWeek(){const start=new Date(getRunStartDate());const weeks=Math.floor((new Date()-start)/(7*24*60*60*1000));return Math.min(Math.max(1,weeks+1),16);}
+function runWeekKey(w){return'runs:week'+w;}
+function getRunsForWeek(w){return ls(runWeekKey(w))||[];}
+function saveRunsForWeek(w,runs){ls(runWeekKey(w),runs);}
+function calcPace(distance,duration){const d=parseFloat(distance),m=parseFloat(duration);if(!d||!m)return'—';const pm=Math.floor(m/d),ps=Math.round((m/d-pm)*60);return`${pm}:${String(ps).padStart(2,'0')}`;}
+function renderRunSection(){const week=getCurrentRunWeek();const plan=RUN_PLAN[week-1];if(!plan)return;const runs=getRunsForWeek(week);const totalMiles=runs.reduce((a,r)=>a+(parseFloat(r.distance)||0),0);const wb=document.getElementById('runWeekBadge');if(wb)wb.textContent=`Week ${week} of 16`;const pl=document.getElementById('runPhaseLabel');if(pl)pl.textContent=`Phase · ${plan.phase}`;const ml=document.getElementById('runMileageLabel');const mb=document.getElementById('runMileageBar');if(ml)ml.textContent=`${totalMiles.toFixed(1)} / ${plan.weeklyTarget} mi`;if(mb)mb.style.width=Math.min(100,Math.round(totalMiles/plan.weeklyTarget*100))+'%';const pr=document.getElementById('runProgressLabel');if(pr)pr.textContent=`${runs.length}/${plan.sessions.length} runs done`;const ws=document.getElementById('runWeekSessions');if(ws){ws.innerHTML=plan.sessions.map((s,i)=>{const done=runs[i];const col=RUN_TYPE_COLORS[s.type]||'var(--muted)';return`<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid ${done?col:'var(--border)'};border-radius:10px;padding:10px 12px;margin-bottom:6px"><div style="width:8px;height:8px;border-radius:50%;background:${done?col:'var(--border)'}"></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:${done?col:'var(--text)'}">${s.day} · ${s.label}</div>${done?`<div style="font-size:11px;color:var(--muted)">${done.distance} mi · ${done.duration} min · ${calcPace(done.distance,done.duration)} /mi</div>`:`<div style="font-size:11px;color:var(--muted)">Target: ${s.target} miles</div>`}</div>${done?'<div style="color:var(--green);font-size:16px">✓</div>':''}</div>`;}).join('');}
+const po=document.getElementById('runPlanOverview');if(po){const phases=[...new Set(RUN_PLAN.map(w=>w.phase))];po.innerHTML=phases.map(phase=>{const weeks=RUN_PLAN.filter(w=>w.phase===phase);const isC=weeks.some(w=>w.week===week);const isDone=weeks.every(w=>w.week<week);return`<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid ${isC?'var(--accent2)':isDone?'var(--green)':'var(--border)'};border-radius:10px;padding:10px 12px;margin-bottom:6px"><div style="font-size:20px">${isDone?'✅':isC?'🏃':'⏳'}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:${isC?'var(--accent2)':isDone?'var(--green)':'var(--muted)'}">Weeks ${weeks[0].week}–${weeks[weeks.length-1].week} · ${phase}</div><div style="font-size:11px;color:var(--muted)">${weeks.map(w=>`Wk${w.week}: ${w.weeklyTarget}mi`).join(' · ')}</div></div>${isC?'<div style="font-size:10px;font-weight:700;color:var(--accent2);background:rgba(255,107,53,0.15);border-radius:6px;padding:3px 8px">NOW</div>':''}</div>`;}).join('');}
+const rh=document.getElementById('runHistory');if(rh){const allRuns=[];for(let w=1;w<=16;w++){const wr=getRunsForWeek(w);wr.forEach(r=>allRuns.push({...r,week:w}));}allRuns.sort((a,b)=>b.timestamp-a.timestamp);if(!allRuns.length){rh.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">No runs logged yet — tap Log a Run to start!</div>';}else{rh.innerHTML=allRuns.slice(0,5).map(r=>{const col=RUN_TYPE_COLORS[r.type]||'var(--muted)';return`<div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${col};border-radius:10px;padding:10px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12px;font-weight:700;color:${col};text-transform:capitalize">${r.type} Run · Wk${r.week}</div><div style="font-size:11px;color:var(--muted)">${r.date}</div></div><div style="display:flex;gap:12px;margin-top:4px;font-size:13px"><span style="color:var(--accent);font-weight:700">${r.distance} mi</span><span style="color:var(--blue)">${r.duration} min</span><span style="color:var(--muted)">${calcPace(r.distance,r.duration)} /mi</span><span style="color:var(--muted)">RPE ${r.effort}/10</span></div>${r.notes?`<div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">"${r.notes}"</div>`:''}</div>`;}).join('');}}}
+function openRunLogger(){runType='easy';runEffort=5;const eb=document.getElementById('effortBtns');if(eb)eb.innerHTML=[1,2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="setRunEffort(${n})" id="effort${n}" style="flex:1;padding:8px 0;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">${n}</button>`).join('');setRunType('easy');setRunEffort(5);const dist=document.getElementById('runDistance');const dur=document.getElementById('runDuration');const notes=document.getElementById('runNotes');if(dist)dist.value='';if(dur)dur.value='';if(notes)notes.value='';document.getElementById('runPaceDisplay')?.style && (document.getElementById('runPaceDisplay').style.display='none');const week=getCurrentRunWeek();const plan=RUN_PLAN[week-1];const runs=getRunsForWeek(week);const nextSession=plan?.sessions[runs.length];const prescEl=document.getElementById('runPrescribed');const prescText=document.getElementById('runPrescribedText');if(nextSession&&prescEl&&prescText){prescEl.style.display='block';prescText.innerHTML=`<b>${nextSession.day}'s session:</b> ${nextSession.label}<br><span style="color:var(--accent2)">Target: ${nextSession.target} miles</span>`;if(dist)dist.value=nextSession.target;if(nextSession.intervals)window._runIntervals=nextSession.intervals;else window._runIntervals=null;}else if(prescEl)prescEl.style.display='none';const label=document.getElementById('runLogWeekLabel');if(label)label.textContent=`Week ${week} · ${plan?.phase||''}`;const o=document.getElementById('runLogOverlay'),s=document.getElementById('runLogSheet');if(o)o.style.display='flex';if(s)setTimeout(()=>s.style.transform='translateY(0)',10);['runDistance','runDuration'].forEach(id=>{const el=document.getElementById(id);if(el)el.oninput=()=>{const d=parseFloat(document.getElementById('runDistance')?.value);const m=parseFloat(document.getElementById('runDuration')?.value);const pd=document.getElementById('runPaceDisplay');const pv=document.getElementById('runPaceValue');if(d&&m&&pd&&pv){pd.style.display='block';pv.textContent=calcPace(d,m);}else if(pd)pd.style.display='none';};});}
+function closeRunLogger(e){if(e&&e.target!==document.getElementById('runLogOverlay'))return;const s=document.getElementById('runLogSheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('runLogOverlay');if(o)o.style.display='none';},300);}
+function setRunType(type){runType=type;['easy','interval','tempo','long'].forEach(t=>{const btn=document.getElementById('runType'+t.charAt(0).toUpperCase()+t.slice(1));const col=RUN_TYPE_COLORS[t]||'var(--muted)';if(btn){btn.style.background=t===type?'rgba(255,255,255,0.1)':'var(--surface)';btn.style.borderColor=t===type?col:'var(--border)';btn.style.color=t===type?col:'var(--muted)';}});}
+function setRunEffort(n){runEffort=n;for(let i=1;i<=10;i++){const btn=document.getElementById('effort'+i);if(btn){btn.style.background=i<=n?'rgba(255,107,53,0.2)':'var(--surface)';btn.style.borderColor=i<=n?'var(--accent2)':'var(--border)';btn.style.color=i<=n?'var(--accent2)':'var(--muted)';}}}
+function saveRun(){const distance=parseFloat(document.getElementById('runDistance')?.value);const duration=parseFloat(document.getElementById('runDuration')?.value);if(!distance||!duration){toast('Enter distance and duration','err');return;}const notes=document.getElementById('runNotes')?.value.trim()||'';const week=getCurrentRunWeek();const runs=getRunsForWeek(week);const run={distance,duration,type:runType,effort:runEffort,notes,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),timestamp:Date.now(),week,pace:calcPace(distance,duration)};runs.push(run);saveRunsForWeek(week,runs);const today=new Date().toDateString();const logs=ls('streakLogs')||[];if(!logs.includes(today)){logs.unshift(today);ls('streakLogs',logs.slice(0,90));}const s=document.getElementById('runLogSheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('runLogOverlay');if(o)o.style.display='none';renderRunSection();showRunComplete(run);},350);haptic('success');}
+function showRunComplete(run){const overlay=document.getElementById('runCompleteOverlay');if(!overlay)return;const d=document.getElementById('runCompleteDate');if(d)d.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});const statsEl=document.getElementById('runCompleteStats');if(statsEl){const paceColor=run.type==='easy'?'var(--green)':run.type==='tempo'?'var(--accent2)':'var(--blue)';statsEl.innerHTML=[{val:run.distance,label:'Miles',color:'var(--accent2)'},{val:run.duration+' min',label:'Duration',color:'var(--blue)'},{val:run.pace+' /mi',label:'Avg Pace',color:paceColor}].map(s=>`<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 8px"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${s.color};line-height:1;margin-bottom:4px">${s.val}</div><div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px">${s.label}</div></div>`).join('');}const msgEl=document.getElementById('runCompleteMsg');if(msgEl){const week=run.week||1;const msgs={1:'Week 1, rep 1 — the hardest step is always the first. You took it. 🔥',5:'The walk breaks are disappearing. Your aerobic base is building.',8:'You can run 20 minutes straight. That is a real achievement.',easy:'Easy runs build your aerobic engine. Slow today means faster tomorrow.',tempo:'Tempo runs are where fitness is made. You pushed through discomfort.',long:'Long runs build mental toughness as much as physical endurance. Well done.',interval:'Intervals done. Your cardiovascular system just got a serious upgrade.'};msgEl.textContent=msgs[week]||(run.type&&msgs[run.type])||`Week ${week} — every mile is progress toward race day.`;}const weekBarEl=document.getElementById('runCompleteWeekBar');if(weekBarEl){const plan=RUN_PLAN[run.week-1];const allRuns=getRunsForWeek(run.week);const total=allRuns.reduce((a,r)=>a+(parseFloat(r.distance)||0),0);const target=plan?.weeklyTarget||0;const pct=Math.min(100,Math.round(total/target*100));weekBarEl.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px"><span>Week ${run.week} mileage</span><span>${total.toFixed(1)} / ${target} mi</span></div><div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px"></div></div>${pct>=100?'<div style="font-size:12px;color:var(--green);margin-top:8px;font-weight:700">✅ Week target hit!</div>':''}`;}overlay.style.display='flex';}
+function openGuidedRun(){const intervals=window._runIntervals;if(!intervals||!intervals.length){toast('No guided intervals for this session','warn');return;}guidedIntervals=[];intervals.forEach(block=>{for(let r=0;r<block.rounds;r++){if(block.walk>0)guidedIntervals.push({type:'walk',secs:block.walk,round:r+1,total:block.rounds});if(block.run>0)guidedIntervals.push({type:'run',secs:block.run,round:r+1,total:block.rounds});}});guidedStep=0;const rlo=document.getElementById('runLogOverlay');if(rlo)rlo.style.display='none';const gro=document.getElementById('guidedRunOverlay');if(gro)gro.style.display='flex';startGuidedInterval();}
+function startGuidedInterval(){clearInterval(guidedTimer);if(guidedStep>=guidedIntervals.length){document.getElementById('grInstruction').textContent='DONE! 🎉';document.getElementById('grPhase').textContent='WORKOUT COMPLETE';document.getElementById('grTimer').textContent='';playDoneBeep();haptic('success');return;}const step=guidedIntervals[guidedStep];const isRun=step.type==='run';const col=isRun?'var(--accent2)':'var(--green)';const nextStep=guidedIntervals[guidedStep+1];document.getElementById('grInstruction').textContent=isRun?'RUN':'WALK';document.getElementById('grInstruction').style.color=col;document.getElementById('grPhase').textContent=`Round ${step.round} of ${step.total}`;document.getElementById('grNextUp').textContent=nextStep?`Next: ${nextStep.type.toUpperCase()} ${Math.floor(nextStep.secs/60)}:${String(nextStep.secs%60).padStart(2,'0')}`:'Last interval!';const ring=document.getElementById('grRingFill');if(ring)ring.style.stroke=col;let rem=step.secs;const tick=()=>{const m=Math.floor(rem/60),s=rem%60;const timerEl=document.getElementById('grTimer');if(timerEl)timerEl.textContent=m+':'+(s<10?'0':'')+s;if(ring)ring.style.strokeDashoffset=RUN_CIRC*(1-rem/step.secs);if(rem===10){playWarningBeep();haptic('warning');}if(rem===0){clearInterval(guidedTimer);playDoneBeep();haptic(isRun?'success':'light');guidedStep++;setTimeout(startGuidedInterval,800);return;}rem--;};tick();guidedTimer=setInterval(tick,1000);if(isRun)haptic('medium');}
+function skipGuidedInterval(){clearInterval(guidedTimer);guidedStep++;startGuidedInterval();}
+function closeGuidedRun(){clearInterval(guidedTimer);const gro=document.getElementById('guidedRunOverlay');if(gro)gro.style.display='none';const rlo=document.getElementById('runLogOverlay');if(rlo)rlo.style.display='flex';}
+
+// ══════════════════════════════════════════════════════════════
+// ENCRYPTED BACKUP
+// ══════════════════════════════════════════════════════════════
+async function deriveKey(password,salt){const enc=new TextEncoder();const km=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function exportEncryptedJSON(){const password=prompt('Set a password for this backup (you\'ll need it to restore):');if(!password||password.length<4){toast('Password must be at least 4 characters','warn');return;}const confirm=prompt('Confirm password:');if(password!==confirm){toast('Passwords do not match','err');return;}const snapshot={__version:2,__encrypted:true,__exported:new Date().toISOString(),data:{}};getAllMyraKeys().forEach(k=>{try{snapshot.data[k]=JSON.parse(localStorage.getItem(k));}catch(e){snapshot.data[k]=localStorage.getItem(k);}});const plaintext=new TextEncoder().encode(JSON.stringify(snapshot));const salt=crypto.getRandomValues(new Uint8Array(16));const iv=crypto.getRandomValues(new Uint8Array(12));const key=await deriveKey(password,salt);const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plaintext);const packed={__myra_encrypted:true,v:1,salt:btoa(String.fromCharCode(...salt)),iv:btoa(String.fromCharCode(...iv)),data:btoa(String.fromCharCode(...new Uint8Array(ciphertext)))};const blob=new Blob([JSON.stringify(packed)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`myra-secure-backup-${localDateKey()}.json`;a.click();toast('🔒 Encrypted backup saved!');haptic('success');}
+async function importEncryptedJSON(file){const text=await file.text();let packed;try{packed=JSON.parse(text);}catch{toast('Invalid backup file','err');return;}if(!packed.__myra_encrypted){importJSONDirect(file);return;}const password=prompt('Enter the backup password:');if(!password)return;try{const salt=Uint8Array.from(atob(packed.salt),c=>c.charCodeAt(0));const iv=Uint8Array.from(atob(packed.iv),c=>c.charCodeAt(0));const ciphertext=Uint8Array.from(atob(packed.data),c=>c.charCodeAt(0));const key=await deriveKey(password,salt);const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext);const snapshot=JSON.parse(new TextDecoder().decode(plaintext));let restored=0;Object.entries(snapshot.data||{}).forEach(([k,v])=>{try{if(!localStorage.getItem(k)){localStorage.setItem(k,JSON.stringify(v));restored++;}else{const ex=JSON.parse(localStorage.getItem(k));if(Array.isArray(ex)&&Array.isArray(v)){const merged=[...ex];v.forEach(item=>{if(!merged.find(m=>(item.timestamp&&m.timestamp===item.timestamp)||(item.loggedAt&&m.loggedAt===item.loggedAt))){merged.push(item);restored++;}});localStorage.setItem(k,JSON.stringify(merged));}}}catch(e){}});toast(`🔒 Decrypted and restored ${restored} items!`);haptic('success');setTimeout(()=>{buildWorkout();refreshHome();},500);}catch(e){toast('Wrong password or corrupted file','err');}}
+
+// ══════════════════════════════════════════════════════════════
+// BACKUP SHEET
+// ══════════════════════════════════════════════════════════════
+function openBackupSheet(){const o=document.getElementById('backupSheetOverlay');const s=document.getElementById('backupSheet');if(!o||!s)return;o.style.display='flex';setTimeout(()=>s.style.transform='translateY(0)',10);}
+function closeBackupSheet(e){if(e&&e.target!==document.getElementById('backupSheetOverlay'))return;const s=document.getElementById('backupSheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('backupSheetOverlay');if(o)o.style.display='none';},300);}
+
+// ══════════════════════════════════════════════════════════════
+// SHAREABLE WORKOUT CARD
+// ══════════════════════════════════════════════════════════════
+function shareWorkout(){const today=new Date().toDateString();const all=getAllSessions().filter(s=>{if(s.timestamp&&new Date(s.timestamp).toDateString()===today)return true;if(s.date){try{return new Date(s.date).toDateString()===today;}catch(e){}}return false;});const vol=all.reduce((a,s)=>a+s.sets.reduce((b,st)=>{if(!st.weight||st.weight==='BW')return b;return b+(parseFloat(st.weight)||0)*(parseFloat(st.reps)||0);},0),0);const totalSets=all.reduce((a,s)=>a+s.sets.length,0);const mins=sessionStart?Math.max(0,Math.round((Date.now()-sessionStart)/60000)):0;const recomp=typeof calcRecompScore==='function'?calcRecompScore():{total:0};const bw=ls('bodyweight')||[];const weight=bw[0]?.weight||'—';const streak=(ls('streakLogs')||[]).length;window._shareText=`💪 MYRA APP\n${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}\n\n${totalSets} sets · ${mins>0?mins+' min · ':''}${vol>=1000?(Math.round(vol/100)/10)+'k':Math.round(vol)} lbs moved\n\n${all.map(s=>`✅ ${s.exName}: ${s.sets.length} sets`).join('\n')}\n\n🔥 ${streak} day streak · Recomp Score ${recomp.total}/100`;generateShareCard({all,vol,totalSets,mins,recomp,weight,streak});document.getElementById('shareOverlay').style.display='flex';const pws=document.getElementById('pwsOverlay');if(pws)pws.classList.remove('show');}
+function generateShareCard({all,vol,totalSets,mins,recomp,weight,streak}){const canvas=document.getElementById('shareCanvas');if(!canvas)return;const W=380,H=480;canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';const ctx=canvas.getContext('2d');ctx.scale(2,2);const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#0a0c12');bg.addColorStop(1,'#111428');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);const goldBar=ctx.createLinearGradient(0,0,W,0);goldBar.addColorStop(0,'#ffc107');goldBar.addColorStop(1,'#ff6b35');ctx.fillStyle=goldBar;ctx.fillRect(0,0,W,4);ctx.font='bold 11px DM Sans,sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.fillText('MYRA APP',22,28);ctx.textAlign='right';ctx.font='11px DM Sans,sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.fillText(new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}),W-22,28);ctx.textAlign='left';ctx.font='bold 36px Bebas Neue,sans-serif';ctx.fillStyle='#ffc107';ctx.fillText('WORKOUT DONE 🏆',22,68);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(22,80);ctx.lineTo(W-22,80);ctx.stroke();const stats=[{val:totalSets,label:'Sets'},{val:mins>0?mins:'—',label:'Minutes'},{val:vol>=1000?(Math.round(vol/100)/10)+'k':Math.round(vol)||0,label:'lbs Moved'},{val:recomp.total+'/100',label:'Recomp'}];const colW=(W-44)/4;stats.forEach((s,i)=>{const x=22+i*colW;ctx.fillStyle=i===3?'rgba(255,193,7,0.1)':'rgba(255,255,255,0.04)';ctx.beginPath();ctx.roundRect(x,88,colW-6,62,8);ctx.fill();ctx.font='bold 22px Bebas Neue,sans-serif';ctx.fillStyle=i===3?'#ffc107':i===2?'#29b6f6':i===0?'#00e676':'#fff';ctx.textAlign='center';ctx.fillText(String(s.val),x+colW/2-3,118);ctx.font='9px DM Sans,sans-serif';ctx.fillStyle='rgba(255,255,255,0.4)';ctx.fillText(s.label.toUpperCase(),x+colW/2-3,136);ctx.textAlign='left';});let yy=168;ctx.font='bold 10px DM Sans,sans-serif';ctx.fillStyle='rgba(255,255,255,0.3)';ctx.fillText('EXERCISES',22,yy);yy+=16;all.slice(0,6).forEach(s=>{ctx.fillStyle='rgba(0,230,118,0.12)';ctx.beginPath();ctx.roundRect(22,yy,W-44,26,7);ctx.fill();ctx.fillStyle='#00e676';ctx.font='bold 12px DM Sans,sans-serif';ctx.fillText('✓',30,yy+17);ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='12px DM Sans,sans-serif';ctx.fillText(s.exName,46,yy+17);ctx.fillStyle='rgba(255,255,255,0.35)';ctx.textAlign='right';ctx.fillText(s.sets.length+' sets',W-26,yy+17);ctx.textAlign='left';yy+=32;});yy=Math.max(yy+10,H-60);ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(22,yy);ctx.lineTo(W-22,yy);ctx.stroke();yy+=16;ctx.font='bold 13px DM Sans,sans-serif';ctx.fillStyle='#ffc107';ctx.fillText(`🔥 ${streak} day streak`,22,yy);ctx.textAlign='right';ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='11px DM Sans,sans-serif';ctx.fillText(`${weight} lbs · myra-app`,W-22,yy);ctx.textAlign='left';ctx.fillStyle=goldBar;ctx.fillRect(0,H-4,W,4);}
+function downloadShareCard(){const canvas=document.getElementById('shareCanvas');if(!canvas)return;try{const link=document.createElement('a');link.download='myra-workout-'+localDateKey()+'.png';link.href=canvas.toDataURL('image/png');link.click();toast('💾 Image saved!');}catch(e){toast('Use screenshot to save image','warn');}}
+function copyShareText(){const text=window._shareText||'';navigator.clipboard?.writeText(text).then(()=>toast('📋 Copied!')).catch(()=>{const fb=document.getElementById('shareTextFallback');if(fb){fb.style.display='block';fb.textContent=text;}toast('Text shown below — select and copy','warn');});}
+
+// ══════════════════════════════════════════════════════════════
+// FITBIT SUMMARY IN PROGRESS
+// ══════════════════════════════════════════════════════════════
+function renderFitbitSummary(){const today=localDateKey();const data=ls('fb:'+today);const stepsEl=document.getElementById('fbSumSteps');const calEl=document.getElementById('fbSumCal');const sleepEl=document.getElementById('fbSumSleep');const hrEl=document.getElementById('fbSumHR');const emptyEl=document.getElementById('fitbitSummaryEmpty');const statsEl=document.getElementById('fitbitSummaryStats');if(!data||(!data.steps&&!data.calories&&!data.sleep&&!data.hr)){if(statsEl)statsEl.style.display='none';if(emptyEl)emptyEl.style.display='block';return;}if(statsEl)statsEl.style.display='grid';if(emptyEl)emptyEl.style.display='none';if(stepsEl)stepsEl.textContent=data.steps?(parseInt(data.steps)>=1000?Math.round(parseInt(data.steps)/100)/10+'k':data.steps):'—';if(calEl)calEl.textContent=data.calories||'—';if(sleepEl)sleepEl.textContent=data.sleep?data.sleep+'h':'—';if(hrEl)hrEl.textContent=data.hr||'—';}
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS SUB-TABS
+// ══════════════════════════════════════════════════════════════
+function switchProgressTab(tab){['body','meas','fitbit'].forEach(t=>{const content=document.getElementById('pcontent-'+t);const btn=document.getElementById('ptab-'+t);if(content)content.style.display=t===tab?'block':'none';if(btn){btn.style.background=t===tab?'var(--accent)':'transparent';btn.style.color=t===tab?'#000':'var(--muted)';}});if(tab==='meas'){renderMeasDisplay();renderMeasCharts();renderScaleDisplay();}if(tab==='fitbit')renderFitbitSummary();if(tab==='body')renderProgress();ls('progressTab',tab);}
+
+// ══════════════════════════════════════════════════════════════
+// PLAN SUB-TABS
+// ══════════════════════════════════════════════════════════════
+function switchPlanTab(tab){['lifting','running'].forEach(t=>{const content=document.getElementById('plancontent-'+t);const btn=document.getElementById('plantab-'+t);if(content)content.style.display=t===tab?'block':'none';if(btn){btn.style.background=t===tab?'var(--accent)':'transparent';btn.style.color=t===tab?'#000':'var(--muted)';}});if(tab==='running')renderRunSection();ls('planTab',tab);}
+
+// ══════════════════════════════════════════════════════════════
+// SMART CARD COLLAPSE (journey map fix 1)
+// ══════════════════════════════════════════════════════════════
+function restoreCardStates(){const bw=ls('bodyweight')||[];const sessions=getAllSessions();const hasData=sessions.length>0||bw.length>0;['recompScoreCardWrap','pushupCardWrap','sciCardWrap'].forEach(id=>{const wrap=document.getElementById(id);if(!wrap)return;const savedState=ls('card_'+id);const shouldCollapse=id==='pushupCardWrap'?savedState!=='open':(!hasData&&savedState!=='open')||savedState==='closed';if(shouldCollapse){const body=wrap.querySelector('.card-body');const btn=wrap.querySelector('.collapse-btn');if(body){body.style.maxHeight='0px';body.style.transition='max-height 0.35s ease';}if(btn)btn.style.transform='rotate(-90deg)';}});}
+
+// ══════════════════════════════════════════════════════════════
+// AUTO DARK MODE + OFFLINE INDICATOR (journey map fixes)
+// ══════════════════════════════════════════════════════════════
+function applySystemTheme(){if(ls('lm')!==null)return;if(!window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.classList.add('light-mode');const btn=document.getElementById('modeBtn');if(btn)btn.textContent='🌙';}}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{if(ls('lm')!==null)return;document.body.classList.toggle('light-mode',!e.matches);});
+function setupOfflineIndicator(){const show=()=>{let bar=document.getElementById('offlineBar');if(!bar){bar=document.createElement('div');bar.id='offlineBar';bar.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(255,82,82,0.9);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:6px;z-index:1000;font-family:"DM Sans",sans-serif';bar.textContent='📵 Offline — AI features unavailable';document.body.prepend(bar);}};const hide=()=>{const bar=document.getElementById('offlineBar');if(bar)bar.remove();};window.addEventListener('offline',show);window.addEventListener('online',hide);if(!navigator.onLine)show();}
+
+// ══════════════════════════════════════════════════════════════
+// ONBOARDING BRAND SLIDES
+// ══════════════════════════════════════════════════════════════
+let obCurrentSlide=0;
+const OB_SLIDES=['obSlide0','obSlide1','obSlide2'];
+function obNextSlide(){if(obCurrentSlide<OB_SLIDES.length-1){document.getElementById(OB_SLIDES[obCurrentSlide]).style.display='none';obCurrentSlide++;const slide=document.getElementById(OB_SLIDES[obCurrentSlide]);if(slide)slide.style.display='flex';const dots=document.getElementById('obBrandDots');if(dots)[...dots.children].forEach((d,i)=>{d.style.width=i===obCurrentSlide?'24px':'8px';d.style.background=i===obCurrentSlide?'#ffc107':'rgba(255,255,255,0.2)';});if(obCurrentSlide===OB_SLIDES.length-1){const btn=document.getElementById('obNextBtn');if(btn){btn.textContent="Let's Go →";btn.onclick=obSkipBrand;}}}else obSkipBrand();}
+function obSkipBrand(){const brand=document.getElementById('onboardBrand');const form=document.getElementById('onboardForm');if(brand)brand.style.display='none';if(form)form.style.display='block';}
+function checkOnboarding(){if(!ls('onboardingDone')){obCurrentSlide=0;OB_SLIDES.forEach((s,i)=>{const el=document.getElementById(s);if(el)el.style.display=i===0?'flex':'none';});const brand=document.getElementById('onboardBrand');const form=document.getElementById('onboardForm');if(brand)brand.style.display='flex';if(form)form.style.display='none';const overlay=document.getElementById('onboardOverlay');if(overlay)overlay.style.display='flex';const btn=document.getElementById('obNextBtn');if(btn){btn.textContent='Next →';btn.onclick=obNextSlide;}}}
+function showStep(n){[1,2].forEach(i=>{const el=document.getElementById('onboardStep'+i);if(el)el.style.display=i===n?'block':'none';});}
+function finishOnboarding(){ls('onboardingDone',true);const overlay=document.getElementById('onboardOverlay');if(overlay)overlay.style.display='none';refreshHome();toast('Welcome to Myra! 🎉');celebrate();}
+
+// ══════════════════════════════════════════════════════════════
+// HOME SCREEN — Today focus card + greeting
+// ══════════════════════════════════════════════════════════════
+function updateHomeGreeting(){const hour=new Date().getHours();const greeting=hour<12?'Good morning ☀️':hour<17?'Good afternoon 👋':hour<21?'Good evening 🌆':'Good night 🌙';const greetEl=document.getElementById('homeGreeting');if(greetEl)greetEl.textContent=greeting;const dateEl=document.getElementById('homeDateLine');if(dateEl)dateEl.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});}
+function updateTodayFocusCard(){const tfc=document.getElementById('todayFocusCard');if(!tfc)return;const d=getTodayDay();const W=getWorkouts();if(d&&W[d]&&W[d].exercises?.length){const w=W[d];tfc.innerHTML=`<div style="background:linear-gradient(135deg,rgba(255,193,7,0.1),rgba(255,107,53,0.05));border:1px solid rgba(255,193,7,0.25);border-radius:16px;padding:16px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent)">TODAY'S WORKOUT</div><div style="font-size:11px;color:var(--muted)">Week ${getProgramWeek()} · Day ${getProgramDay()}</div></div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;color:#fff;margin-bottom:2px">${w.title}</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px">${w.sub}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${w.exercises.slice(0,4).map(ex=>`<span style="background:rgba(255,255,255,0.06);border-radius:20px;padding:3px 10px;font-size:11px;color:rgba(255,255,255,0.6)">${ex.name}</span>`).join('')}${w.exercises.length>4?`<span style="background:rgba(255,255,255,0.04);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted)">+${w.exercises.length-4} more</span>`:''}</div><button onclick="goToToday()" style="width:100%;padding:13px;background:linear-gradient(135deg,#ffc107,#ff6b35);border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Start ${w.title} →</button></div>`;}else{const dow=new Date().getDay();tfc.innerHTML=`<div style="background:linear-gradient(135deg,rgba(167,139,250,0.08),rgba(41,182,246,0.04));border:1px solid rgba(167,139,250,0.2);border-radius:16px;padding:16px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent3);margin-bottom:8px">TODAY</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#fff;margin-bottom:4px">${dow===0?'Full Rest Day 😴':'Active Recovery 🚶'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">${dow===0?'Complete rest. Your muscles grow during recovery.':'Walk 20–30 min + guided stretch'}</div>${dow!==0?`<button onclick="openStretchRoutine()" style="width:100%;padding:12px;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:12px;color:var(--accent3);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🧘 Start Guided Stretch</button>`:''}`;}}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY EMPTY STATE WITH CTA
+// ══════════════════════════════════════════════════════════════
+function renderHistoryEmptyState(c){c.innerHTML=`<div class="empty-state"><svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom:12px"><rect x="10" y="36" width="60" height="8" rx="4" fill="#252952"/><rect x="4" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="60" y="26" width="16" height="28" rx="8" fill="#3d4475"/><rect x="4" y="30" width="6" height="20" rx="3" fill="#ffc107" opacity="0.7"/><rect x="70" y="30" width="6" height="20" rx="3" fill="#ff6b35" opacity="0.7"/></svg><p style="margin-bottom:16px">No sessions yet.<br>Time to make history!</p><button onclick="go('workout',document.querySelectorAll('.nav-btn')[1])" style="background:var(--accent);border:none;border-radius:12px;color:#000;font-size:13px;font-weight:700;padding:12px 24px;cursor:pointer;font-family:'DM Sans',sans-serif">Start Your First Workout →</button></div>`;}
+
+// ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 if(ls('lm')!==null){
@@ -5452,18 +5261,19 @@ if(ls('lm')!==null){
   applySystemTheme();
 }
 if(ls('fontSize')==='lg')document.body.classList.add('font-lg');
-if(ls('notifEnabled')&&Notification.permission==='granted'){
-  const btn=document.getElementById('notifBtn');
-  if(btn){btn.textContent='✅ Reminders Enabled';btn.className='btn btn-green';}
-}
+if(ls('notifEnabled')&&document.getElementById('notifBtn'))document.getElementById('notifBtn').textContent='✅ Reminders Enabled';
+setupOfflineIndicator();
 setupOfflineIndicator();
 buildWorkout();
 refreshHome();
 checkOnboarding();
+if(ls('lm')!==null){if(ls('lm'))document.body.classList.add('light-mode');}else{applySystemTheme();}
 checkDeload();
 setSessionLength(currentSessionLength);
 restoreCardStates();
 setTimeout(reloadTodaySets,300);
+restoreCardStates();
+if(typeof renderMedToggle==='function'&&ls('medSettings')){const s=ls('medSettings');if(s&&s.enabled)setTimeout(renderMedDueIndicator,200);}
 setTimeout(animateHomeStats,400);
 if(ls('pushupNotifsEnabled')){const b=document.getElementById('pushupNotifBtn');if(b){b.textContent='✅';b.style.color='var(--green)';}}// Silently repair any date issues from previous restores
 setTimeout(()=>{
@@ -5485,5 +5295,129 @@ if(!spotifyToken){
   }
 }
 </script>
+
+<!-- ══ ONBOARDING WITH BRAND SLIDES ══ -->
+<div id="onboardOverlay" style="position:fixed;inset:0;background:#0a0c12;z-index:600;display:none;flex-direction:column">
+  <div id="onboardBrand" style="flex:1;display:flex;flex-direction:column">
+    <div id="obSlide0" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:4px;color:#fff;line-height:1;margin-bottom:12px">MY<span style="color:#ffc107">RA</span></div>
+      <div style="font-size:16px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px">Your Personal Fitness Coach</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;max-width:280px">Built for real people with real lives. No gym required. No experience needed. Just show up.</div>
+    </div>
+    <div id="obSlide1" style="flex:1;display:none;flex-direction:column;justify-content:center;padding:40px 28px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#fff;margin-bottom:6px">WHAT MYRA <span style="color:#ffc107">DOES</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px">Everything you need. Nothing you don't.</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px"><div style="width:40px;height:40px;border-radius:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💪</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">AI-Powered Coaching</div><div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5">Personalized workouts that adapt to your progress automatically</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px"><div style="width:40px;height:40px;border-radius:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📈</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Smart Progression</div><div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5">Knows when to add weight before you even ask</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px"><div style="width:40px;height:40px;border-radius:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏃</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Half Marathon Prep</div><div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5">16-week run program — from 2 minutes to 13.1 miles</div></div></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px"><div style="width:40px;height:40px;border-radius:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📸</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Body Transformation Tracking</div><div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5">AI photo analysis shows what's actually changing</div></div></div>
+    </div>
+    <div id="obSlide2" style="flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center">
+      <div style="font-size:64px;margin-bottom:20px">🔥</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:2px;color:#fff;margin-bottom:12px">COMMIT TO <span style="color:#ffc107">THE PROCESS</span></div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:32px;max-width:280px">Results take time. Myra is designed for the long game — consistent effort over months, not miracles overnight.</div>
+      <div style="background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.2);border-radius:14px;padding:16px;width:100%;max-width:300px"><div style="font-size:13px;color:#ffc107;font-weight:700;margin-bottom:8px">Named for Myra 👶</div><div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6">Every rep. Every run. Every day — build the version of yourself your daughter will look up to.</div></div>
+    </div>
+    <div style="padding:20px 28px 32px;display:flex;align-items:center;justify-content:space-between">
+      <button id="obSkipBtn" onclick="obSkipBrand()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Skip</button>
+      <div style="display:flex;gap:6px" id="obBrandDots"><div style="width:24px;height:4px;border-radius:2px;background:#ffc107"></div><div style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2)"></div><div style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2)"></div></div>
+      <button id="obNextBtn" onclick="obNextSlide()" style="background:#ffc107;border:none;border-radius:20px;color:#000;font-size:13px;font-weight:700;padding:10px 24px;cursor:pointer;font-family:'DM Sans',sans-serif">Next →</button>
+    </div>
+  </div>
+  <div id="onboardForm" style="display:none;flex:1;overflow-y:auto;padding:28px 24px 40px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;color:#fff;margin-bottom:4px">LET'S SET UP <span style="color:#ffc107">YOUR PLAN</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px">Takes 30 seconds. Change anything later in Settings.</div>
+    <div id="onboardStep1">
+      <div class="label">Current weight (lbs)</div><input type="number" id="obWeight" placeholder="e.g. 205" style="margin-bottom:12px">
+      <div class="label">Goal weight (lbs)</div><input type="number" id="obGoalWeight" placeholder="e.g. 180" style="margin-bottom:12px">
+      <div class="label">Height</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px"><div style="flex:1"><input type="number" id="obHeightFt" placeholder="Feet" min="4" max="7" style="width:100%"></div><div style="flex:1"><input type="number" id="obHeightIn" placeholder="Inches" min="0" max="11" style="width:100%"></div></div>
+      <div class="label">Age</div><input type="number" id="obAge" placeholder="e.g. 32" style="margin-bottom:24px">
+      <button class="btn btn-accent" style="width:100%;padding:14px;font-size:15px" onclick="onboardStep2()">Build My Program 🚀</button>
+    </div>
+    <div id="onboardStep2" style="display:none">
+      <div style="text-align:center;padding:24px 0">
+        <div style="font-size:56px;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#00e676;margin-bottom:10px">PROGRAM READY!</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:28px">Week 1 starts today. Focus on form, not weight. The gains come later.</div>
+        <div style="background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:14px;padding:14px;margin-bottom:24px;text-align:left"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#00e676;margin-bottom:8px">Your 5-Day Split</div><div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:2">Mon · Push &nbsp;|&nbsp; Tue · Lower &nbsp;|&nbsp; Wed · Recovery<br>Thu · Pull &nbsp;|&nbsp; Fri · Core & Power</div></div>
+      </div>
+      <button class="btn btn-accent" style="width:100%;padding:14px;font-size:15px" onclick="finishOnboarding()">Let's Go! 💪</button>
+      <button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="showStep(1)">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RUN COMPLETION OVERLAY ══ -->
+<div id="runCompleteOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+  <canvas id="runConfettiCanvas" style="position:absolute;inset:0;pointer-events:none"></canvas>
+  <div style="position:relative;z-index:1;width:100%;max-width:360px">
+    <div style="font-size:64px;margin-bottom:8px">🏃</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:4px">RUN <span style="color:var(--accent2)">DONE!</span></div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px" id="runCompleteDate"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px" id="runCompleteStats"></div>
+    <div id="runCompleteMsg" style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.25);border-radius:14px;padding:14px;font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:20px"></div>
+    <div id="runCompleteWeekBar" style="margin-bottom:20px"></div>
+    <button onclick="document.getElementById('runCompleteOverlay').style.display='none'" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:14px;color:#000;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Keep Going 💪</button>
+  </div>
+</div>
+
+<!-- ══ RUN LOGGER OVERLAY ══ -->
+<div id="runLogOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.92);z-index:400;display:none;align-items:flex-end" onclick="closeRunLogger(event)">
+  <div id="runLogSheet" style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)">
+    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:4px">🏃 Log a Run</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="runLogWeekLabel"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Run Type</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="setRunType('easy')" id="runTypeEasy" style="flex:1;padding:9px;background:rgba(0,230,118,0.15);border:2px solid var(--green);border-radius:10px;color:var(--green);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Easy</button>
+      <button onclick="setRunType('interval')" id="runTypeInterval" style="flex:1;padding:9px;background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Intervals</button>
+      <button onclick="setRunType('tempo')" id="runTypeTempo" style="flex:1;padding:9px;background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Tempo</button>
+      <button onclick="setRunType('long')" id="runTypeLong" style="flex:1;padding:9px;background:var(--surface);border:2px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Long</button>
+    </div>
+    <div id="runPrescribed" style="background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:none">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:4px">📋 Today's Target</div>
+      <div id="runPrescribedText" style="font-size:13px;color:var(--text);line-height:1.6"></div>
+      <button onclick="openGuidedRun()" style="margin-top:10px;width:100%;padding:10px;background:var(--accent2);border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">▶ Start Guided Run</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Distance (miles)</div><input type="number" id="runDistance" placeholder="e.g. 1.5" step="0.1" min="0" style="font-size:18px;font-weight:700;color:var(--accent2)"></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Duration (min)</div><input type="number" id="runDuration" placeholder="e.g. 25" min="0" style="font-size:18px;font-weight:700;color:var(--blue)"></div>
+    </div>
+    <div id="runPaceDisplay" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:center;display:none">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent)" id="runPaceValue">0:00</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">min / mile</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Perceived Effort (1–10)</div>
+    <div style="display:flex;gap:4px;margin-bottom:14px" id="effortBtns"></div>
+    <textarea id="runNotes" placeholder="How did it feel? Walk breaks? Weather?" rows="2" style="margin-bottom:14px"></textarea>
+    <button onclick="saveRun()" class="btn btn-accent" style="width:100%">💾 Save Run</button>
+  </div>
+</div>
+
+<!-- ══ GUIDED RUN OVERLAY ══ -->
+<div id="guidedRunOverlay" style="position:fixed;inset:0;background:#000;z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <div style="text-align:center;width:100%;max-width:360px">
+    <div id="grPhase" style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;color:var(--accent2)">GET READY</div>
+    <div id="grInstruction" style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:#fff;margin-bottom:8px">WALK</div>
+    <div style="position:relative;width:180px;height:180px;margin:0 auto 16px">
+      <svg width="180" height="180" viewBox="0 0 200 200" style="transform:rotate(-90deg)">
+        <circle r="88" cx="100" cy="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+        <circle id="grRingFill" r="88" cx="100" cy="100" fill="none" stroke="var(--accent2)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="0" style="transition:stroke-dashoffset 0.9s linear,stroke 0.5s"/>
+      </svg>
+      <div id="grTimer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:56px;color:#fff"></div>
+    </div>
+    <div id="grRoundInfo" style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:8px"></div>
+    <div id="grNextUp" style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:24px"></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button onclick="skipGuidedInterval()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;color:#fff;font-size:13px;padding:12px 24px;cursor:pointer;font-family:'DM Sans',sans-serif">Skip</button>
+      <button onclick="closeGuidedRun()" style="background:rgba(255,82,82,0.2);border:1px solid rgba(255,82,82,0.3);border-radius:12px;color:var(--red);font-size:13px;padding:12px 24px;cursor:pointer;font-family:'DM Sans',sans-serif">End Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MEAL PHOTO INPUT ══ -->
+<input type="file" id="mealPhotoInput" accept="image/*" style="display:none" onchange="if(typeof analyzeMealPhoto==='function')analyzeMealPhoto(this.files[0])">
+
 </body>
 </html>

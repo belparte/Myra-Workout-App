@@ -1,7 +1,7 @@
 // Myra App — Service Worker
 // Enables background notifications even when app is closed
 
-const CACHE_NAME = 'myra-v1';
+const CACHE_NAME = 'myra-v2';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
