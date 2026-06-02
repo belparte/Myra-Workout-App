@@ -34,32 +34,7 @@ if('caches' in window){
 <meta property="og:title" content="Myra App">
 <meta property="og:description" content="Your personal fitness coach">
 <meta name="application-name" content="Myra">
-<script id="pwa-manifest">
-(function(){
-  const iconUri="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBhMGMxMiIvPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmQ3NDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZmZhMDAwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJiYXJHcmFkIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM3OTg2Y2IiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2Y1MWI1Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iZ2xvdyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjgiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT48ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz48ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz48L2ZlTWVyZ2U+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPCEtLSBCYXJiZWxsIGJhciAtLT4KICA8cmVjdCB4PSI0MCIgeT0iMjM2IiB3aWR0aD0iNDMyIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9InVybCgjYmFyR3JhZCkiIG9wYWNpdHk9IjAuOSIvPgogIDwhLS0gTGVmdCBwbGF0ZXMgLS0+CiAgPHJlY3QgeD0iNDAiIHk9IjE3NiIgd2lkdGg9IjUyIiBoZWlnaHQ9IjE2MCIgcng9IjI2IiBmaWxsPSIjMjliNmY2IiBvcGFjaXR5PSIwLjg1Ii8+CiAgPHJlY3QgeD0iOTYiIHk9IjE5NiIgd2lkdGg9IjM2IiBoZWlnaHQ9IjEyMCIgcng9IjE4IiBmaWxsPSIjMjliNmY2IiBvcGFjaXR5PSIwLjY1Ii8+CiAgPCEtLSBSaWdodCBwbGF0ZXMgLS0+CiAgPHJlY3QgeD0iNDIwIiB5PSIxNzYiIHdpZHRoPSI1MiIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmNmIzNSIgb3BhY2l0eT0iMC44NSIvPgogIDxyZWN0IHg9IjM4MCIgeT0iMTk2IiB3aWR0aD0iMzYiIGhlaWdodD0iMTIwIiByeD0iMTgiIGZpbGw9IiNmZjZiMzUiIG9wYWNpdHk9IjAuNjUiLz4KICA8IS0tIE0gbGV0dGVyZm9ybSAtLT4KICA8cGF0aCBkPSJNMTQwIDM2MCBMMTQwIDE2MCBMMjU2IDI5MCBMMzcyIDE2MCBMMzcyIDM2MCIKICAgIHN0cm9rZT0idXJsKCNnb2xkKSIgc3Ryb2tlLXdpZHRoPSI0NCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBmaWxsPSJub25lIiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KICA8IS0tIENvcm5lciBkb3RzIC0tPgogIDxjaXJjbGUgY3g9IjE0MCIgY3k9IjE2MCIgcj0iMjQiIGZpbGw9IiNmZmQ3NDAiLz4KICA8Y2lyY2xlIGN4PSIzNzIiIGN5PSIxNjAiIHI9IjI0IiBmaWxsPSIjZmZkNzQwIi8+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjkwIiByPSIxOCIgZmlsbD0iI2ZmYTAwMCIgb3BhY2l0eT0iMC45Ii8+CiAgPCEtLSBCYXIgc2hpbmUgLS0+CiAgPHJlY3QgeD0iNDAiIHk9IjIzNiIgd2lkdGg9IjQzMiIgaGVpZ2h0PSIxMCIgcng9IjUiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjA2Ii8+Cjwvc3ZnPg==";
-  const manifest={
-    name:"Myra App",
-    short_name:"Myra",
-    start_url:".",
-    display:"standalone",
-    background_color:"#0a0c12",
-    theme_color:"#0a0c12",
-    icons:[
-      {src:iconUri,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"},
-      {src:iconUri,sizes:"192x192",type:"image/svg+xml"}
-    ]
-  };
-  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-  const u=URL.createObjectURL(blob);
-  const l=document.createElement('link');l.rel='manifest';l.href=u;document.head.appendChild(l);
-  // Apple touch icon
-  const ic=document.createElement('link');ic.rel='apple-touch-icon';ic.href=iconUri;document.head.appendChild(ic);
-  // Favicon
-  const fav=document.createElement('link');fav.rel='icon';fav.type='image/svg+xml';fav.href=iconUri;document.head.appendChild(fav);
-  // OG image meta for browser tab / sharing
-  const og=document.createElement('meta');og.property='og:image';og.content=iconUri;document.head.appendChild(og);
-})();
-</script>
+<link rel="manifest" href="./manifest.json">
 <style>
 :root{
   --bg:#0a0c12;--surface:#12152b;--card:#181c36;--card2:#1e2240;
