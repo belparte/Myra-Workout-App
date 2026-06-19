@@ -1013,7 +1013,8 @@ body.font-lg .chip{font-size:13px}
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
         <b style="color:var(--push)">Mon</b> — Upper Push · Chest / Shoulders / Triceps<br>
         <b style="color:var(--lower)">Tue</b> — Lower Body + Core (back-safe)<br>
-        <b style="color:var(--recovery)">Wed</b> — Walk 20–30 min + hip stretch"color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
+        <b style="color:var(--recovery)">Wed</b> — Walk 20–30 min + hip stretch<br>
+        <b style="color:var(--pull)">Thu</b> — Upper Pull · Back / Biceps / Rear Delts<br>
         <b style="color:var(--lower)">Fri</b> — Lower Body + Glutes<br>
         <b style="color:var(--recovery)">Sat</b> — Walk + foam roll<br>
         <b style="color:var(--muted)">Sun</b> — Full Rest
@@ -1022,7 +1023,7 @@ body.font-lg .chip{font-size:13px}
     
     <div class="card" style="margin-bottom:14px;border-color:rgba(240,98,146,0.3)">
       <div style="font-size:12px;color:var(--muted);line-height:2">
-        🧘 <b style="color:var(--text)">hip stretch"color:var(--text)">Cat-cow</b> — every morning, 10 reps<br>
+        🧘 <b style="color:var(--text)">Hip stretch &amp; Cat-cow</b> — every morning, 10 reps<br>
         💪 <b style="color:var(--text)">Glute bridges</b> — every warm-up, relieves nerve pressure<br>
         ❄️ <b style="color:var(--text)">Ice after flare</b> — 15 min left glute/SI joint<br>
         🚫 <b style="color:var(--text)">Avoid</b> — deep lunges, heavy deadlifts, 60+ min sitting
@@ -1055,8 +1056,19 @@ body.font-lg .chip{font-size:13px}
       </div>
     </div>
   </div>
-</div>
+</div><!-- end plancontent-lifting -->
 
+
+
+  <div id="plancontent-running" style="display:none;padding:16px">
+    <div id="runWeekBadge" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+    <div id="runPhaseLabel" style="font-size:13px;font-weight:700;margin-bottom:10px"></div>
+    <div id="runWeekSessions" style="margin-bottom:12px"></div>
+    <button onclick="openRunLogger()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:14px">🏃 Log a Run</button>
+    <div id="runPlanOverview" style="margin-bottom:14px"></div>
+    <div id="runHistory"></div>
+  </div><!-- end plancontent-running -->
+</div><!-- close s-plan -->
 
 <!-- ══ EQUIPMENT TIER SHEET ══ -->
 
@@ -1089,17 +1101,6 @@ body.font-lg .chip{font-size:13px}
 <!-- ══ MEAL PHOTO INPUT ══ -->
 <input type="file" id="mealPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="analyzeMealPhoto(this.files[0])">
 
-
-
-</div><!-- end plancontent-lifting -->
-  <div id="plancontent-running" style="display:none;padding:16px">
-    <div id="runWeekBadge" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
-    <div id="runPhaseLabel" style="font-size:13px;font-weight:700;margin-bottom:10px"></div>
-    <div id="runWeekSessions" style="margin-bottom:12px"></div>
-    <button onclick="openRunLogger()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:12px;color:#000;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:14px">🏃 Log a Run</button>
-    <div id="runPlanOverview" style="margin-bottom:14px"></div>
-    <div id="runHistory"></div>
-  </div><!-- end plancontent-running -->
 
 <!-- ══════════════════════ BOTTOM NAV ══════════════════════ -->
 <nav class="bottom-nav">
@@ -1610,6 +1611,7 @@ const SESSION_PLAN={
   90:{exercises:6, sets:4},
 };
 const DAY_ORDER=['day1','day2','day3','day4','day5'];
+const RUN_PLAN=[{"phase": "Foundation \u2014 Walk/Run Intervals", "sessions": [{"day": "Wed", "label": "Easy intervals", "target": 1.5}, {"day": "Sat", "label": "Easy intervals", "target": 2.0}]}, {"phase": "Foundation \u2014 Walk/Run Intervals", "sessions": [{"day": "Wed", "label": "Easy intervals", "target": 2.0}, {"day": "Sat", "label": "Long walk/run", "target": 2.5}]}, {"phase": "Foundation \u2014 Building Endurance", "sessions": [{"day": "Wed", "label": "Easy run", "target": 2.0}, {"day": "Sat", "label": "Long walk/run", "target": 3.0}]}, {"phase": "Foundation \u2014 Building Endurance", "sessions": [{"day": "Wed", "label": "Easy run", "target": 2.5}, {"day": "Sat", "label": "Long run", "target": 3.5}]}, {"phase": "Base Building \u2014 Continuous Running", "sessions": [{"day": "Tue", "label": "Easy run", "target": 2.5}, {"day": "Thu", "label": "Tempo run", "target": 2.0}, {"day": "Sat", "label": "Long run", "target": 4.0}]}, {"phase": "Base Building \u2014 Continuous Running", "sessions": [{"day": "Tue", "label": "Easy run", "target": 3.0}, {"day": "Thu", "label": "Tempo run", "target": 2.5}, {"day": "Sat", "label": "Long run", "target": 4.5}]}, {"phase": "Base Building \u2014 Continuous Running", "sessions": [{"day": "Tue", "label": "Easy run", "target": 3.0}, {"day": "Thu", "label": "Tempo run", "target": 2.5}, {"day": "Sat", "label": "Long run", "target": 5.0}]}, {"phase": "Base Building \u2014 Deload Week", "sessions": [{"day": "Tue", "label": "Easy run", "target": 2.0}, {"day": "Sat", "label": "Recovery run", "target": 3.0}]}, {"phase": "Build Phase \u2014 Distance + Speed", "sessions": [{"day": "Tue", "label": "Interval run", "target": 3.0}, {"day": "Thu", "label": "Tempo run", "target": 3.0}, {"day": "Sat", "label": "Long run", "target": 6.0}]}, {"phase": "Build Phase \u2014 Distance + Speed", "sessions": [{"day": "Tue", "label": "Interval run", "target": 3.5}, {"day": "Thu", "label": "Tempo run", "target": 3.0}, {"day": "Sat", "label": "Long run", "target": 7.0}]}, {"phase": "Build Phase \u2014 Distance + Speed", "sessions": [{"day": "Tue", "label": "Interval run", "target": 3.5}, {"day": "Thu", "label": "Tempo run", "target": 3.5}, {"day": "Sat", "label": "Long run", "target": 8.0}]}, {"phase": "Build Phase \u2014 Deload Week", "sessions": [{"day": "Tue", "label": "Easy run", "target": 2.5}, {"day": "Sat", "label": "Recovery run", "target": 4.0}]}, {"phase": "Peak Phase \u2014 Race Prep", "sessions": [{"day": "Tue", "label": "Interval run", "target": 4.0}, {"day": "Thu", "label": "Tempo run", "target": 3.5}, {"day": "Sat", "label": "Long run", "target": 9.0}]}, {"phase": "Peak Phase \u2014 Race Prep", "sessions": [{"day": "Tue", "label": "Interval run", "target": 3.5}, {"day": "Thu", "label": "Tempo run", "target": 3.0}, {"day": "Sat", "label": "Long run", "target": 10.0}]}, {"phase": "Taper \u2014 Race Week Approaching", "sessions": [{"day": "Tue", "label": "Easy run", "target": 3.0}, {"day": "Thu", "label": "Easy run", "target": 2.0}, {"day": "Sat", "label": "Long run", "target": 6.0}]}, {"phase": "Taper \u2014 Race Week", "sessions": [{"day": "Tue", "label": "Shakeout run", "target": 2.0}, {"day": "Thu", "label": "Easy run", "target": 1.5}, {"day": "Sun", "label": "\ud83c\udfc1 HALF MARATHON", "target": 13.1}]}];
 const DAY_TYPE_CLASS={push:'push-tab',pull:'pull-tab',lower:'lower-tab',recovery:'recovery-tab'};
 const DAY_NAMES={day1:'Push',day2:'Lower',day3:'Recovery',day4:'Pull',day5:'Core & Power'};
 
