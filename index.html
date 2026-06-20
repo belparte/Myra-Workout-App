@@ -1179,40 +1179,47 @@ body.font-lg .chip{font-size:13px}
 </div>
 
 <!-- ONBOARDING OVERLAY -->
-<div id="onboardOverlay" style="position:fixed;inset:0;background:rgba(10,12,18,0.97);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px">
-  <div style="width:100%;max-width:360px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;color:#fff;text-align:center;line-height:1">MY<span style="color:var(--accent)">RA</span></div>
-    <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px">Let's set up your program</div>
-    <!-- Step 1 -->
+<div id="onboardOverlay" style="position:fixed;inset:0;background:#0a0c12;z-index:600;display:none;flex-direction:column">
+  <div id="onboardBrand" style="flex:1;display:flex;flex-direction:column">
+    <div id="obSlide0" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:4px;color:#fff;line-height:1;margin-bottom:12px">MY<span style="color:#ffc107">RA</span></div>
+      <div style="font-size:16px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Your Personal Fitness Coach</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;max-width:280px">Built for real life. No gym required. Just show up.</div>
+    </div>
+    <div id="obSlide1" style="flex:1;display:none;flex-direction:column;justify-content:center;padding:40px 28px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;margin-bottom:24px">WHAT MYRA <span style="color:#ffc107">DOES</span></div>
+      <div style="display:flex;gap:14px;margin-bottom:16px"><div style="font-size:28px">💪</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Progressive Lifting</div><div style="font-size:12px;color:rgba(255,255,255,0.5)">Push, Pull, Lower — adapts as you get stronger</div></div></div>
+      <div style="display:flex;gap:14px;margin-bottom:16px"><div style="font-size:28px">🏃</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">Half Marathon Prep</div><div style="font-size:12px;color:rgba(255,255,255,0.5)">16-week plan to 13.1 miles</div></div></div>
+      <div style="display:flex;gap:14px"><div style="font-size:28px">🤖</div><div><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px">AI Coach</div><div style="font-size:12px;color:rgba(255,255,255,0.5)">Knows your program and tracks your PRs</div></div></div>
+    </div>
+    <div id="obSlide2" style="flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center">
+      <div style="font-size:56px;margin-bottom:20px">🔥</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;margin-bottom:12px">LET'S <span style="color:#ffc107">GO</span></div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;max-width:280px">Every rep. Every run. Every day. Build the version of yourself you're working toward.</div>
+    </div>
+    <div style="padding:20px 28px 32px;display:flex;align-items:center;justify-content:space-between">
+      <button onclick="obSkip()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Skip</button>
+      <div style="display:flex;gap:6px" id="obDots"><div style="width:24px;height:4px;border-radius:2px;background:#ffc107"></div><div style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2)"></div><div style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2)"></div></div>
+      <button id="obNextBtn" onclick="obNext()" style="background:#ffc107;border:none;border-radius:20px;color:#000;font-size:13px;font-weight:700;padding:10px 24px;cursor:pointer;font-family:'DM Sans',sans-serif">Next →</button>
+    </div>
+  </div>
+  <div id="onboardForm" style="display:none;flex:1;overflow-y:auto;padding:28px 24px 40px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:#fff;margin-bottom:4px">SET UP YOUR <span style="color:#ffc107">PLAN</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px">Takes 30 seconds.</div>
     <div id="onboardStep1">
-      <div class="label">Your current weight (lbs)</div>
-      <input type="number" id="obWeight" placeholder="e.g. 205" style="margin-bottom:12px">
-      <div class="label">Your target weight (lbs)</div>
-      <input type="number" id="obGoalWeight" placeholder="e.g. 180" style="margin-bottom:12px">
-      <div class="label">Your height</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div style="flex:1"><input type="number" id="obHeightFt" placeholder="Feet" min="4" max="7" style="width:100%"></div>
-        <div style="flex:1"><input type="number" id="obHeightIn" placeholder="Inches" min="0" max="11" style="width:100%"></div>
-      </div>
-      <div class="label">Your age</div>
-      <input type="number" id="obAge" placeholder="e.g. 32" style="margin-bottom:20px">
-      <button class="btn btn-accent" style="width:100%" onclick="onboardStep2()">Next →</button>
+      <div class="label">Current weight (lbs)</div><input type="number" id="obWeight" placeholder="e.g. 205" style="margin-bottom:12px">
+      <div class="label">Goal weight (lbs)</div><input type="number" id="obGoalWeight" placeholder="e.g. 185" style="margin-bottom:12px">
+      <div class="label">Height</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px"><div style="flex:1"><input type="number" id="obHeightFt" placeholder="Feet" min="4" max="7" style="width:100%"></div><div style="flex:1"><input type="number" id="obHeightIn" placeholder="Inches" min="0" max="11" style="width:100%"></div></div>
+      <div class="label">Age</div><input type="number" id="obAge" placeholder="e.g. 36" style="margin-bottom:20px">
+      <button class="btn btn-accent" style="width:100%;padding:14px;font-size:15px" onclick="onboardStep2()">Build My Program 🚀</button>
     </div>
-    <!-- Step 2 (was step 3) -->
-    <div id="onboardStep2" style="display:none">
-      <div style="text-align:center;padding:20px 0">
-        <div style="font-size:48px;margin-bottom:12px">💪</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);margin-bottom:8px">YOU'RE ALL SET!</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px">Your program starts today. Week 1 is about building the habit, not going heavy. Let's go!</div>
-      </div>
-      <button class="btn btn-accent" style="width:100%" onclick="finishOnboarding()">Start My Program 🚀</button>
-      <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="showStep(1)">← Back</button>
-    </div>
-    <!-- Step indicator -->
-    <div style="display:flex;gap:6px;justify-content:center;margin-top:16px" id="onboardDots">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div>
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--border)"></div>
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--border)"></div>
+    <div id="onboardStep2" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:56px;margin-bottom:16px">💪</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);margin-bottom:10px">YOU'RE ALL SET!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:24px">Your program starts today. Week 1 is about building the habit, not going heavy.</div>
+      <button class="btn btn-accent" style="width:100%;padding:14px;font-size:15px;margin-bottom:8px" onclick="finishOnboarding()">Start My Program 🚀</button>
+      <button class="btn btn-outline" style="width:100%" onclick="showStep(1)">← Back</button>
     </div>
   </div>
 </div>
