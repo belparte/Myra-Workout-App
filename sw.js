@@ -1,44 +1,61 @@
-// Myra App — Service Worker
-// Enables background notifications even when app is closed
-
-const CACHE_NAME = 'myra-v2';
+const CACHE = 'myra-v2';
+const SHELL = [
+  '/Myra-Workout-App/',
+  '/Myra-Workout-App/index.html',
+  '/Myra-Workout-App/manifest.json',
+  'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap',
+];
 
 self.addEventListener('install', e => {
-  self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(SHELL).catch(() => {}))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
-// Handle notification clicks
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const action = e.action;
-  e.waitUntil(
-    clients.matchAll({type:'window', includeUncontrolled:true}).then(clientList => {
-      // Focus existing window or open new one
-      for(const client of clientList){
-        if(client.url && 'focus' in client) return client.focus();
-      }
-      if(clients.openWindow) return clients.openWindow('./');
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Never cache API calls
+  if (url.hostname.includes('anthropic') || url.hostname.includes('workers.dev')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // Cache-first for everything else with network fallback
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      const network = fetch(e.request).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => cached);
+      return cached || network;
     })
   );
 });
 
-// Listen for messages from the app to schedule notifications
-self.addEventListener('message', e => {
-  if(e.data?.type === 'SCHEDULE_NOTIF'){
-    const {title, body, tag, delay} = e.data;
-    setTimeout(()=>{
-      self.registration.showNotification(title, {
-        body,
-        tag: tag || 'myra-notif',
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>',
-        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0c12"/><text y=".9em" font-size="80" x="10">💪</text></svg>',
-        vibrate: [100, 50, 100],
-        requireInteraction: false
-      });
-    }, delay || 0);
-  }
+// Push notifications
+self.addEventListener('push', e => {
+  if (!e.data) return;
+  const d = e.data.json();
+  e.waitUntil(
+    self.registration.showNotification(d.title || 'Myra', {
+      body: d.body || "Time to train 💪",
+      icon: '/Myra-Workout-App/icons/icon-192.png',
+      badge: '/Myra-Workout-App/icons/icon-72.png',
+      vibrate: [100, 50, 100],
+    })
+  );
 });

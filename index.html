@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0c12">
+  <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -444,6 +445,7 @@ body.font-lg .chip{font-size:13px}
 </style>
 </head>
 <body>
+<div style="position:fixed;bottom:60px;right:8px;font-size:9px;color:rgba(255,255,255,0.15);z-index:1;pointer-events:none;font-family:monospace">build 15:28:19</div>
 <div id="app">
 
 <!-- ══════════════════════ HOME ══════════════════════ -->
@@ -1849,7 +1851,7 @@ window.addEventListener('popstate',e=>{
 // ── Service Worker + unified notification helper ───────────────
 let swRegistration=null;
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js')
+  navigator.serviceWorker.register('sw.js')
     .then(reg=>{swRegistration=reg;})
     .catch(()=>{}); // expected to fail in Claude preview
 }
@@ -4989,7 +4991,83 @@ function setRunEffort(n){runEffort=n;for(let i=1;i<=10;i++){const btn=document.g
 function openRunLogger(){const o=document.getElementById('runLogOverlay'),s=document.getElementById('runLogSheet');if(!o)return;['runDistance','runDuration','runNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const eb=document.getElementById('effortBtns');if(eb)eb.innerHTML=[1,2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="setRunEffort(${n})" id="effort${n}" style="flex:1;padding:8px 0;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">${n}</button>`).join('');setRunType('easy');setRunEffort(5);o.style.display='flex';if(s)setTimeout(()=>s.style.transform='translateY(0)',10);}
 function closeRunLogger(e){if(e&&e.target!==document.getElementById('runLogOverlay'))return;const s=document.getElementById('runLogSheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('runLogOverlay');if(o)o.style.display='none';},300);}
 function saveRun(){const dist=parseFloat(document.getElementById('runDistance')?.value),dur=parseFloat(document.getElementById('runDuration')?.value);if(!dist||!dur){toast('Enter distance and duration','err');return;}const week=getCurrentRunWeek();const runs=getRunsForWeek(week);runs.push({distance:dist,duration:dur,type:runType,effort:runEffort,notes:document.getElementById('runNotes')?.value||'',date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),timestamp:Date.now(),week,pace:calcPace(dist,dur)});saveRunsForWeek(week,runs);const s=document.getElementById('runLogSheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('runLogOverlay');if(o)o.style.display='none';renderRunSection();},350);toast('🏃 Run logged!');haptic('success');}
-function renderRunSection(){if(typeof RUN_PLAN==='undefined')return;const week=getCurrentRunWeek();const plan=RUN_PLAN?.[week-1];if(!plan)return;const runs=getRunsForWeek(week);const wb=document.getElementById('runWeekBadge');if(wb)wb.textContent='Week '+week+' of 16';const pl=document.getElementById('runPhaseLabel');if(pl)pl.textContent=plan.phase;const ws=document.getElementById('runWeekSessions');if(ws)ws.innerHTML=(plan.sessions||[]).map((s,i)=>{const done=runs[i];return`<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:10px;padding:10px 12px;margin-bottom:6px"><div style="width:8px;height:8px;border-radius:50%;background:${done?'var(--green)':'var(--border)'}"></div><div style="flex:1"><div style="font-size:12px;font-weight:700">${s.day} · ${s.label}</div><div style="font-size:11px;color:var(--muted)">${done?done.distance+' mi · '+calcPace(done.distance,done.duration)+' /mi':'Target: '+s.target+' mi'}</div></div>${done?'<div style="color:var(--green)">✓</div>':''}</div>`;}).join('');const rh=document.getElementById('runHistory');if(rh){const all=[];for(let w=1;w<=16;w++)getRunsForWeek(w).forEach(r=>all.push(r));all.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));rh.innerHTML=all.length?all.slice(0,5).map(r=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:var(--accent2)">${r.type} Run</span><span style="font-size:11px;color:var(--muted)">${r.date}</span></div><div>${r.distance} mi · ${r.duration} min · ${calcPace(r.distance,r.duration)}/mi</div></div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--muted)">No runs yet</div>';}}
+function renderRunSection(){
+  if(typeof RUN_PLAN==='undefined')return;
+  const week=getCurrentRunWeek();
+  const plan=RUN_PLAN?.[week-1];
+  if(!plan)return;
+  const runs=getRunsForWeek(week);
+  const sessions=plan.sessions||[];
+
+  // Week badge
+  const wb=document.getElementById('runWeekBadge');
+  if(wb)wb.textContent='Week '+week+' of 16';
+
+  // Phase label
+  const pl=document.getElementById('runPhaseLabel');
+  if(pl)pl.textContent=plan.phase;
+
+  // Week progress indicator
+  const doneCount=runs.filter(r=>r).length;
+  const totalCount=sessions.length;
+  const ws=document.getElementById('runWeekSessions');
+  if(!ws)return;
+
+  // Progress header
+  const progressHtml=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:${doneCount===totalCount?'var(--green)':'var(--text)'}">
+        ${doneCount===totalCount
+          ? '🎉 All sessions done this week!'
+          : doneCount+' of '+totalCount+' sessions done'}
+      </div>
+      <div style="display:flex;gap:4px">
+        ${sessions.map((_,i)=>`<div style="width:20px;height:4px;border-radius:2px;background:${runs[i]?'var(--green)':'rgba(255,255,255,0.15)'}"></div>`).join('')}
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+      Complete these sessions in any order that fits your week
+    </div>`;
+
+  // Session cards — no day label, completion by type not day
+  const cardsHtml=sessions.map((s,i)=>{
+    // Match runs by index (preserves order logged) but show all as independent
+    const done=runs[i];
+    return`<div onclick="${done?'':'openCoachedRun('+i+')'}" style="display:flex;align-items:center;gap:12px;background:${done?'rgba(0,230,118,0.06)':'var(--surface)'};border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:${done?'default':'pointer'};transition:all 0.2s" onmousedown="this.style.opacity=${done?1:0.85}" onmouseup="this.style.opacity=1">
+      <div style="width:32px;height:32px;border-radius:50%;background:${done?'var(--green)':'rgba(255,255,255,0.06)'};border:2px solid ${done?'var(--green)':'var(--border)'};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${done?'✓':'🏃'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:${done?'var(--green)':'var(--text)'};margin-bottom:2px">${s.label}</div>
+        <div style="font-size:11px;color:var(--muted)">${done?done.distance+' mi in '+done.duration+' min · '+calcPace(done.distance,done.duration)+'/mi':'Target: '+s.target+' mi'}</div>
+      </div>
+      ${done
+        ?'<div style="font-size:20px">✅</div>'
+        :`<div style="background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:#000;white-space:nowrap">Start →</div>`}
+    </div>`;
+  }).join('');
+
+  ws.innerHTML=progressHtml+cardsHtml;
+
+  // Run history
+  const rh=document.getElementById('runHistory');
+  if(rh){
+    const all=[];
+    for(let w=1;w<=16;w++)getRunsForWeek(w).forEach(r=>all.push({...r,weekNum:w}));
+    all.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    rh.innerHTML=all.length
+      ?'<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Recent Runs</div>'
+        +all.slice(0,5).map(r=>`
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:700;color:var(--accent)">${r.type||'Run'}</span>
+              <span style="font-size:11px;color:var(--muted)">Wk ${r.weekNum} · ${r.date||''}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text)">${r.distance} mi · ${r.duration} min · ${calcPace(r.distance,r.duration)}/mi · effort ${r.effort||'—'}/10</div>
+            ${r.coached?'<div style="font-size:10px;color:var(--accent);margin-top:3px">⚡ Coached</div>':''}
+          </div>`).join('')
+      :'<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">No runs logged yet</div>';
+  }
+}
+
 let _editExId=null;
 function openEditEntryByKey(exId){const sessions=ls('w:'+exId)||[];if(!sessions.length){toast('No sessions','warn');return;}openEditEntry(exId,0);}
 function openEditEntry(exId,idx){_editExId=exId;const sessions=ls('w:'+exId)||[];const sess=sessions[idx];if(!sess)return;const o=document.getElementById('editEntryOverlay'),s=document.getElementById('editEntrySheet');const t=document.getElementById('editEntryTitle');if(t)t.textContent=sess.exName||'Edit';const d=document.getElementById('editEntryDate');if(d)d.textContent=sess.date||'';const rows=document.getElementById('editEntryRows');if(rows)rows.innerHTML=sess.sets.map((st,i)=>`<div style="display:grid;grid-template-columns:22px 1fr 1fr 1fr;gap:6px;margin-bottom:8px;align-items:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">${i+1}</div><input type="number" value="${st.weight!=='BW'?st.weight:''}" placeholder="${st.bodyweight?'BW':'lbs'}" id="ew_w_${i}" style="font-size:13px;padding:8px;text-align:center" ${st.bodyweight?'disabled':''}><input type="number" value="${st.reps!=='—'?st.reps:''}" placeholder="reps" id="ew_r_${i}" style="font-size:13px;padding:8px;text-align:center"><input type="number" value="${st.rir!=='—'?st.rir:''}" placeholder="RIR" id="ew_rir_${i}" style="font-size:13px;padding:8px;text-align:center"></div>`).join('');if(o)o.style.display='flex';if(s)setTimeout(()=>s.style.transform='translateY(0)',10);}
@@ -4997,6 +5075,656 @@ function saveEditEntry(){const sessions=ls('w:'+_editExId)||[];const sess=sessio
 function closeEditEntry(e){if(e&&e.target!==document.getElementById('editEntryOverlay'))return;const s=document.getElementById('editEntrySheet');if(s)s.style.transform='translateY(100%)';setTimeout(()=>{const o=document.getElementById('editEntryOverlay');if(o)o.style.display='none';},300);}
 async function exportEncryptedJSON(){const pw=prompt('Backup password (min 4 chars):');if(!pw||pw.length<4){toast('Too short','warn');return;}if(prompt('Confirm:')!==pw){toast('No match','err');return;}const snap={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);try{snap[k]=JSON.parse(localStorage.getItem(k));}catch(e){snap[k]=localStorage.getItem(k);}}}catch(e){}const pt=new TextEncoder().encode(JSON.stringify(snap));const salt=crypto.getRandomValues(new Uint8Array(16));const iv=crypto.getRandomValues(new Uint8Array(12));const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),{name:'PBKDF2'},false,['deriveKey']);const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt']);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,pt);const packed={v:1,salt:btoa(String.fromCharCode(...salt)),iv:btoa(String.fromCharCode(...iv)),data:btoa(String.fromCharCode(...new Uint8Array(ct)))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(packed)],{type:'application/json'}));a.download='myra-backup-'+localDateKey()+'.json';a.click();toast('🔒 Backup saved!');}
 
+
+// ══════════════════════════════════════════════════════════════
+// COACHED RUN SYSTEM v2 — questionnaire-first
+// ══════════════════════════════════════════════════════════════
+
+// ── State ────────────────────────────────────────────────────
+let _crIntervals = [];
+let _crCurrentIdx = 0;
+let _crSecondsLeft = 0;
+let _crElapsedTotal = 0;
+let _crTimerTick = null;
+let _crWakeLock = null;
+let _crSessionInfo = {};
+let _crEffort = 5;
+
+// Questionnaire answers
+let _crEnv = null;          // 'treadmill' | 'outdoor'
+let _crWalkSpeed = 3.2;
+let _crRunSpeed = 5.0;
+let _crIncline = 0;
+let _crTerrain = 'flat';    // 'flat' | 'hilly' | 'trail' | 'track'
+let _crFitness = null;      // 'beginner' | 'early' | 'intermediate' | 'returner'
+let _crLegs = null;         // 'heavy' | 'normal' | 'fresh'
+let _crEnergy = null;       // 'low' | 'normal' | 'high'
+let _crCurrentQStep = 0;
+
+// ── Entry point ───────────────────────────────────────────────
+function openCoachedRun(sessionIdx) {
+  const week = getCurrentRunWeek();
+  const plan = RUN_PLAN?.[week - 1];
+  if (!plan) return;
+  const session = plan.sessions?.[sessionIdx];
+  if (!session) return;
+
+  _crSessionInfo = { ...session, week, phase: plan.phase };
+  _crIntervals = [];
+  _crCurrentIdx = 0;
+  _crElapsedTotal = 0;
+  _crEffort = 5;
+
+  // Reset questionnaire state
+  _crEnv = null; _crFitness = null; _crLegs = null; _crEnergy = null;
+  // Reset user-edited flags on speed inputs
+  ['crWalkSpeedInput','crRunSpeedInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el._userEdited = false;
+  });
+  _crWalkSpeed = 3.2; _crRunSpeed = 5.0; _crIncline = 0; _crTerrain = 'flat';
+
+  // Show overlay at questionnaire step 0
+  const ov = document.getElementById('coachedRunOverlay');
+  if (ov) ov.style.display = 'flex';
+
+  const label = document.getElementById('crSessionLabel');
+  if (label) label.textContent = `Week ${week} · ${session.label}`;
+
+  showCrPhase('q');
+  crQGoTo(0);
+}
+
+// ── Phase navigation ──────────────────────────────────────────
+function showCrPhase(phase) {
+  ['crQPhase','crBriefPhase','crTimerPhase','crDebriefPhase'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const map = { q:'crQPhase', brief:'crBriefPhase', timer:'crTimerPhase', debrief:'crDebriefPhase' };
+  const el = document.getElementById(map[phase]);
+  if (el) el.style.display = 'flex';
+}
+
+function crQGoTo(step) {
+  _crCurrentQStep = step;
+  [0,1,2,3].forEach(i => {
+    const s = document.getElementById('crQStep' + i);
+    if (s) s.style.display = i === step ? 'flex' : 'none';
+    const dot = document.getElementById('crQDot' + i);
+    if (dot) {
+      dot.style.width = i === step ? '24px' : '8px';
+      dot.style.background = i <= step ? '#ffc107' : 'rgba(255,255,255,0.15)';
+    }
+  });
+  // If moving to step 3 (treadmill settings), populate recommendations
+  if (step === 3) populateSpeedRecommendations();
+  showCrPhase('q');
+  crQCheckNext(step);
+}
+
+function crQCheckNext(step) {
+  const nextBtns = { 0: 'crQNext0', 1: 'crQNext1', 2: 'crQNext2' };
+  const btn = document.getElementById(nextBtns[step]);
+  if (!btn) return;
+  let ready = false;
+  if (step === 0) ready = _crEnv !== null;
+  if (step === 1) ready = _crFitness !== null;
+  if (step === 2) ready = _crLegs !== null && _crEnergy !== null;
+  btn.disabled = !ready;
+  btn.style.opacity = ready ? '1' : '0.35';
+}
+
+function populateSpeedRecommendations() {
+  const speedRecs = {
+    beginner:     { walk: 2.8, run: 4.5, note: "We've set conservative speeds for a beginner — these let you complete the session without burning out. You can nudge the run speed up once you feel comfortable." },
+    early:        { walk: 3.0, run: 5.0, note: "Good starting point for your stage. If 5.0 mph feels too easy after the first interval, increase by 0.2. If it feels too hard, drop to 4.5." },
+    intermediate: { walk: 3.2, run: 5.5, note: "Moderate effort settings — you should be breathing harder during run intervals but not gasping. Adjust run speed by feel." },
+    returner:     { walk: 3.0, run: 5.2, note: "Conservative start for your return — your cardio will come back faster than you think. These speeds should feel manageable but not easy." },
+  };
+  const rec = speedRecs[_crFitness] || speedRecs.beginner;
+
+  // Pre-fill inputs with recommendations
+  const walkInp = document.getElementById('crWalkSpeedInput');
+  const runInp = document.getElementById('crRunSpeedInput');
+  if (walkInp && !walkInp._userEdited) { walkInp.value = rec.walk; _crWalkSpeed = rec.walk; }
+  if (runInp && !runInp._userEdited) { runInp.value = rec.run; _crRunSpeed = rec.run; }
+
+  // Show recommendation badge
+  const badge = document.getElementById('crSpeedRecommendBadge');
+  if (badge) badge.innerHTML = '💡 <strong>Recommended for ' + (_crFitness || 'you') + ':</strong> ' + rec.note;
+}
+
+// ── Q step 0 helpers ─────────────────────────────────────────
+function setCrEnv(env) {
+  _crEnv = env;
+  ['treadmill','outdoor'].forEach(e => {
+    const b = document.getElementById('crEnv' + e.charAt(0).toUpperCase() + e.slice(1));
+    if (b) {
+      b.style.background = e === env ? 'rgba(255,193,7,0.12)' : 'rgba(255,255,255,0.04)';
+      b.style.borderColor = e === env ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+    }
+  });
+  const ts = document.getElementById('crTreadmillSettings');
+  const os = document.getElementById('crOutdoorSettings');
+  if (ts) ts.style.display = env === 'treadmill' ? 'block' : 'none';
+  if (os) os.style.display = env === 'outdoor' ? 'block' : 'none';
+  crQCheckNext(0);
+}
+
+function syncSpeedInputs() {
+  const w = parseFloat(document.getElementById('crWalkSpeedInput')?.value);
+  const r = parseFloat(document.getElementById('crRunSpeedInput')?.value);
+  if (!isNaN(w)) { _crWalkSpeed = w; const el=document.getElementById('crWalkSpeedInput'); if(el) el._userEdited=true; }
+  if (!isNaN(r)) { _crRunSpeed = r; const el=document.getElementById('crRunSpeedInput'); if(el) el._userEdited=true; }
+}
+
+function setCrIncline(val) {
+  _crIncline = val;
+  [0,1,2,3].forEach(v => {
+    const b = document.getElementById('crInc' + v);
+    if (b) {
+      b.style.background = v === val ? 'var(--accent)' : 'var(--surface)';
+      b.style.color = v === val ? '#000' : 'var(--muted)';
+      b.style.border = v === val ? 'none' : '1px solid var(--border)';
+    }
+  });
+}
+
+function setCrTerrain(t) {
+  _crTerrain = t;
+  ['flat','hilly','trail','track'].forEach(v => {
+    const b = document.getElementById('crTerr' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (b) {
+      b.style.background = v === t ? 'var(--accent)' : 'var(--surface)';
+      b.style.color = v === t ? '#000' : 'var(--muted)';
+      b.style.border = v === t ? 'none' : '1px solid var(--border)';
+    }
+  });
+}
+
+// ── Q step 1 helpers ─────────────────────────────────────────
+function setCrFitness(level) {
+  _crFitness = level;
+  ['beginner','early','intermediate','returner'].forEach(l => {
+    const b = document.getElementById('crFit' + l.charAt(0).toUpperCase() + l.slice(1));
+    if (b) {
+      b.style.background = l === level ? 'rgba(255,193,7,0.12)' : 'rgba(255,255,255,0.04)';
+      b.style.borderColor = l === level ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+    }
+  });
+  crQCheckNext(1);
+
+  // Set AI-recommended treadmill speeds based on fitness level
+  const speedRecs = {
+    beginner:     { walk: 2.8, run: 4.5, hint: 'Recommended for beginners — easy to adjust up if comfortable' },
+    early:        { walk: 3.0, run: 5.0, hint: 'Good starting point — increase run speed if feeling strong' },
+    intermediate: { walk: 3.2, run: 5.5, hint: 'Moderate effort — adjust based on your comfortable pace' },
+    returner:     { walk: 3.0, run: 5.2, hint: 'Conservative start — you can push the run speed once warmed up' },
+  };
+  const rec = speedRecs[level];
+  if (rec) {
+    const walkInp = document.getElementById('crWalkSpeedInput');
+    const runInp = document.getElementById('crRunSpeedInput');
+    const hint = document.getElementById('crSpeedHint');
+    if (walkInp) { walkInp.value = rec.walk; _crWalkSpeed = rec.walk; }
+    if (runInp) { runInp.value = rec.run; _crRunSpeed = rec.run; }
+    if (hint) { hint.textContent = '💡 ' + rec.hint; hint.style.display = 'block'; }
+  }
+}
+
+// ── Q step 2 helpers ─────────────────────────────────────────
+function setCrLegs(state) {
+  _crLegs = state;
+  ['heavy','normal','fresh'].forEach(s => {
+    const b = document.getElementById('crLegs' + s.charAt(0).toUpperCase() + s.slice(1));
+    if (b) {
+      b.style.background = s === state ? 'rgba(255,193,7,0.12)' : 'rgba(255,255,255,0.04)';
+      b.style.borderColor = s === state ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+      b.style.color = s === state ? '#fff' : 'var(--muted)';
+    }
+  });
+  crQCheckNext(2);
+}
+
+function setCrEnergy(level) {
+  _crEnergy = level;
+  ['low','normal','high'].forEach(l => {
+    const b = document.getElementById('crEnergy' + l.charAt(0).toUpperCase() + l.slice(1));
+    if (b) {
+      b.style.background = l === level ? 'rgba(255,193,7,0.12)' : 'rgba(255,255,255,0.04)';
+      b.style.borderColor = l === level ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+      b.style.color = l === level ? '#fff' : 'var(--muted)';
+    }
+  });
+  crQCheckNext(2);
+}
+
+// ── After questionnaire: show brief phase and call AI ─────────
+async function crStartBrief() {
+  showCrPhase('brief');
+
+  const badge = document.getElementById('crSessionBadge');
+  if (badge) badge.textContent = `Week ${_crSessionInfo.week} · ${_crSessionInfo.label}`;
+
+  const title = document.getElementById('crBriefTitle');
+  if (title) title.textContent = 'Building your plan...';
+
+  const sub = document.getElementById('crBriefSub');
+  if (sub) sub.textContent = `${_crSessionInfo.label} · Target: ${_crSessionInfo.target} mi · ${_crEnv === 'treadmill' ? 'Treadmill' : 'Outdoor'}`;
+
+  // Show environment summary
+  const envSum = document.getElementById('crEnvironmentSummary');
+  if (envSum) {
+    if (_crEnv === 'treadmill') {
+      envSum.innerHTML = `🏃 Treadmill · Walk: <strong>${_crWalkSpeed} mph</strong> · Run: <strong>${_crRunSpeed} mph</strong> · Incline: <strong>${_crIncline}%</strong>`;
+    } else {
+      const terrainLabels = { flat:'Mostly flat', hilly:'Rolling hills', trail:'Trail/uneven', track:'Track' };
+      envSum.innerHTML = `🌳 Outdoor · ${terrainLabels[_crTerrain] || 'Outdoor'} · Effort-based cues`;
+    }
+  }
+
+  const btn = document.getElementById('crStartBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.35'; }
+
+  await generateRunCoaching();
+}
+
+// ── AI generates interval plan ────────────────────────────────
+async function generateRunCoaching() {
+  if (typeof canUseAI === 'function' && !canUseAI()) {
+    if (typeof openPremiumModal === 'function') openPremiumModal('ai');
+    closeCoachedRun(); return;
+  }
+
+  const week = _crSessionInfo.week;
+  const session = _crSessionInfo;
+  const recentRuns = [];
+  for (let w = Math.max(1, week - 2); w <= week; w++) {
+    getRunsForWeek(w).forEach(r => recentRuns.push(`W${r.week}: ${r.distance}mi in ${r.duration}min (effort ${r.effort})`));
+  }
+
+  const fitnessDesc = {
+    beginner: 'Complete beginner — cannot run more than 1-2 minutes without stopping',
+    early: 'Early stage — can run 3-5 minutes but uncomfortable, still building habit',
+    intermediate: 'Getting there — can run 10-15 minutes continuous',
+    returner: 'Returning runner who has taken time off'
+  }[_crFitness] || 'unknown fitness level';
+
+  const envDesc = _crEnv === 'treadmill'
+    ? `Treadmill: walk speed ${_crWalkSpeed} mph, run speed ${_crRunSpeed} mph, incline ${_crIncline}%`
+    : `Outdoor: ${_crTerrain} terrain, effort-based pacing`;
+
+  const readinessDesc = `Legs: ${_crLegs}, Energy: ${_crEnergy}`;
+
+  const prompt = `You are a running coach designing a specific coached interval session.
+
+RUNNER PROFILE:
+- Fitness level: ${fitnessDesc}
+- Environment: ${envDesc}
+- Today's readiness: ${readinessDesc}
+- Program: Week ${week} of 16 (${session.phase})
+- Session: ${session.day} · ${session.label} · Target: ${session.target} miles
+- Recent history: ${recentRuns.length ? recentRuns.slice(-4).join(', ') : 'No logged runs yet'}
+
+CRITICAL RULES FOR BEGINNERS:
+- A complete beginner should NEVER run more than 1-2 minutes per running interval in weeks 1-4
+- Walk intervals must be LONGER than run intervals for beginners (e.g. 90s walk / 60s run, or 2min walk / 1min run)
+- For "beginner" fitness: start with 60-90 second run intervals maximum
+- Total session should feel completable, not crushing — leave them wanting more
+
+TREADMILL-SPECIFIC (if treadmill):
+- Every interval note MUST include the specific speed: "Set to ${_crRunSpeed} mph" or "Drop to ${_crWalkSpeed} mph"
+- Account for incline: ${_crIncline}% incline means slightly harder, so don't set run speed too high
+- Warm up at even lower speed (${Math.max(2.0, _crWalkSpeed - 0.3).toFixed(1)} mph) for first interval
+
+OUTDOOR-SPECIFIC (if outdoor):
+- Give effort/feel cues instead of speed: "easy conversational pace", "can say a sentence but breathing harder"
+- Account for terrain: ${_crTerrain === 'hilly' ? 'walk uphill, run on flats and downhills' : _crTerrain === 'trail' ? 'slow down on uneven ground, safety first' : 'steady consistent effort'}
+
+READINESS ADJUSTMENT:
+- Heavy legs + low energy: reduce run intervals by 20-30%, add extra walk recovery
+- Fresh legs + high energy: can push run intervals slightly longer or harder
+- Current readiness: ${_crLegs} legs, ${_crEnergy} energy
+
+Return ONLY this exact JSON structure, no other text:
+{
+  "brief": "2-3 sentence personalized pre-run brief. Be specific to their fitness level, environment, and today's readiness. Warm and encouraging.",
+  "intervals": [
+    {"type": "walk", "duration": 120, "note": "Specific cue for this person and environment"},
+    {"type": "run", "duration": 60, "note": "Specific cue — include treadmill speed if on treadmill"},
+    {"type": "walk", "duration": 90, "note": "Recovery walk cue"},
+    {"type": "run", "duration": 60, "note": "Second run interval cue"}
+  ]
+}
+
+Design the full interval sequence (4-12 intervals depending on session). Include warm-up walk and cool-down walk. Make sure total active time roughly matches the target distance at an appropriate pace for this fitness level.
+
+TOTAL SESSION TIME GUIDANCE:
+- Beginner: target distance / 15 min per mile = total minutes. E.g. 1.5 miles = ~22 min total
+- Early: target distance / 14 min per mile = total minutes
+- Intermediate/returner: target distance / 12 min per mile = total minutes
+- DO NOT generate sessions longer than 45 minutes for beginners or 60 minutes for anyone
+- If the target is 1.5 miles, the session should be roughly 20-25 minutes total, NOT 51 minutes`;
+
+  try {
+    if (typeof incrementAICount === 'function') incrementAICount();
+    const fetchUrl = typeof VF_PROXY_URL !== 'undefined'
+      ? VF_PROXY_URL + '/v1/messages'
+      : 'https://api.anthropic.com/v1/messages';
+    const headers = typeof VF_PROXY_URL !== 'undefined'
+      ? { 'Content-Type': 'application/json', 'x-voltframe-premium': String(typeof isPremium === 'function' ? isPremium() : true) }
+      : { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+
+    const resp = await fetch(fetchUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await resp.json();
+    const raw = data.content?.[0]?.text || '';
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON');
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    _crIntervals = parsed.intervals || [];
+
+    // Hard enforcement — AI cannot override fitness-level caps
+    _crIntervals = enforceFitnessCaps(_crIntervals, _crFitness, _crSessionInfo.week);
+
+    // Sanitize treadmill notes — replace any speed the AI invented with user's actual speeds
+    if (_crEnv === 'treadmill') {
+      _crIntervals = _crIntervals.map(iv => {
+        // Strip any mph mention from notes and replace with correct speed
+        let note = iv.note || '';
+        note = note.replace(/[\d.]+\s*mph/gi, iv.type === 'run'
+          ? _crRunSpeed + ' mph'
+          : _crWalkSpeed + ' mph'
+        );
+        return { ...iv, note };
+      });
+    }
+
+    const briefEl = document.getElementById('crBriefText');
+    if (briefEl) briefEl.textContent = parsed.brief || "Your plan is ready.";
+
+    const titleEl = document.getElementById('crBriefTitle');
+    if (titleEl) titleEl.textContent = session.label.toUpperCase();
+
+    renderIntervalPreview();
+    const btn = document.getElementById('crStartBtn');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+
+  } catch (err) {
+    _crIntervals = buildFallbackIntervals(session, week, _crFitness);
+    const briefEl = document.getElementById('crBriefText');
+    if (briefEl) briefEl.textContent = `Your ${session.label.toLowerCase()} session is ready. ${_crEnv === 'treadmill' ? `Walk at ${_crWalkSpeed} mph, run at ${_crRunSpeed} mph.` : 'Use effort cues — keep it conversational on the run intervals.'} Week ${week} of 16 — stay consistent.`;
+    renderIntervalPreview();
+    const btn = document.getElementById('crStartBtn');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    const titleEl = document.getElementById('crBriefTitle');
+    if (titleEl) titleEl.textContent = session.label.toUpperCase();
+  }
+}
+
+
+// ── Hard fitness caps — enforced regardless of AI output ─────
+function enforceFitnessCaps(intervals, fitness, week) {
+  if (!intervals || !intervals.length) return intervals;
+
+  // Max run duration per interval by fitness level and week
+  const maxRunSecs = {
+    beginner:     week <= 2 ? 90  : week <= 4 ? 120 : week <= 6 ? 150 : 180,
+    early:        week <= 2 ? 150 : week <= 4 ? 180 : week <= 6 ? 240 : 300,
+    intermediate: week <= 4 ? 300 : week <= 8 ? 420 : 600,
+    returner:     week <= 2 ? 240 : week <= 4 ? 360 : 600,
+  }[fitness] || 90; // default: treat unknown as beginner — never let AI give huge intervals
+
+  // Min walk duration for recovery between runs
+  const minWalkSecs = {
+    beginner:     week <= 2 ? 90 : 75,
+    early:        week <= 2 ? 75 : 60,
+    intermediate: 45,
+    returner:     45,
+  }[fitness] || 45;
+
+  // Absolute safety cap — never more than 5 min run in weeks 1-4 regardless of fitness
+  const absoluteMax = week <= 4 ? 300 : 900;
+
+  return intervals.map((iv, i) => {
+    const effectiveCap = Math.min(maxRunSecs, absoluteMax);
+    if (iv.type === 'run' && iv.duration > effectiveCap) {
+      console.log(`Clamped run interval ${i} from ${iv.duration}s to ${maxRunSecs}s (${fitness}, week ${week})`);
+      return { ...iv, duration: effectiveCap };
+    }
+    if (iv.type === 'walk' && i > 0 && i < intervals.length - 1 && iv.duration < minWalkSecs) {
+      // Don't shorten recovery walks between run intervals
+      const prevRun = intervals[i-1]?.type === 'run';
+      const nextRun = intervals[i+1]?.type === 'run';
+      if (prevRun || nextRun) return { ...iv, duration: minWalkSecs };
+    }
+    return iv;
+  });
+}
+
+function buildFallbackIntervals(session, week, fitness) {
+  const label = session.label.toLowerCase();
+  const isBeginner = fitness === 'beginner' || fitness === 'early';
+  const isTreadmill = _crEnv === 'treadmill';
+
+  const walkNote = isTreadmill ? `Walk at ${_crWalkSpeed} mph` : 'Easy walking pace';
+  const runNote = isTreadmill ? `Increase to ${_crRunSpeed} mph` : 'Easy conversational jog';
+  const recovNote = isTreadmill ? `Drop back to ${_crWalkSpeed} mph — full recovery` : 'Recover with easy walking';
+
+  if (label.includes('interval') || label.includes('walk/run')) {
+    const walkSecs = isBeginner ? (week <= 2 ? 120 : 90) : 60;
+    const runSecs = isBeginner ? (week <= 2 ? 60 : 75) : 90;
+    const rounds = isBeginner ? (week <= 2 ? 5 : 6) : 8;
+    const arr = [{ type: 'walk', duration: 180, note: isTreadmill ? `Start at ${Math.max(2.5, _crWalkSpeed - 0.3).toFixed(1)} mph — warm up easy` : 'Warm up with a slow walk — get your breathing settled' }];
+    for (let i = 0; i < rounds; i++) {
+      arr.push({ type: 'run', duration: runSecs, note: i === 0 ? runNote : (i === rounds - 1 ? (isTreadmill ? `${_crRunSpeed} mph — strong finish` : 'Last one — finish strong') : runNote) });
+      arr.push({ type: 'walk', duration: walkSecs, note: recovNote });
+    }
+    arr[arr.length - 1].note = isTreadmill ? `${_crWalkSpeed} mph — cool down, great work` : 'Cool down walk — you did it';
+    return arr;
+  }
+  if (label.includes('tempo')) {
+    return [
+      { type: 'walk', duration: 180, note: isTreadmill ? `${_crWalkSpeed} mph warm-up` : '3 min warm-up walk' },
+      { type: 'run', duration: 300, note: isTreadmill ? `${_crRunSpeed} mph — comfortably hard` : 'Comfortably hard — can say a few words only' },
+      { type: 'walk', duration: 90, note: recovNote },
+      { type: 'run', duration: 300, note: isTreadmill ? `Back to ${_crRunSpeed} mph` : 'Hold your tempo — same effort' },
+      { type: 'walk', duration: 90, note: recovNote },
+      { type: 'run', duration: 300, note: isTreadmill ? `${_crRunSpeed} mph — strong finish` : 'Last tempo interval — dig in' },
+      { type: 'walk', duration: 180, note: isTreadmill ? `${_crWalkSpeed} mph cool-down` : 'Cool-down walk — excellent session' },
+    ];
+  }
+  const runMins = Math.round(session.target * (isBeginner ? 18 : 15));
+  return [
+    { type: 'walk', duration: 120, note: isTreadmill ? `${_crWalkSpeed} mph warm-up` : 'Warm up easy' },
+    { type: 'run', duration: Math.round(runMins * 60 * 0.35), note: runNote },
+    { type: 'walk', duration: 90, note: recovNote },
+    { type: 'run', duration: Math.round(runMins * 60 * 0.35), note: isTreadmill ? `${_crRunSpeed} mph — keep going` : 'Steady easy pace' },
+    { type: 'walk', duration: 60, note: recovNote },
+    { type: 'run', duration: Math.round(runMins * 60 * 0.3), note: isTreadmill ? `${_crRunSpeed} mph — finish strong` : 'Last stretch — finish strong' },
+    { type: 'walk', duration: 120, note: isTreadmill ? `Drop to ${Math.max(2.5, _crWalkSpeed - 0.3).toFixed(1)} mph — cool down` : 'Cool-down walk — well done' },
+  ];
+}
+
+function renderIntervalPreview() {
+  const el = document.getElementById('crIntervalPreview');
+  if (!el) return;
+  const totalSecs = _crIntervals.reduce((a, b) => a + b.duration, 0);
+  const totalMins = Math.round(totalSecs / 60);
+  const runCount = _crIntervals.filter(x => x.type === 'run').length;
+  el.innerHTML = `
+    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:14px">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">${runCount} run intervals · ~${totalMins} min total</div>
+      <div style="display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;margin-bottom:10px">
+        ${_crIntervals.map(iv => {
+          const pct = (iv.duration / totalSecs * 100).toFixed(1);
+          const bg = iv.type === 'walk' ? 'rgba(41,182,246,0.5)' : 'rgba(255,193,7,0.8)';
+          return '<div style="flex:' + pct + ';background:' + bg + '"></div>';
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(41,182,246,0.5)"></div><span style="font-size:11px;color:var(--muted)">Walk</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(255,193,7,0.8)"></div><span style="font-size:11px;color:var(--muted)">Run</span></div>
+      </div>
+    </div>`;
+}
+
+// ── Timer engine ──────────────────────────────────────────────
+async function startCoachedTimer() {
+  if (!_crIntervals.length) return;
+  showCrPhase('timer');
+  _crCurrentIdx = 0;
+  _crElapsedTotal = 0;
+  try {
+    if ('wakeLock' in navigator) _crWakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) {}
+  startInterval(0);
+  _crTimerTick = setInterval(timerTick, 1000);
+}
+
+function startInterval(idx) {
+  if (idx >= _crIntervals.length) { endCoachedRun(); return; }
+  _crSecondsLeft = Math.round(_crIntervals[idx].duration);
+  updateTimerDisplay();
+}
+
+function timerTick() {
+  _crElapsedTotal++;
+  _crSecondsLeft--;
+  if (_crSecondsLeft <= 0) {
+    _crCurrentIdx++;
+    if (_crCurrentIdx >= _crIntervals.length) { clearInterval(_crTimerTick); endCoachedRun(); return; }
+    startInterval(_crCurrentIdx);
+  }
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const iv = _crIntervals[_crCurrentIdx];
+  if (!iv) return;
+  const isRun = iv.type === 'run';
+  const totalSecs = _crIntervals.reduce((a, b) => a + b.duration, 0);
+  const consumed = _crIntervals.slice(0, _crCurrentIdx).reduce((a, b) => a + b.duration, 0) + (Math.round(iv.duration) - _crSecondsLeft);
+  const pct = Math.min(100, (consumed / totalSecs) * 100);
+
+  const runIntervals = _crIntervals.filter(x => x.type === 'run');
+  const doneRuns = _crIntervals.slice(0, _crCurrentIdx).filter(x => x.type === 'run').length;
+
+  const el = (id) => document.getElementById(id);
+  if (el('crIntervalState')) { el('crIntervalState').textContent = isRun ? 'RUN' : 'WALK'; el('crIntervalState').style.color = isRun ? '#ffc107' : '#29b6f6'; }
+  if (el('crIntervalBg')) el('crIntervalBg').style.background = isRun ? 'rgba(255,193,7,0.08)' : 'rgba(41,182,246,0.08)';
+  if (el('crIntervalCountdown')) { el('crIntervalCountdown').textContent = formatSecs(_crSecondsLeft); el('crIntervalCountdown').style.color = isRun ? 'rgba(255,193,7,0.9)' : 'rgba(41,182,246,0.9)'; }
+  if (el('crProgressBar')) el('crProgressBar').style.width = pct + '%';
+  if (el('crCoachNote')) el('crCoachNote').textContent = iv.note || '';
+
+  // Treadmill speed cue
+  const speedCue = el('crSpeedCue');
+  const speedText = el('crSpeedCueText');
+  if (_crEnv === 'treadmill' && speedCue && speedText) {
+    speedCue.style.display = 'block';
+    speedText.textContent = isRun ? `${_crRunSpeed} mph — incline ${_crIncline}%` : `${_crWalkSpeed} mph`;
+    speedCue.style.background = isRun ? 'rgba(255,193,7,0.12)' : 'rgba(41,182,246,0.08)';
+    speedCue.style.borderColor = isRun ? 'rgba(255,193,7,0.3)' : 'rgba(41,182,246,0.2)';
+  } else if (speedCue) {
+    speedCue.style.display = 'none';
+  }
+
+  if (el('crRoundLabel')) {
+    if (runIntervals.length > 0) {
+      el('crRoundLabel').textContent = isRun
+        ? `RUN ${doneRuns + 1} OF ${runIntervals.length}`
+        : doneRuns < runIntervals.length ? `NEXT: RUN ${doneRuns + 1} OF ${runIntervals.length}` : 'COOL DOWN';
+    }
+  }
+  const nextIv = _crIntervals[_crCurrentIdx + 1];
+  if (el('crNextInterval')) el('crNextInterval').textContent = nextIv ? `${nextIv.type.toUpperCase()} ${formatSecs(nextIv.duration)}` : 'FINISH';
+  if (el('crElapsed')) el('crElapsed').textContent = formatSecs(_crElapsedTotal);
+  if (el('crTotalTime')) el('crTotalTime').textContent = formatSecs(Math.round(totalSecs));
+}
+
+function formatSecs(s) {
+  s = Math.max(0, Math.round(s));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+// ── End run ───────────────────────────────────────────────────
+function endCoachedRun() {
+  clearInterval(_crTimerTick);
+  if (_crWakeLock) { _crWakeLock.release(); _crWakeLock = null; }
+  showCrPhase('debrief');
+  const totalMins = Math.round(_crElapsedTotal / 60);
+  const durEl = document.getElementById('crDuration');
+  if (durEl) durEl.value = totalMins;
+  const summary = document.getElementById('crDebriefSummary');
+  if (summary) summary.textContent = `${_crIntervals.length} intervals · ${formatSecs(_crElapsedTotal)} · ${_crEnv === 'treadmill' ? 'Treadmill' : 'Outdoor'}`;
+  const eb = document.getElementById('crEffortBtns');
+  if (eb) eb.innerHTML = [1,2,3,4,5,6,7,8,9,10].map(n =>
+    `<button onclick="setCrEffort(${n})" id="crEff${n}" style="flex:1;padding:6px 0;background:${_crEffort===n?'var(--accent)':'var(--surface)'};border:1px solid ${_crEffort===n?'var(--accent)':'var(--border)'};border-radius:8px;color:${_crEffort===n?'#000':'var(--muted)'};font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">${n}</button>`
+  ).join('');
+  const distInput = document.getElementById('crDistance');
+  if (distInput) distInput.addEventListener('blur', function() {
+    const dist = parseFloat(this.value);
+    if (dist > 0) generatePostRunDebrief(dist, totalMins);
+  });
+}
+
+function setCrEffort(n) {
+  _crEffort = n;
+  [1,2,3,4,5,6,7,8,9,10].forEach(i => {
+    const b = document.getElementById('crEff' + i);
+    if (b) { b.style.background = i===n?'var(--accent)':'var(--surface)'; b.style.border=`1px solid ${i===n?'var(--accent)':'var(--border)'}`; b.style.color=i===n?'#000':'var(--muted)'; }
+  });
+}
+
+async function generatePostRunDebrief(dist, durationMins) {
+  if (typeof canUseAI === 'function' && !canUseAI()) return;
+  const el = document.getElementById('crDebriefText');
+  if (el) el.innerHTML = '<span style="color:var(--muted)">Getting your debrief...</span>';
+  const iv = _crSessionInfo;
+  const envNote = _crEnv === 'treadmill' ? `Treadmill at ${_crRunSpeed} mph run / ${_crWalkSpeed} mph walk, ${_crIncline}% incline` : `Outdoor — ${_crTerrain} terrain`;
+  const prompt = `Running coach — post-run debrief. 3 sentences max. Warm and specific.
+Session: ${iv.label} · Target: ${iv.target}mi · Week ${iv.week}/16 · ${iv.phase}
+What happened: ${dist}mi in ${durationMins}min · Effort ${_crEffort}/10 · ${_crFitness} fitness level · ${envNote}
+Give a personal response: acknowledge what they did vs target, one specific positive observation, one forward-looking tip for next session.`;
+  try {
+    if (typeof incrementAICount === 'function') incrementAICount();
+    const fetchUrl = typeof VF_PROXY_URL !== 'undefined' ? VF_PROXY_URL + '/v1/messages' : 'https://api.anthropic.com/v1/messages';
+    const headers = typeof VF_PROXY_URL !== 'undefined'
+      ? { 'Content-Type': 'application/json', 'x-voltframe-premium': String(typeof isPremium === 'function' ? isPremium() : true) }
+      : { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    const resp = await fetch(fetchUrl, { method: 'POST', headers, body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 250, messages: [{ role: 'user', content: prompt }] }) });
+    const data = await resp.json();
+    if (el) el.textContent = data.content?.[0]?.text || 'Great work today.';
+  } catch (e) {
+    if (el) el.textContent = `${dist >= iv.target ? 'You hit your target' : 'Good effort'} — ${dist}mi at effort ${_crEffort}/10. Keep showing up.`;
+  }
+}
+
+function saveCoachedRun() {
+  const dist = parseFloat(document.getElementById('crDistance')?.value);
+  const dur = parseFloat(document.getElementById('crDuration')?.value);
+  if (!dist || !dur) { toast('Enter your distance to save', 'err'); return; }
+  const week = _crSessionInfo.week || getCurrentRunWeek();
+  const runs = getRunsForWeek(week);
+  runs.push({ distance: dist, duration: dur, type: _crSessionInfo.label || 'coached', effort: _crEffort, notes: document.getElementById('crNotes')?.value || '', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), timestamp: Date.now(), week, pace: calcPace(dist, dur), coached: true, env: _crEnv, fitness: _crFitness });
+  saveRunsForWeek(week, runs);
+  closeCoachedRun();
+  renderRunSection();
+  toast('Run saved!');
+  if (typeof haptic === 'function') haptic('success');
+}
+
+function closeCoachedRun() {
+  clearInterval(_crTimerTick);
+  if (_crWakeLock) { _crWakeLock.release(); _crWakeLock = null; }
+  const ov = document.getElementById('coachedRunOverlay');
+  if (ov) ov.style.display = 'none';
+}
 
 // INIT
 // ══════════════════════════════════════════════════════════════
@@ -5095,6 +5823,234 @@ setTimeout(()=>{
         <button onclick="setSessionEquipmentOverride('gym');closeEquipmentSheet()" style="flex:1;padding:10px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);border-radius:10px;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🏟️ Gym</button>
       </div>
     </div>
+  </div>
+</div>
+<!-- ══ COACHED RUN OVERLAY ══ -->
+<div id="coachedRunOverlay" style="position:fixed;inset:0;z-index:8000;display:none;flex-direction:column;background:#0a0c12;overflow:hidden">
+
+  <!-- ═══ PHASE Q: Pre-run questionnaire ═══ -->
+  <div id="crQPhase" style="flex:1;display:flex;flex-direction:column;overflow-y:auto">
+
+    <!-- Q Header -->
+    <div style="padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between">
+      <button onclick="closeCoachedRun()" style="background:rgba(255,255,255,0.06);border:none;border-radius:10px;color:var(--muted);font-size:13px;padding:8px 16px;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button>
+      <div id="crQStepDots" style="display:flex;gap:6px">
+        <div id="crQDot0" style="width:24px;height:4px;border-radius:2px;background:#ffc107;transition:all 0.3s"></div>
+        <div id="crQDot1" style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);transition:all 0.3s"></div>
+        <div id="crQDot2" style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);transition:all 0.3s"></div>
+        <div id="crQDot3" style="width:8px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);transition:all 0.3s"></div>
+      </div>
+      <div id="crSessionLabel" style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase"></div>
+    </div>
+
+    <!-- Q Step 0: Environment (no speeds here) -->
+    <div id="crQStep0" style="flex:1;padding:28px 24px 32px;display:flex;flex-direction:column">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:6px">WHERE ARE YOU <span style="color:#ffc107">RUNNING?</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px">Your coach needs to know this to give you specific instructions</div>
+      <div style="display:grid;gap:12px;margin-bottom:auto">
+        <button onclick="setCrEnv('treadmill')" id="crEnvTreadmill" style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 20px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:36px">🏃</div>
+          <div><div style="font-size:15px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Treadmill</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif">Speed and incline settings will come next</div></div>
+        </button>
+        <button onclick="setCrEnv('outdoor')" id="crEnvOutdoor" style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 20px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:36px">🌳</div>
+          <div><div style="font-size:15px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Outdoor</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif">Effort-based cues — no speed settings needed</div></div>
+        </button>
+        <!-- Outdoor terrain (shown when outdoor selected) -->
+        <div id="crOutdoorSettings" style="display:none;background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.15);border-radius:14px;padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">🗺️ Terrain</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button onclick="setCrTerrain('flat')" id="crTerrFlat" style="padding:10px;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Mostly flat</button>
+            <button onclick="setCrTerrain('hilly')" id="crTerrHilly" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Rolling hills</button>
+            <button onclick="setCrTerrain('trail')" id="crTerrTrail" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Trail/uneven</button>
+            <button onclick="setCrTerrain('track')" id="crTerrTrack" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Track</button>
+          </div>
+        </div>
+      </div>
+      <div style="height:20px"></div>
+      <button id="crQNext0" onclick="crQGoTo(1)" disabled style="width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.35;transition:opacity 0.3s">Next →</button>
+    </div>
+
+    <!-- Q Step 1: Fitness level -->
+    <div id="crQStep1" style="display:none;flex:1;padding:28px 24px 32px;flex-direction:column">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:6px">YOUR <span style="color:#ffc107">FITNESS LEVEL</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px">Be honest — your coach will adapt the session to exactly where you are</div>
+      <div style="display:grid;gap:10px;margin-bottom:auto">
+        <button onclick="setCrFitness('beginner')" id="crFitBeginner" style="display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:28px;margin-top:2px">🌱</div>
+          <div><div style="font-size:14px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Complete beginner</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;line-height:1.5">Running is hard. I can't run more than 1-2 minutes without stopping</div></div>
+        </button>
+        <button onclick="setCrFitness('early')" id="crFitEarly" style="display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:28px;margin-top:2px">🏃</div>
+          <div><div style="font-size:14px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Early stage</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;line-height:1.5">I can run 3-5 minutes but it's uncomfortable. Still building the habit</div></div>
+        </button>
+        <button onclick="setCrFitness('intermediate')" id="crFitIntermediate" style="display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:28px;margin-top:2px">💪</div>
+          <div><div style="font-size:14px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Getting there</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;line-height:1.5">I can run 10-15 minutes continuous. Cardio is improving but still challenging</div></div>
+        </button>
+        <button onclick="setCrFitness('returner')" id="crFitReturner" style="display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;cursor:pointer;text-align:left;transition:all 0.2s">
+          <div style="font-size:28px;margin-top:2px">↩️</div>
+          <div><div style="font-size:14px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;margin-bottom:3px">Returning runner</div><div style="font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;line-height:1.5">I've run before but took time off. Getting back into it</div></div>
+        </button>
+      </div>
+      <div style="height:20px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="crQGoTo(0)" style="padding:16px 20px;background:rgba(255,255,255,0.06);border:none;border-radius:14px;color:var(--muted);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">←</button>
+        <button id="crQNext1" onclick="crQGoTo(2)" disabled style="flex:1;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.35;transition:opacity 0.3s">Next →</button>
+      </div>
+    </div>
+
+    <!-- Q Step 2: Today's readiness -->
+    <div id="crQStep2" style="display:none;flex:1;padding:28px 24px 32px;flex-direction:column">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:6px">HOW DO YOU <span style="color:#ffc107">FEEL TODAY?</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px">Your coach will adjust intensity based on how you feel right now</div>
+      <div style="margin-bottom:24px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Legs</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <button onclick="setCrLegs('heavy')" id="crLegsHeavy" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">😩 Heavy</button>
+          <button onclick="setCrLegs('normal')" id="crLegsNormal" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">😐 Normal</button>
+          <button onclick="setCrLegs('fresh')" id="crLegsFresh" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">⚡ Fresh</button>
+        </div>
+      </div>
+      <div style="margin-bottom:auto">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Energy</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <button onclick="setCrEnergy('low')" id="crEnergyLow" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">🔋 Low</button>
+          <button onclick="setCrEnergy('normal')" id="crEnergyNormal" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">😊 Normal</button>
+          <button onclick="setCrEnergy('high')" id="crEnergyHigh" style="padding:12px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">🚀 High</button>
+        </div>
+      </div>
+      <div style="height:20px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="crQGoTo(1)" style="padding:16px 20px;background:rgba(255,255,255,0.06);border:none;border-radius:14px;color:var(--muted);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">←</button>
+        <button id="crQNext2" onclick="_crEnv==='treadmill'?crQGoTo(3):crStartBrief()" disabled style="flex:1;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.35;transition:opacity 0.3s">Next →</button>
+      </div>
+    </div>
+
+    <!-- Q Step 3: Treadmill settings (only shown if treadmill selected, with fitness-based recommendations) -->
+    <div id="crQStep3" style="display:none;flex:1;padding:28px 24px 32px;flex-direction:column">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:6px">YOUR <span style="color:#ffc107">SETTINGS</span></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px">We've set recommended speeds based on your fitness level. Adjust to your comfort.</div>
+
+      <!-- Recommendation badge -->
+      <div id="crSpeedRecommendBadge" style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);border-radius:12px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6"></div>
+
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px">WALK SPEED (mph)</div>
+            <input type="number" id="crWalkSpeedInput" step="0.1" min="1.5" max="5" onchange="syncSpeedInputs()" oninput="syncSpeedInputs()" style="width:100%;font-size:26px;font-weight:700;padding:12px;border-radius:10px;text-align:center;background:var(--surface);border:1px solid var(--border);color:var(--text)">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px">RUN SPEED (mph)</div>
+            <input type="number" id="crRunSpeedInput" step="0.1" min="3" max="12" onchange="syncSpeedInputs()" oninput="syncSpeedInputs()" style="width:100%;font-size:26px;font-weight:700;padding:12px;border-radius:10px;text-align:center;background:var(--surface);border:1px solid var(--border);color:var(--text)">
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px">INCLINE (%)</div>
+          <div style="display:flex;gap:8px">
+            <button onclick="setCrIncline(0)" id="crInc0" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Flat</button>
+            <button onclick="setCrIncline(1)" id="crInc1" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">1%</button>
+            <button onclick="setCrIncline(2)" id="crInc2" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">2%</button>
+            <button onclick="setCrIncline(3)" id="crInc3" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">3%+</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="crQGoTo(2)" style="padding:16px 20px;background:rgba(255,255,255,0.06);border:none;border-radius:14px;color:var(--muted);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">←</button>
+        <button onclick="crStartBrief()" style="flex:1;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Generate My Plan ⚡</button>
+      </div>
+    </div>
+
+  </div>
+
+<!-- ═══ PHASE B: AI brief + interval preview ═══ -->
+  <div id="crBriefPhase" style="flex:1;display:none;flex-direction:column;padding:28px 24px 32px;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <button onclick="crQGoTo(2)" style="background:rgba(255,255,255,0.06);border:none;border-radius:10px;color:var(--muted);font-size:13px;padding:8px 16px;cursor:pointer;font-family:'DM Sans',sans-serif">← Edit</button>
+      <div id="crSessionBadge" style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase"></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;margin-bottom:6px" id="crBriefTitle">Your plan is ready</div>
+      <div id="crBriefSub" style="font-size:13px;color:var(--muted);margin-bottom:20px"></div>
+      <div id="crBriefBox" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">⚡ Coach says</div>
+        <div id="crBriefText" style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.8">
+          <div style="display:flex;align-items:center;gap:10px;color:var(--muted)">
+            <div style="width:16px;height:16px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+            Analyzing your profile and generating your personalized plan...
+          </div>
+        </div>
+      </div>
+      <div id="crIntervalPreview" style="margin-bottom:16px"></div>
+      <div id="crEnvironmentSummary" style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;font-size:12px;color:var(--muted);line-height:1.8"></div>
+    </div>
+    <button id="crStartBtn" onclick="startCoachedTimer()" disabled style="width:100%;padding:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:16px;color:#000;font-size:17px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.35;transition:opacity 0.3s;margin-top:20px">Start Run →</button>
+  </div>
+
+  <!-- ═══ PHASE T: Active interval timer ═══ -->
+  <div id="crTimerPhase" style="flex:1;display:none;flex-direction:column">
+    <div id="crIntervalBg" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:rgba(41,182,246,0.08);transition:background 0.6s ease">
+      <div id="crRoundLabel" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">ROUND 1 OF 6</div>
+      <div id="crIntervalState" style="font-family:'Bebas Neue',sans-serif;font-size:88px;letter-spacing:4px;color:#fff;line-height:1;margin-bottom:8px;transition:all 0.4s ease">WALK</div>
+      <div id="crIntervalCountdown" style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(255,255,255,0.9);line-height:1;margin-bottom:16px">2:00</div>
+      <div style="width:100%;max-width:280px;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:16px;overflow:hidden">
+        <div id="crProgressBar" style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.5s linear"></div>
+      </div>
+      <!-- Speed instruction (treadmill) or effort cue (outdoor) -->
+      <div id="crSpeedCue" style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:10px 16px;margin-bottom:10px;display:none">
+        <div style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">TREADMILL</div>
+        <div id="crSpeedCueText" style="font-size:18px;font-weight:700;color:#fff"></div>
+      </div>
+      <div id="crCoachNote" style="font-size:13px;color:rgba(255,255,255,0.55);text-align:center;max-width:280px;line-height:1.7;min-height:40px"></div>
+    </div>
+    <div style="background:#13151a;padding:20px 24px 32px;border-top:1px solid rgba(255,255,255,0.06)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+        <div style="text-align:center">
+          <div id="crElapsed" style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff">0:00</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Elapsed</div>
+        </div>
+        <div style="text-align:center">
+          <div id="crNextLabel" style="font-size:11px;color:var(--muted);margin-bottom:2px">NEXT</div>
+          <div id="crNextInterval" style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.7)">—</div>
+        </div>
+        <div style="text-align:center">
+          <div id="crTotalTime" style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff">0:00</div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Total</div>
+        </div>
+      </div>
+      <button onclick="endCoachedRun()" style="width:100%;padding:14px;background:rgba(255,59,48,0.12);border:1px solid rgba(255,59,48,0.3);border-radius:14px;color:#ff3b30;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">End Run & Log</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE D: Post-run debrief ═══ -->
+  <div id="crDebriefPhase" style="flex:1;display:none;flex-direction:column;overflow-y:auto;padding:28px 24px 40px">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;margin-bottom:4px">GREAT <span style="color:var(--accent)">WORK</span></div>
+    <div id="crDebriefSummary" style="font-size:13px;color:var(--muted);margin-bottom:20px"></div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">Log this session</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Distance (mi)</div>
+          <input type="number" id="crDistance" step="0.1" placeholder="e.g. 1.5" style="width:100%;font-size:16px;padding:10px;border-radius:10px">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Duration (min)</div>
+          <input type="number" id="crDuration" placeholder="auto" style="width:100%;font-size:16px;padding:10px;border-radius:10px">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Effort (1-10)</div>
+      <div id="crEffortBtns" style="display:flex;gap:4px;margin-bottom:14px"></div>
+      <input type="text" id="crNotes" placeholder="Any notes? (optional)" style="width:100%;font-size:13px;padding:10px;border-radius:10px">
+    </div>
+    <div style="background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.15);border-radius:16px;padding:18px;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">⚡ Coach says</div>
+      <div id="crDebriefText" style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.8">Enter your distance above to get your personal debrief...</div>
+    </div>
+    <button onclick="saveCoachedRun()" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#000;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px">Save Session ✓</button>
+    <button onclick="closeCoachedRun()" style="width:100%;padding:12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:var(--muted);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Discard</button>
   </div>
 </div>
 </body>
