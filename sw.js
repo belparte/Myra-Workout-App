@@ -53,8 +53,8 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(d.title || 'Myra', {
       body: d.body || "Time to train 💪",
-      icon: '/Myra-Workout-App/icons/icon-192.png',
-      badge: '/Myra-Workout-App/icons/icon-72.png',
+      icon: '/Myra-Workout-App/icon-192.png',
+      badge: '/Myra-Workout-App/icon-72.png',
       vibrate: [100, 50, 100],
     })
   );
